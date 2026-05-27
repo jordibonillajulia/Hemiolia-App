@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fe:Facturae xmlns:fe="http://www.facturae.gob.es/formato/Versiones/Facturaev3_2_2.xml">
+  <FileHeader>
+    <SchemaVersion>3.2.2</SchemaVersion>
+    <Modality>I</Modality>
+    <InvoiceIssuerType>EM</InvoiceIssuerType>
+    <Batch>
+      <BatchIdentifier>40936132L202600000004</BatchIdentifier>
+      <InvoicesCount>1</InvoicesCount>
+      <TotalInvoicesAmount>
+        <TotalAmount>1140.00</TotalAmount>
+      </TotalInvoicesAmount>
+      <TotalOutstandingAmount>
+        <TotalAmount>1140.00</TotalAmount>
+      </TotalOutstandingAmount>
+      <TotalExecutableAmount>
+        <TotalAmount>1140.00</TotalAmount>
+      </TotalExecutableAmount>
+      <InvoiceCurrencyCode>EUR</InvoiceCurrencyCode>
+    </Batch>
+  </FileHeader>
+  <Parties>
+    <SellerParty>
+      <TaxIdentification>
+        <PersonTypeCode>F</PersonTypeCode>
+        <ResidenceTypeCode>R</ResidenceTypeCode>
+        <TaxIdentificationNumber>40936132L</TaxIdentificationNumber>
+      </TaxIdentification>
+      <Individual>
+        <Name>Jordi</Name>
+        <FirstSurname>Bonilla</FirstSurname>
+        <SecondSurname>Julià</SecondSurname>
+        <AddressInSpain>
+          <Address>Avinguda Catalunya, 87 (5-A)</Address>
+          <PostCode>43500</PostCode>
+          <Town>Tortosa</Town>
+          <Province>Tarragona</Province>
+          <CountryCode>ESP</CountryCode>
+        </AddressInSpain>
+      </Individual>
+    </SellerParty>
+    <BuyerParty>
+      <TaxIdentification>
+        <PersonTypeCode>J</PersonTypeCode>
+        <ResidenceTypeCode>R</ResidenceTypeCode>
+        <TaxIdentificationNumber>P4307800E</TaxIdentificationNumber>
+      </TaxIdentification>
+      <AdministrativeCentres>
+        <AdministrativeCentre>
+          <CentreCode>L01430770</CentreCode>
+          <RoleTypeCode>01</RoleTypeCode>
+          <Name>Ajuntament del Mas de Barberans</Name>
+          <AddressInSpain>
+            <Address>Avinguda Joan Celma s/n</Address>
+            <PostCode>43514</PostCode>
+            <Town>Mas de Barberans</Town>
+            <Province>Tarragona</Province>
+            <CountryCode>ESP</CountryCode>
+          </AddressInSpain>
+        </AdministrativeCentre>
+        <AdministrativeCentre>
+          <CentreCode>L01430770</CentreCode>
+          <RoleTypeCode>02</RoleTypeCode>
+          <Name>Ajuntament del Mas de Barberans</Name>
+          <AddressInSpain>
+            <Address>Avinguda Joan Celma s/n</Address>
+            <PostCode>43514</PostCode>
+            <Town>Mas de Barberans</Town>
+            <Province>Tarragona</Province>
+            <CountryCode>ESP</CountryCode>
+          </AddressInSpain>
+        </AdministrativeCentre>
+        <AdministrativeCentre>
+          <CentreCode>L01430770</CentreCode>
+          <RoleTypeCode>03</RoleTypeCode>
+          <Name>Ajuntament del Mas de Barberans</Name>
+          <AddressInSpain>
+            <Address>Avinguda Joan Celma s/n</Address>
+            <PostCode>43514</PostCode>
+            <Town>Mas de Barberans</Town>
+            <Province>Tarragona</Province>
+            <CountryCode>ESP</CountryCode>
+          </AddressInSpain>
+        </AdministrativeCentre>
+      </AdministrativeCentres>
+      <LegalEntity>
+        <CorporateName>Ajuntament del Mas de Barberans</CorporateName>
+        <AddressInSpain>
+          <Address>Avinguda Joan Celma s/n</Address>
+          <PostCode>43514</PostCode>
+          <Town>Mas de Barberans</Town>
+          <Province>Tarragona</Province>
+          <CountryCode>ESP</CountryCode>
+        </AddressInSpain>
+      </LegalEntity>
+    </BuyerParty>
+  </Parties>
+  <Invoices>
+    <Invoice>
+      <InvoiceHeader>
+        <InvoiceNumber>202600000004</InvoiceNumber>
+        <InvoiceDocumentType>FC</InvoiceDocumentType>
+        <InvoiceClass>OO</InvoiceClass>
+      </InvoiceHeader>
+      <InvoiceIssueData>
+        <IssueDate>2026-05-24</IssueDate>
+        <InvoiceCurrencyCode>EUR</InvoiceCurrencyCode>
+        <TaxCurrencyCode>EUR</TaxCurrencyCode>
+        <LanguageName>ca</LanguageName>
+        <InvoiceDescription>Factura generada per un sistema VERI*FACTU. Codi de registre (petjada): C27436631CDD233A30FA5F114C85388ADB746E7EAC383795353A311A6C876D5F.</InvoiceDescription>
+      </InvoiceIssueData>
+
+          <TaxesOutputs>
+            <Tax>
+              <TaxTypeCode>01</TaxTypeCode>
+              <TaxRate>10.0000</TaxRate>
+              <TaxableBase>
+                <TotalAmount>1200.00</TotalAmount>
+              </TaxableBase>
+              <TaxAmount>
+                <TotalAmount>120.00</TotalAmount>
+              </TaxAmount>
+            </Tax>
+          </TaxesOutputs>
+      
+          <TaxesWithheld>
+            <Tax>
+              <TaxTypeCode>04</TaxTypeCode>
+              <TaxRate>15.0000</TaxRate>
+              <TaxableBase>
+                <TotalAmount>1200.00</TotalAmount>
+              </TaxableBase>
+              <TaxAmount>
+                <TotalAmount>180.00</TotalAmount>
+              </TaxAmount>
+            </Tax>
+          </TaxesWithheld>
+      <InvoiceTotals>
+        <TotalGrossAmount>1200.00</TotalGrossAmount>
+        <TotalGeneralDiscounts>0.00</TotalGeneralDiscounts>
+        <TotalGeneralSurcharges>0.00</TotalGeneralSurcharges>
+        <TotalGrossAmountBeforeTaxes>1200.00</TotalGrossAmountBeforeTaxes>
+        <TotalTaxOutputs>120.00</TotalTaxOutputs>
+        <TotalTaxesWithheld>180.00</TotalTaxesWithheld>
+        <InvoiceTotal>1140.00</InvoiceTotal>
+        <TotalOutstandingAmount>1140.00</TotalOutstandingAmount>
+        <TotalExecutableAmount>1140.00</TotalExecutableAmount>
+      </InvoiceTotals>
+      <Items>
+            <InvoiceLine>
+              <ItemDescription>Cavernus, una evolució musical</ItemDescription>
+              <Quantity>1.000000</Quantity>
+              <UnitOfMeasure>01</UnitOfMeasure>
+              <UnitPriceWithoutTax>1200.000000</UnitPriceWithoutTax>
+              <TotalCost>1200.000000</TotalCost>
+              <GrossAmount>1200.000000</GrossAmount>
+              <TaxesOutputs>
+                <Tax>
+                  <TaxTypeCode>01</TaxTypeCode>
+                  <TaxRate>10.0000</TaxRate>
+                  <TaxableBase>
+                    <TotalAmount>1200.00</TotalAmount>
+                  </TaxableBase>
+                  <TaxAmount>
+                    <TotalAmount>120.00</TotalAmount>
+                  </TaxAmount>
+                </Tax>
+              </TaxesOutputs>
+            </InvoiceLine>
+      </Items>
+      <PaymentDetails>
+        <Installment>
+          <InstallmentDueDate>2026-05-24</InstallmentDueDate>
+          <InstallmentAmount>1140.00</InstallmentAmount>
+          <PaymentMeans>04</PaymentMeans>
+          <AccountToBeCredited>
+            <IBAN>ES6014910001242062822024</IBAN>
+          </AccountToBeCredited>
+        </Installment>
+      </PaymentDetails>
+    </Invoice>
+  </Invoices>
+</fe:Facturae>

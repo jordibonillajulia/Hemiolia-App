@@ -1,0 +1,25 @@
+{
+  "name": "Hemiòlia Produccions - Gestió",
+  "short_name": "Hemiòlia",
+  "description": "Eina unificada de gestió per a Hemiòlia Produccions",
+  "start_url": "/dashboard/billing/ledgers",
+  "display": "standalone",
+  "background_color": "#1d1d1f",
+  "theme_color": "#1d1d1f",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/logo-hemiolia.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

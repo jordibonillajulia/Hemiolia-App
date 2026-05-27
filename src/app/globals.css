@@ -1,0 +1,589 @@
+:root {
+  /* Colors */
+  --color-bg: #0a0a0c;
+  --color-bg-glass: rgba(20, 20, 25, 0.7);
+  --color-bg-glass-hover: rgba(30, 30, 40, 0.85);
+  
+  --color-text-primary: #f0f0f5;
+  --color-text-secondary: #a0a0b0;
+  
+  --color-accent: #d4af37; /* Hemiolia gold-ish classic vibe */
+  --color-accent-hover: #f1c40f;
+  
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-border-hover: rgba(255, 255, 255, 0.2);
+
+  --color-error: #e74c3c;
+  --color-success: #2ecc71;
+
+  /* Typography */
+  --font-heading: var(--font-playfair), serif;
+  --font-body: var(--font-outfit), sans-serif;
+
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+
+  /* Shadows & Effects */
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --blur-glass: blur(12px);
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  /* Add a subtle background gradient or mesh for premium feel */
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(212, 175, 55, 0.05), transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(255, 255, 255, 0.03), transparent 25%);
+  background-attachment: fixed;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+h1 { font-size: 2.5rem; margin-bottom: var(--space-md); }
+h2 { font-size: 2rem; margin-bottom: var(--space-md); }
+h3 { font-size: 1.5rem; margin-bottom: var(--space-sm); }
+
+p {
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-accent-hover);
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: var(--color-bg-glass);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-glass);
+  padding: var(--space-lg);
+  transition: transform var(--transition-normal), background var(--transition-normal), border-color var(--transition-normal);
+}
+
+.glass-panel:hover {
+  background: var(--color-bg-glass-hover);
+  border-color: var(--color-border-hover);
+  transform: translateY(-2px);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  border: none;
+  outline: none;
+}
+
+.btn-primary {
+  background-color: var(--color-accent);
+  color: var(--color-bg);
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+}
+
+.btn-glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.btn-glass:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--color-border-hover);
+}
+
+/* Form Elements */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+}
+
+.input-group label {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+}
+
+.input-field:disabled {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Mobile Layout Helpers */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-md);
+}
+
+.mobile-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--color-bg-glass);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-around;
+  padding: var(--space-sm) 0 calc(var(--space-sm) + env(safe-area-inset-bottom));
+  z-index: 100;
+}
+
+.mobile-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  padding: var(--space-sm);
+}
+
+.mobile-nav-item.active {
+  color: var(--color-accent);
+}
+
+/* Utilities */
+.text-center { text-align: center; }
+.mt-xl { margin-top: var(--space-xl); }
+.mb-lg { margin-bottom: var(--space-lg); }
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.gap-md { gap: var(--space-md); }
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ====== PRINT STYLES FOR INVOICE PDF ====== */
+@page {
+  size: A4 portrait;
+  margin: 0.9cm 0.8cm 0.5cm 0.8cm;
+}
+
+@media print {
+  /* Hide all UI elements */
+  nav, .sidebar, .btn, button, footer {
+    display: none !important;
+  }
+
+  /* Reset layout for print */
+  body, html {
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    font-size: 19px !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .emissor-logo {
+    max-height: 110px !important;
+    max-width: 240px !important;
+  }
+
+  .legal-note-vat10 {
+    font-size: 0.52rem !important;
+    padding-left: 0.6rem !important;
+  }
+
+  .emissor-box div,
+  .destinatari-box div {
+    font-size: 0.85rem !important;
+  }
+
+  .emissor-box h3,
+  .destinatari-box h3 {
+    font-size: 0.75rem !important;
+  }
+
+  .details-row {
+    font-size: 0.8rem !important;
+  }
+
+  .details-row p {
+    font-size: 0.8rem !important;
+  }
+
+  .dates-block {
+    font-size: 0.8rem !important;
+  }
+
+  .table-container th {
+    font-size: 0.78rem !important;
+  }
+
+  .huella-box {
+    font-size: 0.55rem !important;
+    padding: 0.2rem 0.5rem !important;
+  }
+
+  .huella-box span {
+    font-size: 0.52rem !important;
+  }
+
+  .notes-box {
+    font-size: 0.7rem !important;
+  }
+
+  .payment-box td {
+    font-size: 0.7rem !important;
+  }
+
+  .container {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Make glass panels flat and white */
+  .glass-panel {
+    background: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    padding: 0 !important;
+    color: #000000 !important;
+    min-height: 28.3cm !important;
+    height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.6rem !important; /* Reduced from 0.8rem */
+  }
+
+  /* Logo adjustment to be higher up and larger */
+  .logo-container {
+    margin-bottom: 0.8rem !important; /* Reduced from 1.5rem */
+  }
+  .logo-container img {
+    max-height: 170px !important;
+  }
+
+  /* Reduce spaces between main elements */
+  .top-row {
+    gap: 1rem !important; /* Reduced from 2rem */
+  }
+
+  .info-box {
+    padding: 0.5rem 0.8rem !important; /* Reduced from 0.85rem 1.2rem */
+  }
+
+  .details-row {
+    padding: 0.5rem 0.8rem !important; /* Reduced from 0.85rem 1.2rem */
+  }
+
+  .table-container th, 
+  .table-container td {
+    padding: 0.4rem 0.6rem !important; /* Reduced from 0.75rem 0.8rem */
+  }
+
+  .totals-section {
+    gap: 1rem !important; /* Reduced from 2rem */
+    margin-top: auto !important;
+  }
+
+  .totals-section > div {
+    padding: 0.5rem 0.8rem !important;
+  }
+
+  .payment-box td, 
+  .payment-box th {
+    padding: 0.3rem 0.5rem !important; /* Reduced from 0.55rem */
+  }
+
+  .footer-container {
+    padding-top: 0.4rem !important;
+    margin-top: 1.5rem !important;
+  }
+
+  /* ====== COMPACT STYLES FOR LONG INVOICES / BUDGETS ====== */
+  .print-compact {
+    font-size: 16.5px !important;
+  }
+
+  .print-compact .emissor-logo {
+    max-height: 90px !important;
+    max-width: 180px !important;
+  }
+
+  .print-compact .legal-note-vat10 {
+    font-size: 0.48rem !important;
+    padding-left: 0.4rem !important;
+  }
+
+  .print-compact .emissor-box div,
+  .print-compact .destinatari-box div {
+    font-size: 0.78rem !important;
+  }
+
+  .print-compact .dates-block {
+    font-size: 0.72rem !important;
+  }
+
+  .print-compact .emissor-box h3,
+  .print-compact .destinatari-box h3 {
+    font-size: 0.7rem !important;
+  }
+
+  .print-compact .huella-box {
+    font-size: 0.52rem !important;
+  }
+
+  .print-compact .huella-box span {
+    font-size: 0.48rem !important;
+  }
+
+  .print-compact .notes-box {
+    font-size: 0.65rem !important;
+  }
+
+  .print-compact .logo-container {
+    margin-bottom: 0.4rem !important;
+  }
+
+  .print-compact .logo-container img {
+    max-height: 130px !important;
+  }
+
+  .print-compact.glass-panel {
+    gap: 0.4rem !important;
+  }
+
+  .print-compact .top-row {
+    gap: 0.8rem !important;
+  }
+
+  .print-compact .info-box {
+    padding: 0.35rem 0.6rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  .print-compact .details-row {
+    padding: 0.35rem 0.6rem !important;
+    font-size: 0.72rem !important;
+  }
+
+  .print-compact .details-row h2 {
+    font-size: 0.95rem !important;
+  }
+
+  .print-compact .details-row p {
+    font-size: 0.72rem !important;
+  }
+
+  .print-compact .table-container th,
+  .print-compact .table-container td {
+    padding: 0.25rem 0.4rem !important;
+    font-size: 0.72rem !important;
+  }
+
+  .print-compact .table-container td strong {
+    font-size: 0.75rem !important;
+  }
+
+  .print-compact .totals-section {
+    gap: 0.8rem !important;
+    margin-top: auto !important;
+  }
+
+  .print-compact .totals-section th,
+  .print-compact .totals-section td {
+    padding: 0.2rem 0.3rem !important;
+    font-size: 0.7rem !important;
+  }
+
+  .print-compact .totals-section > div {
+    font-size: 0.75rem !important;
+  }
+
+  .print-compact .totals-section > div > div {
+    font-size: 0.75rem !important;
+    gap: 0.3rem !important;
+  }
+
+  .print-compact .payment-box td,
+  .print-compact .payment-box th {
+    padding: 0.2rem 0.3rem !important;
+    font-size: 0.7rem !important;
+  }
+
+  /* Typography for print */
+  h1, h2, h3, h4, h5, h6, p, td, th, span, strong, div {
+    text-shadow: none !important;
+  }
+
+  /* Tables in print */
+  table {
+    border-collapse: collapse !important;
+    width: 100% !important;
+  }
+  th, td {
+    border-bottom: 1px solid #ccc !important;
+    color: #000 !important;
+  }
+  th {
+    background: #f5f5f5 !important;
+    border-top: 2px solid #000 !important;
+    border-bottom: 2px solid #000 !important;
+  }
+  
+  /* Utilities */
+  .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .print-break-inside-avoid {
+    break-inside: avoid;
+  }
+}
+
+/* Premium Dashboard & Login Layout Styles */
+.dashboard-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--color-accent) !important;
+  box-shadow: 0 12px 30px -10px rgba(212, 175, 55, 0.3) !important;
+  filter: brightness(1.1);
+}
+
+@media (max-width: 768px) {
+  .login-hero {
+    display: none !important;
+  }
+  .mobile-logo-container {
+    display: block !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-logo-container {
+    display: none !important;
+  }
+}
+
+/* Circular Premium Back Button */
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--color-text-secondary);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn-back:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  transform: translateX(-3px);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.15);
+}
+
+.btn-back svg {
+  transition: transform 0.2s ease;
+}

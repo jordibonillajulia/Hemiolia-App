@@ -1,0 +1,42 @@
+{
+  "name": "hemiolia-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "@kreyo/verifactu-hash-calculator": "^0.1.2",
+    "@peculiar/webcrypto": "^1.7.1",
+    "@peculiar/x509": "^2.0.0",
+    "@signpdf/placeholder-pdf-lib": "^3.3.0",
+    "@signpdf/signer-p12": "^3.3.0",
+    "@signpdf/signpdf": "^3.3.0",
+    "@xmldom/xmldom": "^0.9.10",
+    "dotenv": "^17.4.2",
+    "exceljs": "^4.4.0",
+    "firebase": "^12.13.0",
+    "firebase-admin": "^13.10.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
+    "next": "16.2.6",
+    "node-forge": "^1.4.0",
+    "nodemailer": "^8.0.7",
+    "papaparse": "^5.5.3",
+    "pdf-lib": "^1.17.1",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "xadesjs": "^2.6.7",
+    "xml-crypto": "^6.1.2",
+    "xmldsigjs": "^2.8.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "tailwindcss": "^4"
+  }
+}
