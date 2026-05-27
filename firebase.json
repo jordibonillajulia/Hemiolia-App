@@ -9,5 +9,9 @@
   },
   "storage": {
     "rules": "storage.rules"
+  },
+  "apphosting": {
+    "backendId": "hemiolia-app-backend",
+    "rootDir": "/"
   }
 }
