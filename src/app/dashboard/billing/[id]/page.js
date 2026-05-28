@@ -499,18 +499,26 @@ export default function InvoiceDetailPage() {
             borderRadius: '4px', 
             padding: '0.25rem 0.6rem', 
             background: 'rgba(46, 204, 113, 0.05)', 
-            fontSize: '0.85rem', 
+            fontSize: '0.72rem', 
             color: '#27ae60',
             display: 'flex',
             flexDirection: 'row',
-            justifyContent: 'space-between',
+            justifyContent: 'center',
             alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '0.4rem'
+            gap: '0.6rem',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden'
           }}>
-            <div><strong>Codi de registre de petjada (Hash):</strong> <span style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: '#1e293b' }}>{invoice.huella}</span></div>
+            <span style={{ color: '#1e293b' }}>
+              <strong>Hash:</strong> <span style={{ fontFamily: 'monospace', fontSize: '0.68rem' }}>{invoice.huella}</span>
+            </span>
             {invoice.fechaHoraHusoGenRegistro && (
-              <div><strong>Data i hora de registre oficial (AEAT):</strong> {formatDateTime(invoice.fechaHoraHusoGenRegistro)}</div>
+              <>
+                <span style={{ color: '#bdc3c7' }}>|</span>
+                <span style={{ color: '#1e293b' }}>
+                  <strong>Registre AEAT:</strong> {formatDateTime(invoice.fechaHoraHusoGenRegistro)}
+                </span>
+              </>
             )}
           </div>
         )}
