@@ -31,7 +31,7 @@ export const AuthProvider = ({ children }) => {
             setRole(userDocSnap.data().role || 'viewer');
           } else {
             // First login or registration
-            const defaultRole = currentUser.email === 'info@hemiolia.cat' ? 'admin' : 'viewer';
+            const defaultRole = (currentUser.email === 'info@hemiolia.cat' || currentUser.email === 'admin@hemiolia.cat') ? 'admin' : 'viewer';
             await setDoc(userDocRef, {
               email: currentUser.email,
               role: defaultRole,
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
           console.error("Error loading user role from Firestore:", error);
           // Fallback based on email
-          setRole(currentUser.email === 'info@hemiolia.cat' ? 'admin' : 'viewer');
+          setRole((currentUser.email === 'info@hemiolia.cat' || currentUser.email === 'admin@hemiolia.cat') ? 'admin' : 'viewer');
         }
       } else {
         setRole('viewer');
