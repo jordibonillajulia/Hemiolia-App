@@ -99,8 +99,7 @@ export default function LoginPage() {
             <div className="mobile-logo-container" style={{ marginBottom: '1.5rem' }}>
               <img src="/logo-hemiolia-light.png" alt="Hemiòlia Logo" style={{ maxHeight: '130px', objectFit: 'contain', margin: '0 auto' }} />
             </div>
-            <h2 style={{ color: 'var(--color-accent)', marginBottom: '0.5rem', fontFamily: 'var(--font-heading)', fontSize: '1.8rem' }}>Gestió i Logística</h2>
-            <p style={{ fontSize: '0.9rem' }}>Introdueix les teves credencials per accedir</p>
+            <h2 style={{ color: 'var(--color-accent)', marginBottom: '0.5rem', fontFamily: 'var(--font-heading)', fontSize: '2.1rem' }}>Benvinguts</h2>
           </div>
           
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -150,6 +149,63 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      {/* Landscape lock overlay for mobile devices */}
+      <div className="landscape-lock-overlay">
+        <div className="phone-rotate-icon">📱🔄</div>
+        <h3>Gira el mòbil en vertical</h3>
+        <p>Aquesta pantalla de l'aplicació està dissenyada exclusivament per a orientació vertical.</p>
+      </div>
+
+      <style>{`
+        .landscape-lock-overlay {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background-color: #0a0a0c;
+          z-index: 99999;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          color: #f0f0f5;
+          text-align: center;
+          padding: 2rem;
+          box-sizing: border-box;
+        }
+        .phone-rotate-icon {
+          font-size: 3.5rem;
+          margin-bottom: 1.2rem;
+          animation: phone-rotate 2.5s ease-in-out infinite;
+        }
+        .landscape-lock-overlay h3 {
+          color: #d4af37;
+          font-family: var(--font-heading);
+          font-size: 1.8rem;
+          margin-bottom: 0.75rem;
+          font-weight: 600;
+        }
+        .landscape-lock-overlay p {
+          color: #a0a0b0;
+          font-size: 0.95rem;
+          max-width: 340px;
+          line-height: 1.6;
+          margin: 0;
+        }
+        @media (max-width: 900px) and (orientation: landscape) {
+          .landscape-lock-overlay {
+            display: flex !important;
+          }
+        }
+        @keyframes phone-rotate {
+          0% { transform: rotate(0deg); }
+          30% { transform: rotate(90deg); }
+          70% { transform: rotate(90deg); }
+          100% { transform: rotate(0deg); }
+        }
+      `}</style>
     </main>
   );
 }
