@@ -6,6 +6,22 @@ import { getInvoices, deleteInvoice, formatDisplayInvoiceNumber, getBillingClien
 import Link from 'next/link';
 import Papa from 'papaparse';
 
+// Helper to format a date string (YYYY-MM-DD) as DD/MM/YYYY with zero-padding
+const formatDateDDMMYYYY = (dateStr) => {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    const [yyyy, mm, dd] = parts;
+    return `${dd.padStart(2, '0')}/${mm.padStart(2, '0')}/${yyyy}`;
+  }
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 export default function BillingPage() {
   const { user, loading, isAdmin } = useAuth();
   const [invoices, setInvoices] = useState([]);
@@ -90,7 +106,7 @@ export default function BillingPage() {
     const exportData = dataToExport.map(inv => ({
       'Número Factura': formatDisplayInvoiceNumber(inv.invoiceNumber, inv.issuerId),
       'Número AEAT (Oficial)': inv.invoiceNumber,
-      'Data': new Date(inv.date).toLocaleDateString('ca-ES'),
+      'Data': formatDateDDMMYYYY(inv.date),
       'Client': inv.clientName,
       'NIF': inv.clientNif,
       'Base Imposable': `${(parseFloat(inv.totals?.baseImposable) || 0).toFixed(2)} €`,
@@ -260,8 +276,8 @@ export default function BillingPage() {
               {filteredInvoices.map(inv => (
                 <tr key={inv.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <td style={{ padding: '1rem' }}>
-                    <div style={{ fontSize: '0.85rem' }}>Op: {new Date(inv.operationDate || inv.date).toLocaleDateString('ca-ES')}</div>
-                    <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>Em: {new Date(inv.date).toLocaleDateString('ca-ES')}</div>
+                    <div style={{ fontSize: '0.85rem' }}>Op: {formatDateDDMMYYYY(inv.operationDate || inv.date)}</div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>Em: {formatDateDDMMYYYY(inv.date)}</div>
                   </td>
                   <td style={{ padding: '1rem' }}>{formatDisplayInvoiceNumber(inv.invoiceNumber, inv.issuerId)}</td>
                   <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatClientName(inv.clientName)}</td>

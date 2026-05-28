@@ -5,6 +5,22 @@ import { useAuth } from '../../../../lib/AuthContext';
 import { getBudgets, deleteBudget, getBillingClients, formatClientName } from '../../../../lib/firestoreUtils';
 import Link from 'next/link';
 
+// Helper to format a date string (YYYY-MM-DD) as DD/MM/YYYY with zero-padding
+const formatDateDDMMYYYY = (dateStr) => {
+  if (!dateStr) return '';
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    const [yyyy, mm, dd] = parts;
+    return `${dd.padStart(2, '0')}/${mm.padStart(2, '0')}/${yyyy}`;
+  }
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 export default function BudgetsPage() {
   const { user, loading, isAdmin } = useAuth();
   const [budgets, setBudgets] = useState([]);
@@ -192,7 +208,7 @@ export default function BudgetsPage() {
             <tbody>
               {filteredBudgets.map(b => (
                 <tr key={b.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '1rem' }}>{new Date(b.date).toLocaleDateString('ca-ES')}</td>
+                  <td style={{ padding: '1rem' }}>{formatDateDDMMYYYY(b.date)}</td>
                   <td style={{ padding: '1rem' }}>{b.budgetNumber}</td>
                   <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatClientName(b.clientName)}</td>
                   <td style={{ padding: '1rem' }}>{(parseFloat(b.totals?.baseImposable) || 0).toFixed(2)} €</td>

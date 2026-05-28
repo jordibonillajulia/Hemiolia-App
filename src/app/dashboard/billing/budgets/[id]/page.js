@@ -148,6 +148,11 @@ export default function BudgetDetailPage() {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const [yyyy, mm, dd] = parts;
+      return `${dd.padStart(2, '0')}/${mm.padStart(2, '0')}/${yyyy}`;
+    }
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return '';
     const day = String(d.getDate()).padStart(2, '0');
@@ -565,7 +570,7 @@ export default function BudgetDetailPage() {
                 <strong>NIF:</strong> {budget.issuerData?.nif}
               </div>
               <div>
-                <strong>Data de signatura:</strong> {new Date().toLocaleDateString('ca-ES')} a les {new Date().toLocaleTimeString('ca-ES', { hour: '2-digit', minute: '2-digit' })}
+                <strong>Data de signatura:</strong> {(() => { const now = new Date(); return `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`; })()} a les {new Date().toLocaleTimeString('ca-ES', { hour: '2-digit', minute: '2-digit' })}
               </div>
               <div style={{ fontSize: '0.65rem', color: '#64748b', fontFamily: 'monospace', marginTop: '0.15rem' }}>
                 CSV: {getVerificationCode(budget.id)}

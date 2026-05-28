@@ -6,6 +6,23 @@ import { useAuth } from '../../../../lib/AuthContext';
 import { getContactById, getInteractionsByContact, addInteraction, getShows } from '../../../../lib/firestoreUtils';
 import Link from 'next/link';
 
+// Helper to format date as DD/MM/YYYY with padding
+const formatDateDDMMYYYY = (dateStr) => {
+  if (!dateStr) return '';
+  const cleanDateStr = dateStr.split(/[ T]/)[0];
+  const parts = cleanDateStr.split('-');
+  if (parts.length === 3) {
+    const [yyyy, mm, dd] = parts;
+    return `${dd.padStart(2, '0')}/${mm.padStart(2, '0')}/${yyyy}`;
+  }
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 export default function ContactDetailPage() {
   const params = useParams();
   const contactId = params.id;
@@ -174,7 +191,7 @@ export default function ContactDetailPage() {
           interactions.map(interaction => (
             <div key={interaction.id} className="glass-panel" style={{ marginBottom: '1rem', borderLeft: `4px solid var(--color-accent)` }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <strong>{interaction.date ? interaction.date.split('-').reverse().join('/') : ''}</strong>
+                <strong>{formatDateDDMMYYYY(interaction.date)}</strong>
                 <span style={{ color: 'var(--color-accent)' }}>
                   {'★'.repeat(interaction.interestLevel)}{'☆'.repeat(5 - interaction.interestLevel)}
                 </span>

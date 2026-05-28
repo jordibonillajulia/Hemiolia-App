@@ -5,6 +5,23 @@ import { useAuth } from '../../../lib/AuthContext';
 import { getUpcomingGigs, addGig, deleteGig, updateGig } from '../../../lib/firestoreUtils';
 import Link from 'next/link';
 
+// Helper to format date as DD/MM/YYYY with padding
+const formatDateDDMMYYYY = (dateStr) => {
+  if (!dateStr) return '';
+  const cleanDateStr = dateStr.split(/[ T]/)[0];
+  const parts = cleanDateStr.split('-');
+  if (parts.length === 3) {
+    const [yyyy, mm, dd] = parts;
+    return `${dd.padStart(2, '0')}/${mm.padStart(2, '0')}/${yyyy}`;
+  }
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 // La previsió meteorològica ara és un simple enllaç per estalviar recursos i evitar errors de CORS
 
 const AddressAutocomplete = ({ value, onChange }) => {
@@ -459,7 +476,7 @@ export default function RoadSheetPage() {
                     </div>
                     
                     <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', fontWeight: 'bold', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                      <span>📅 {gig.date === 'a determinar' ? 'a determinar' : (gig.date ? gig.date.split('-').reverse().join('/') : '')} {gig.showTime ? `a les ${gig.showTime}` : ''} | 📍 {gig.municipality && gig.locationName ? `${gig.municipality} (${gig.locationName})` : (gig.municipality || gig.locationName)}</span>
+                      <span>📅 {gig.date === 'a determinar' ? 'a determinar' : formatDateDDMMYYYY(gig.date)} {gig.showTime ? `a les ${gig.showTime}` : ''} | 📍 {gig.municipality && gig.locationName ? `${gig.municipality} (${gig.locationName})` : (gig.municipality || gig.locationName)}</span>
                       {isUpcoming && gig.municipality && (
                         <a 
                           href={`https://www.google.com/search?q=temps+${encodeURIComponent(gig.municipality)}`} 

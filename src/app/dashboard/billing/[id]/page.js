@@ -123,8 +123,8 @@ export default function InvoiceDetailPage() {
     if (!dateStr) return '';
     const parts = dateStr.split('-');
     if (parts.length === 3) {
-      // YYYY-MM-DD to DD/MM/YYYY
-      return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      // YYYY-MM-DD to DD/MM/YYYY with zero-padding
+      return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${parts[0]}`;
     }
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return '';

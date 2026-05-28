@@ -21,6 +21,24 @@ import { storage } from '../../../../lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 
+// Helper to format a date string (YYYY-MM-DD) as DD/MM/YYYY with zero-padding
+const formatDateDDMMYYYY = (dateStr) => {
+  if (!dateStr) return '';
+  // Parse directly from the YYYY-MM-DD string to avoid timezone shifts
+  const parts = dateStr.split('-');
+  if (parts.length === 3) {
+    const [yyyy, mm, dd] = parts;
+    return `${dd.padStart(2, '0')}/${mm.padStart(2, '0')}/${yyyy}`;
+  }
+  // Fallback for other date formats
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${day}/${month}/${year}`;
+};
+
 const GASTO_CONCEPTS = [
   { code: '', label: '-- Sense concepte especial --' },
   { code: 'G01', label: 'G01 - Consums d\'explotació (compres, materials)' },
@@ -797,7 +815,7 @@ export default function LedgersPage() {
                     <strong>{item.year}</strong> <span style={{ color: 'var(--color-text-secondary)' }}>({item.period || getQuarterFromDate(item.dateExp || item.dateReceipt)})</span>
                   </td>
                   <td style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
-                    {item.dateExp ? new Date(item.dateExp).toLocaleDateString('ca-ES') : ''}
+                    {formatDateDDMMYYYY(item.dateExp)}
                   </td>
                   <td style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
                     {type === 'issued'
