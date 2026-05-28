@@ -264,14 +264,14 @@ a:hover {
     color: #000000 !important;
     padding: 0 !important;
     margin: 0 !important;
-    font-size: 14.5px !important;
+    font-size: 19px !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
   .emissor-logo {
-    max-height: 95px !important;
-    max-width: 200px !important;
+    max-height: 110px !important;
+    max-width: 240px !important;
   }
 
   .legal-note-vat10 {
@@ -338,7 +338,7 @@ a:hover {
     backdrop-filter: none !important;
     padding: 0 !important;
     color: #000000 !important;
-    min-height: 26.8cm !important;
+    min-height: 28.3cm !important;
     height: auto !important;
     display: flex !important;
     flex-direction: column !important;
@@ -387,48 +387,48 @@ a:hover {
 
   .footer-container {
     padding-top: 0.4rem !important;
-    margin-top: 1.2rem !important;
+    margin-top: 1.5rem !important;
   }
 
   /* ====== COMPACT STYLES FOR LONG INVOICES / BUDGETS ====== */
   .print-compact {
-    font-size: 12.5px !important;
+    font-size: 16.5px !important;
   }
 
   .print-compact .emissor-logo {
-    max-height: 70px !important;
-    max-width: 150px !important;
+    max-height: 90px !important;
+    max-width: 180px !important;
   }
 
   .print-compact .legal-note-vat10 {
-    font-size: 0.55em !important;
+    font-size: 0.48rem !important;
     padding-left: 0.4rem !important;
   }
 
   .print-compact .emissor-box div,
   .print-compact .destinatari-box div {
-    font-size: 0.85em !important;
+    font-size: 0.78rem !important;
   }
 
   .print-compact .dates-block {
-    font-size: 0.8em !important;
+    font-size: 0.72rem !important;
   }
 
   .print-compact .emissor-box h3,
   .print-compact .destinatari-box h3 {
-    font-size: 0.8em !important;
+    font-size: 0.7rem !important;
   }
 
   .print-compact .huella-box {
-    font-size: 0.6em !important;
+    font-size: 0.52rem !important;
   }
 
   .print-compact .huella-box span {
-    font-size: 0.55em !important;
+    font-size: 0.48rem !important;
   }
 
   .print-compact .notes-box {
-    font-size: 0.75em !important;
+    font-size: 0.65rem !important;
   }
 
   .print-compact .logo-container {
@@ -436,70 +436,69 @@ a:hover {
   }
 
   .print-compact .logo-container img {
-    max-height: 100px !important;
+    max-height: 130px !important;
   }
 
   .print-compact.glass-panel {
-    gap: 0.35rem !important;
-    min-height: 25.5cm !important;
+    gap: 0.4rem !important;
   }
 
   .print-compact .top-row {
-    gap: 0.6rem !important;
+    gap: 0.8rem !important;
   }
 
   .print-compact .info-box {
-    padding: 0.3rem 0.5rem !important;
-    font-size: 0.8em !important;
+    padding: 0.35rem 0.6rem !important;
+    font-size: 0.75rem !important;
   }
 
   .print-compact .details-row {
-    padding: 0.3rem 0.5rem !important;
-    font-size: 0.8em !important;
+    padding: 0.35rem 0.6rem !important;
+    font-size: 0.72rem !important;
   }
 
   .print-compact .details-row h2 {
-    font-size: 1em !important;
+    font-size: 0.95rem !important;
   }
 
   .print-compact .details-row p {
-    font-size: 0.8em !important;
+    font-size: 0.72rem !important;
   }
 
   .print-compact .table-container th,
   .print-compact .table-container td {
-    padding: 0.2rem 0.35rem !important;
-    font-size: 0.8em !important;
+    padding: 0.25rem 0.4rem !important;
+    font-size: 0.72rem !important;
   }
 
   .print-compact .table-container td strong {
-    font-size: 0.85em !important;
+    font-size: 0.75rem !important;
   }
 
   .print-compact .totals-section {
-    gap: 0.6rem !important;
+    gap: 0.8rem !important;
     margin-top: auto !important;
   }
 
   .print-compact .totals-section th,
   .print-compact .totals-section td {
-    padding: 0.15rem 0.25rem !important;
-    font-size: 0.75em !important;
+    padding: 0.2rem 0.3rem !important;
+    font-size: 0.7rem !important;
   }
 
   .print-compact .totals-section > div {
-    font-size: 0.8em !important;
+    font-size: 0.75rem !important;
   }
 
   .print-compact .totals-section > div > div {
-    font-size: 0.8em !important;
+    font-size: 0.75rem !important;
     gap: 0.3rem !important;
   }
 
   .print-compact .payment-box td,
   .print-compact .payment-box th {
-    padding: 0.15rem 0.25rem !important;
-    font-size: 0.75em !important;
+    padding: 0.2rem 0.3rem !important;
+    font-size: 0.7rem !important;
   }
 
   /* Typography for print */
