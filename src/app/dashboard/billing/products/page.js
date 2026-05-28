@@ -92,7 +92,7 @@ export default function BillingProductsPage() {
               <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
           </Link>
-          <h1 style={{ marginTop: '0.5rem', marginBottom: 0, display: 'inline-block', verticalAlign: 'middle' }}>Espectacles i Productes</h1>
+          <h1 style={{ marginTop: '0.5rem', marginBottom: 0, display: 'inline-block', verticalAlign: 'middle' }}>Espectacles</h1>
         </div>
         {isAdmin && (
           <button className="btn btn-primary" onClick={() => setIsAdding(!isAdding)}>

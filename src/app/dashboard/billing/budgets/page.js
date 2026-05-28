@@ -120,7 +120,7 @@ export default function BudgetsPage() {
               <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
           </Link>
-          <h1 style={{ marginTop: '0.5rem', marginBottom: 0, display: 'inline-block', verticalAlign: 'middle' }}>Gestió de Pressupostos</h1>
+          <h1 style={{ marginTop: '0.5rem', marginBottom: 0, display: 'inline-block', verticalAlign: 'middle' }}>Pressupostos</h1>
         </div>
         {isAdmin && (
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -218,22 +218,22 @@ export default function BudgetsPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead style={{ background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid var(--color-border)' }}>
               <tr>
-                <th style={{ padding: '1rem' }}>Data</th>
-                <th style={{ padding: '1rem' }}>Nº Pressupost</th>
-                <th style={{ padding: '1rem' }}>Client</th>
-                <th style={{ padding: '1rem' }}>Base Imposable</th>
-                <th style={{ padding: '1rem' }}>Estat</th>
-                <th style={{ padding: '1rem' }}>Accions</th>
+                <th style={{ padding: '1rem', whiteSpace: 'nowrap' }}>Data</th>
+                <th style={{ padding: '1rem', whiteSpace: 'nowrap' }}>Nº Pressupost</th>
+                <th style={{ padding: '1rem', whiteSpace: 'nowrap' }}>Client</th>
+                <th style={{ padding: '1rem', whiteSpace: 'nowrap' }}>Base Imposable</th>
+                <th style={{ padding: '1rem', whiteSpace: 'nowrap' }}>Estat</th>
+                <th style={{ padding: '1rem', whiteSpace: 'nowrap' }}>Accions</th>
               </tr>
             </thead>
             <tbody>
               {filteredBudgets.map(b => (
                 <tr key={b.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '1rem' }}>{formatDateDDMMYYYY(b.date)}</td>
-                  <td style={{ padding: '1rem' }}>{b.budgetNumber}</td>
+                  <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatDateDDMMYYYY(b.date)}</td>
+                  <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{b.budgetNumber}</td>
                   <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatClientName(b.clientName)}</td>
-                  <td style={{ padding: '1rem' }}>{(parseFloat(b.totals?.baseImposable) || 0).toFixed(2)} €</td>
-                  <td style={{ padding: '1rem' }}>
+                  <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{(parseFloat(b.totals?.baseImposable) || 0).toFixed(2)} €</td>
+                  <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
                     <span style={{ 
                       padding: '0.2rem 0.5rem', 
                       borderRadius: 'var(--radius-full)', 
@@ -247,7 +247,8 @@ export default function BudgetsPage() {
                         ? 'var(--color-success)' 
                         : b.status === 'Rebutjat' 
                         ? '#ff6b6b' 
-                        : 'var(--color-accent)'
+                        : 'var(--color-accent)',
+                      whiteSpace: 'nowrap'
                     }}>
                       {b.status}
                     </span>
