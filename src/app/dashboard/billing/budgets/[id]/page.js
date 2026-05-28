@@ -250,7 +250,7 @@ export default function BudgetDetailPage() {
   return (
     <div className="container" style={{ paddingTop: 'var(--space-md)', paddingBottom: 'var(--space-xl)' }}>
       {/* NO-PRINT HEADER */}
-      <div className="no-print" style={{ marginBottom: 'var(--space-lg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
+      <div className="no-print no-print-header" style={{ marginBottom: 'var(--space-lg)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
         <div>
           <Link href="/dashboard/billing/budgets" className="btn-back no-print" title="Tornar a Pressupostos" style={{ marginRight: '1rem' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -264,7 +264,7 @@ export default function BudgetDetailPage() {
           <p style={{ color: 'var(--color-text-secondary)', margin: 0 }}>Data: {formatDate(budget.date)}</p>
         </div>
         
-        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'nowrap', alignItems: 'center' }}>
+        <div className="no-print-button-group" style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
           <div style={{ 
             padding: '0.5rem 0.8rem', 
             borderRadius: 'var(--radius-full)', 

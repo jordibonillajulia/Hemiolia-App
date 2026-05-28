@@ -194,7 +194,7 @@ export default function LoginPage() {
           line-height: 1.6;
           margin: 0;
         }
-        @media (max-width: 900px) and (orientation: landscape) {
+        @media (max-width: 900px) and (orientation: landscape) and (pointer: coarse) {
           .landscape-lock-overlay {
             display: flex !important;
           }

@@ -713,7 +713,7 @@ a:hover {
   }
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 1024px) {
   /* Mobile styling for invoice and budget viewers */
   .invoice-paper {
     padding: 1.25rem !important;
@@ -799,6 +799,49 @@ a:hover {
     max-width: 100% !important;
     width: 100% !important;
     box-sizing: border-box;
+  }
+
+  /* Responsive header controls */
+  .no-print-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.8rem !important;
+  }
+  
+  .no-print-header > div {
+    width: 100% !important;
+  }
+  
+  .no-print-header h1 {
+    font-size: 1.6rem !important;
+  }
+  
+  /* Responsive buttons stack on mobile */
+  .no-print-button-group {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.5rem !important;
+  }
+  
+  .no-print-button-group .btn,
+  .no-print-button-group a.btn {
+    width: 100% !important;
+    text-align: center;
+    justify-content: center !important;
+  }
+  
+  .no-print-actions {
+    width: 100% !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.5rem !important;
+  }
+  
+  .no-print-actions .btn {
+    width: 100% !important;
+    text-align: center;
+    justify-content: center !important;
   }
 }
 

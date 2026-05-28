@@ -278,7 +278,7 @@ export default function InvoiceDetailPage() {
   return (
     <div className="container" style={{ paddingTop: 'var(--space-md)', paddingBottom: 'var(--space-xl)' }}>
       {/* NO-PRINT HEADER */}
-      <div className="no-print" style={{ marginBottom: 'var(--space-lg)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="no-print no-print-header" style={{ marginBottom: 'var(--space-lg)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <Link href="/dashboard/billing" className="btn-back no-print" title="Tornar a Facturació" style={{ marginRight: '1rem' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -715,7 +715,7 @@ export default function InvoiceDetailPage() {
       </div>
 
       {/* NO-PRINT ACTIONS */}
-      <div className="no-print" style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+      <div className="no-print no-print-actions" style={{ marginTop: '2rem', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
         {invoice.submissionMethod === 'efact' && (
           <button className="btn btn-glass" onClick={handleDownloadFacturaeXML} disabled={isSigning}>
             📥 {isSigning ? 'Signant XML...' : 'Descarregar XML Facturae'}
