@@ -10,6 +10,9 @@
   "storage": {
     "rules": "storage.rules"
   },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
   "apphosting": {
     "backendId": "hemiolia-app-backend",
     "rootDir": "/"

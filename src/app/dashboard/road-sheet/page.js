@@ -64,7 +64,7 @@ const AddressAutocomplete = ({ value, onChange }) => {
 };
 
 export default function RoadSheetPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const [gigs, setGigs] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingGigId, setEditingGigId] = useState(null);
@@ -245,15 +245,19 @@ export default function RoadSheetPage() {
               </select>
             );
           })()}
-          <button className="btn btn-glass" onClick={handleImportWeb}>
-            ⬇️ Importar Web
-          </button>
-          <button className="btn btn-primary" onClick={() => {
-            setIsAdding(!isAdding);
-            if (isAdding) resetForm();
-          }}>
-            {isAdding ? 'Cancel·lar' : '+ Afegir Bolo'}
-          </button>
+          {isAdmin && (
+            <>
+              <button className="btn btn-glass" onClick={handleImportWeb}>
+                ⬇️ Importar Web
+              </button>
+              <button className="btn btn-primary" onClick={() => {
+                setIsAdding(!isAdding);
+                if (isAdding) resetForm();
+              }}>
+                {isAdding ? 'Cancel·lar' : '+ Afegir Bolo'}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -431,22 +435,26 @@ export default function RoadSheetPage() {
                             </span>
                           );
                         })()}
-                        <button 
-                          onClick={() => handleEditClick(gig)}
-                          className="btn btn-glass"
-                          style={{ padding: '0.4rem', border: 'none', background: 'transparent' }}
-                          title="Editar Bolo"
-                        >
-                          ✏️
-                        </button>
-                        <button 
-                          onClick={() => handleRemoveGig(gig.id, gig.title)}
-                          className="btn btn-glass"
-                          style={{ padding: '0.4rem', border: 'none', background: 'transparent' }}
-                          title="Eliminar Bolo"
-                        >
-                          🗑️
-                        </button>
+                        {isAdmin && (
+                          <>
+                            <button 
+                              onClick={() => handleEditClick(gig)}
+                              className="btn btn-glass"
+                              style={{ padding: '0.4rem', border: 'none', background: 'transparent' }}
+                              title="Editar Bolo"
+                            >
+                              ✏️
+                            </button>
+                            <button 
+                              onClick={() => handleRemoveGig(gig.id, gig.title)}
+                              className="btn btn-glass"
+                              style={{ padding: '0.4rem', border: 'none', background: 'transparent' }}
+                              title="Eliminar Bolo"
+                            >
+                              🗑️
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                     

@@ -6,7 +6,7 @@ import { getContacts, addContact, deleteContact, updateContact } from '../../../
 import Link from 'next/link';
 
 export default function CRMPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const [contacts, setContacts] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingContactId, setEditingContactId] = useState(null);
@@ -78,17 +78,19 @@ export default function CRMPage() {
           </Link>
           <h1 style={{ marginTop: '0.5rem', marginBottom: 0, display: 'inline-block', verticalAlign: 'middle' }}>CRM i Contactes</h1>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <Link href="/dashboard/crm/import" className="btn btn-glass">
-            Importar CSV
-          </Link>
-          <button className="btn btn-primary" onClick={() => {
-            setIsAdding(!isAdding);
-            if (isAdding) resetForm();
-          }}>
-            {isAdding ? 'Cancel·lar' : '+ Nou Contacte'}
-          </button>
-        </div>
+        {isAdmin && (
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <Link href="/dashboard/crm/import" className="btn btn-glass">
+              Importar CSV
+            </Link>
+            <button className="btn btn-primary" onClick={() => {
+              setIsAdding(!isAdding);
+              if (isAdding) resetForm();
+            }}>
+              {isAdding ? 'Cancel·lar' : '+ Nou Contacte'}
+            </button>
+          </div>
+        )}
       </div>
 
       {isAdding && (
@@ -147,12 +149,16 @@ export default function CRMPage() {
                     <Link href={`/dashboard/crm/${contact.id}`} className="btn btn-glass" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>
                       Veure &rarr;
                     </Link>
-                    <button onClick={() => handleEditClick(contact)} className="btn btn-glass" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} title="Editar Contacte">
-                      ✏️
-                    </button>
-                    <button onClick={() => handleRemoveContact(contact.id, contact.name)} className="btn btn-glass" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', color: '#ff6b6b', borderColor: '#ff6b6b' }} title="Esborrar Contacte">
-                      🗑️
-                    </button>
+                    {isAdmin && (
+                      <>
+                        <button onClick={() => handleEditClick(contact)} className="btn btn-glass" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} title="Editar Contacte">
+                          ✏️
+                        </button>
+                        <button onClick={() => handleRemoveContact(contact.id, contact.name)} className="btn btn-glass" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', color: '#ff6b6b', borderColor: '#ff6b6b' }} title="Esborrar Contacte">
+                          🗑️
+                        </button>
+                      </>
+                    )}
                   </td>
                 </tr>
               ))}

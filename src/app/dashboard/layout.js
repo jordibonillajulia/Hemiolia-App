@@ -8,7 +8,7 @@ import { auth } from '../../lib/firebase';
 import Link from 'next/link';
 
 export default function DashboardLayout({ children }) {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -49,6 +49,23 @@ export default function DashboardLayout({ children }) {
           Tancar sessió
         </button>
       </nav>
+
+      {!isAdmin && (
+        <div style={{
+          background: 'rgba(212, 175, 55, 0.1)',
+          borderBottom: '1px solid rgba(212, 175, 55, 0.3)',
+          color: 'var(--color-accent)',
+          padding: '0.5rem 2.5rem',
+          fontSize: '0.88rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          justifyContent: 'center',
+          fontWeight: '500'
+        }}>
+          <span>👁️ Mode de visualització (Només lectura). No pots modificar camps ni dades.</span>
+        </div>
+      )}
       
       {/* Page Content */}
       <div style={{ flex: 1 }}>

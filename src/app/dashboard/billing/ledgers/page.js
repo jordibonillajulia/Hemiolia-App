@@ -45,7 +45,7 @@ const INGRESO_CONCEPTS = [
 ];
 
 export default function LedgersPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   
   // Data State
   const [issued, setIssued] = useState([]);
@@ -454,19 +454,21 @@ export default function LedgersPage() {
         </div>
         
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          {type === 'issued' && (
+          {type === 'issued' && isAdmin && (
             <button className="btn btn-glass" onClick={handleSyncInvoices}>
               🔄 Sincronitzar Factures
             </button>
           )}
-          {type === 'received' && (
+          {type === 'received' && isAdmin && (
             <button className="btn btn-glass" onClick={() => setIsScannerOpen(!isScannerOpen)}>
               📷 Escanejar Factura
             </button>
           )}
-          <button className="btn btn-primary" onClick={() => setIsFormOpen(!isFormOpen)}>
-            {isFormOpen ? 'Cancel·lar' : '+ Afegir Registre'}
-          </button>
+          {isAdmin && (
+            <button className="btn btn-primary" onClick={() => setIsFormOpen(!isFormOpen)}>
+              {isFormOpen ? 'Cancel·lar' : '+ Afegir Registre'}
+            </button>
+          )}
         </div>
       </div>
 
@@ -835,22 +837,28 @@ export default function LedgersPage() {
                     {(item.total || 0).toFixed(2)} €
                   </td>
                   <td style={{ padding: '0.8rem 1rem', verticalAlign: 'middle', whiteSpace: 'nowrap', textAlign: 'center' }}>
-                    <button 
-                      onClick={() => handleEdit(item)} 
-                      className="btn btn-glass" 
-                      style={{ padding: '0.3rem 0.5rem', fontSize: '0.8rem', marginRight: '0.4rem' }}
-                      title="Editar"
-                    >
-                      ✏️
-                    </button>
-                    <button 
-                      onClick={() => handleDelete(item.id, item.invoiceNumber)} 
-                      className="btn btn-glass" 
-                      style={{ padding: '0.3rem 0.5rem', fontSize: '0.8rem', color: '#ff6b6b' }}
-                      title="Esborrar"
-                    >
-                      🗑️
-                    </button>
+                    {isAdmin ? (
+                      <>
+                        <button 
+                          onClick={() => handleEdit(item)} 
+                          className="btn btn-glass" 
+                          style={{ padding: '0.3rem 0.5rem', fontSize: '0.8rem', marginRight: '0.4rem' }}
+                          title="Editar"
+                        >
+                          ✏️
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(item.id, item.invoiceNumber)} 
+                          className="btn btn-glass" 
+                          style={{ padding: '0.3rem 0.5rem', fontSize: '0.8rem', color: '#ff6b6b' }}
+                          title="Esborrar"
+                        >
+                          🗑️
+                        </button>
+                      </>
+                    ) : (
+                      <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>Només lectura</span>
+                    )}
                   </td>
                 </tr>
               ))}

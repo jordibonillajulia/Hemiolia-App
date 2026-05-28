@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if the user is an admin
+    function isAdmin() {
+      return request.auth != null && 
+        (request.auth.token.email == 'info@hemiolia.cat' || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
+    }
+
+    // Users collection: users can read/write their own document, admins can read/write all
+    match /users/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
+
+    // Other collections (contacts, shows, interactions, gigs, invoices, budgets, clients_billing, products_billing, ledgers_issued, ledgers_received)
+    match /{document=**} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+  }
+}

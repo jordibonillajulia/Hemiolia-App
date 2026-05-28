@@ -10,7 +10,7 @@ import { generateFacturaeXML } from '../../../../lib/facturaeGenerator';
 export default function InvoiceDetailPage() {
   const params = useParams();
   const invoiceId = params.id;
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   
   const [invoice, setInvoice] = useState(null);
   const [isSending, setIsSending] = useState(false);
@@ -693,7 +693,7 @@ export default function InvoiceDetailPage() {
             📥 {isSigning ? 'Signant XML...' : 'Descarregar XML Facturae'}
           </button>
         )}
-        {!isLocked && (
+        {isAdmin && !isLocked && (
           <>
             <button 
               className="btn btn-glass" 

@@ -8,7 +8,7 @@ import Papa from 'papaparse';
 import { DIR3_DB } from '../../../../lib/dir3Database';
 
 export default function BillingClientsPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const [clients, setClients] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -171,12 +171,16 @@ export default function BillingClientsPage() {
           <button className="btn btn-glass" onClick={handleExportCSV} disabled={clients.length === 0}>
             📤 Exportar CSV
           </button>
-          <Link href="/dashboard/billing/clients/import" className="btn btn-glass">
-            📥 Importar CSV
-          </Link>
-          <button className="btn btn-primary" onClick={() => setIsAdding(!isAdding)}>
-            {isAdding ? 'Cancel·lar' : '+ Nou Client'}
-          </button>
+          {isAdmin && (
+            <>
+              <Link href="/dashboard/billing/clients/import" className="btn btn-glass">
+                📥 Importar CSV
+              </Link>
+              <button className="btn btn-primary" onClick={() => setIsAdding(!isAdding)}>
+                {isAdding ? 'Cancel·lar' : '+ Nou Client'}
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -322,8 +326,14 @@ export default function BillingClientsPage() {
                 </td>
                 <td style={{ padding: '1rem' }}>{client.type}</td>
                 <td style={{ padding: '1rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                  <button onClick={() => handleEdit(client)} className="btn btn-glass" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', marginRight: '0.5rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>✏️</button>
-                  <button onClick={() => handleDelete(client.id, client.name)} className="btn btn-glass" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', color: '#ff6b6b', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>🗑️</button>
+                  {isAdmin ? (
+                    <>
+                      <button onClick={() => handleEdit(client)} className="btn btn-glass" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', marginRight: '0.5rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>✏️</button>
+                      <button onClick={() => handleDelete(client.id, client.name)} className="btn btn-glass" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', color: '#ff6b6b', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>🗑️</button>
+                    </>
+                  ) : (
+                    <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>Només lectura</span>
+                  )}
                 </td>
               </tr>
             ))}

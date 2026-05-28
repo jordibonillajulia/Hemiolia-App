@@ -38,7 +38,7 @@ const ISSUERS = [
 ];
 
 function BudgetForm() {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get('edit');
@@ -240,6 +240,22 @@ function BudgetForm() {
   const totals = calculateTotals();
 
   if (loading || !user) return <div className="container mt-xl text-center">Carregant...</div>;
+
+  if (!isAdmin) {
+    return (
+      <div className="container" style={{ paddingTop: 'var(--space-md)' }}>
+        <div className="glass-panel text-center" style={{ padding: '3rem', maxWidth: '500px', margin: '2rem auto' }}>
+          <h2 style={{ color: '#ff6b6b', marginBottom: '1rem' }}>⚠️ Accés Denegat</h2>
+          <p>Només els administradors poden crear o editar pressupostos en aquesta aplicació.</p>
+          <div style={{ marginTop: '2rem' }}>
+            <Link href="/dashboard/billing/budgets" className="btn btn-primary">
+              Tornar a Pressupostos
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-md)', paddingBottom: 'var(--space-xl)' }}>

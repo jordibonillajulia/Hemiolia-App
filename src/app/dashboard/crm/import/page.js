@@ -7,10 +7,12 @@ import Link from 'next/link';
 import { useAuth } from '../../../../lib/AuthContext';
 
 export default function ImportContactsPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const [file, setFile] = useState(null);
   const [isImporting, setIsImporting] = useState(false);
   const [results, setResults] = useState(null);
+
+  // ... rest of state and handlers ...
 
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
@@ -33,8 +35,6 @@ export default function ImportContactsPage() {
 
         for (const row of rows) {
           try {
-            // Mapping CSV fields to our DB structure
-            // Example assuming CSV has headers: Nom, Entitat, Municipi, Correu, Telefon
             await addContact({
               name: row['Nom'] || row['name'] || 'Desconegut',
               entity: row['Entitat'] || row['entity'] || 'Sense especificar',
@@ -60,6 +60,22 @@ export default function ImportContactsPage() {
   };
 
   if (loading || !user) return <div className="container mt-xl">Carregant...</div>;
+
+  if (!isAdmin) {
+    return (
+      <div className="container" style={{ paddingTop: 'var(--space-md)' }}>
+        <div className="glass-panel text-center" style={{ padding: '3rem', maxWidth: '500px', margin: '2rem auto' }}>
+          <h2 style={{ color: '#ff6b6b', marginBottom: '1rem' }}>⚠️ Accés Denegat</h2>
+          <p>Només els administradors poden importar contactes en aquesta aplicació.</p>
+          <div style={{ marginTop: '2rem' }}>
+            <Link href="/dashboard/crm" className="btn btn-primary">
+              Tornar a CRM
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-md)' }}>

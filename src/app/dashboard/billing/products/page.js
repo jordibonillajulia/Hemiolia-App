@@ -6,7 +6,7 @@ import { getBillingProducts, addBillingProduct, updateBillingProduct, deleteBill
 import Link from 'next/link';
 
 export default function BillingProductsPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const [products, setProducts] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -94,9 +94,11 @@ export default function BillingProductsPage() {
           </Link>
           <h1 style={{ marginTop: '0.5rem', marginBottom: 0, display: 'inline-block', verticalAlign: 'middle' }}>Espectacles i Productes</h1>
         </div>
-        <button className="btn btn-primary" onClick={() => setIsAdding(!isAdding)}>
-          {isAdding ? 'Cancel·lar' : '+ Nou Producte'}
-        </button>
+        {isAdmin && (
+          <button className="btn btn-primary" onClick={() => setIsAdding(!isAdding)}>
+            {isAdding ? 'Cancel·lar' : '+ Nou Producte'}
+          </button>
+        )}
       </div>
 
       {isAdding && (
@@ -182,8 +184,14 @@ export default function BillingProductsPage() {
                   ) : '-'}
                 </td>
                 <td style={{ padding: '1rem' }}>
-                  <button onClick={() => handleEdit(p)} className="btn btn-glass" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', marginRight: '0.5rem' }}>✏️</button>
-                  <button onClick={() => handleDelete(p.id, p.description)} className="btn btn-glass" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', color: '#ff6b6b' }}>🗑️</button>
+                  {isAdmin ? (
+                    <>
+                      <button onClick={() => handleEdit(p)} className="btn btn-glass" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', marginRight: '0.5rem' }}>✏️</button>
+                      <button onClick={() => handleDelete(p.id, p.description)} className="btn btn-glass" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', color: '#ff6b6b' }}>🗑️</button>
+                    </>
+                  ) : (
+                    <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>Només lectura</span>
+                  )}
                 </td>
               </tr>
             ))}

@@ -6,7 +6,7 @@ import { getBudgets, deleteBudget, getBillingClients, formatClientName } from '.
 import Link from 'next/link';
 
 export default function BudgetsPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const [budgets, setBudgets] = useState([]);
   const [clients, setClients] = useState([]);
   
@@ -85,11 +85,13 @@ export default function BudgetsPage() {
           </Link>
           <h1 style={{ marginTop: '0.5rem', marginBottom: 0, display: 'inline-block', verticalAlign: 'middle' }}>Gestió de Pressupostos</h1>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <Link href="/dashboard/billing/budgets/new" className="btn btn-primary">
-            + Nou Pressupost
-          </Link>
-        </div>
+        {isAdmin && (
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <Link href="/dashboard/billing/budgets/new" className="btn btn-primary">
+              + Nou Pressupost
+            </Link>
+          </div>
+        )}
       </div>
 
       {/* Barra de Filtres */}
@@ -217,12 +219,18 @@ export default function BudgetsPage() {
                     <Link href={`/dashboard/billing/budgets/${b.id}`} className="btn btn-glass" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', marginRight: '0.5rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
                       Veure &rarr;
                     </Link>
-                    <Link href={`/dashboard/billing/budgets/new?edit=${b.id}`} className="btn btn-glass" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', marginRight: '0.5rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                      ✏️ Editar
-                    </Link>
-                    <button onClick={() => handleDelete(b.id, b.budgetNumber)} className="btn btn-glass" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', color: '#ff6b6b', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                      🗑️ Esborrar
-                    </button>
+                    {isAdmin ? (
+                      <>
+                        <Link href={`/dashboard/billing/budgets/new?edit=${b.id}`} className="btn btn-glass" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', marginRight: '0.5rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                          ✏️ Editar
+                        </Link>
+                        <button onClick={() => handleDelete(b.id, b.budgetNumber)} className="btn btn-glass" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', color: '#ff6b6b', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                          🗑️ Esborrar
+                        </button>
+                      </>
+                    ) : (
+                      <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>Només lectura</span>
+                    )}
                   </td>
                 </tr>
               ))}

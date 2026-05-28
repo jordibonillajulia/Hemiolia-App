@@ -9,7 +9,7 @@ import Link from 'next/link';
 export default function ContactDetailPage() {
   const params = useParams();
   const contactId = params.id;
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   
   const [contact, setContact] = useState(null);
   const [interactions, setInteractions] = useState([]);
@@ -102,7 +102,7 @@ export default function ContactDetailPage() {
             {contact.email && <span>📧 {contact.email}</span>}
             {contact.phone && <span>📞 {contact.phone}</span>}
           </div>
-          {contact.email && (
+          {contact.email && isAdmin && (
             <button 
               className="btn btn-glass" 
               onClick={handleSendEmail} 
@@ -116,9 +116,11 @@ export default function ContactDetailPage() {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h2>Històric d'Interaccions</h2>
-        <button className="btn btn-primary" onClick={() => setIsAdding(!isAdding)}>
-          {isAdding ? 'Cancel·lar' : '+ Nova Interacció'}
-        </button>
+        {isAdmin && (
+          <button className="btn btn-primary" onClick={() => setIsAdding(!isAdding)}>
+            {isAdding ? 'Cancel·lar' : '+ Nova Interacció'}
+          </button>
+        )}
       </div>
 
       {isAdding && (

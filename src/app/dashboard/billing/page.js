@@ -7,7 +7,7 @@ import Link from 'next/link';
 import Papa from 'papaparse';
 
 export default function BillingPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const [invoices, setInvoices] = useState([]);
   const [clients, setClients] = useState([]);
   
@@ -137,9 +137,11 @@ export default function BillingPage() {
           <Link href="/dashboard/billing/budgets" className="btn btn-glass">
             📄 Pressupostos
           </Link>
-          <Link href="/dashboard/billing/new" className="btn btn-primary">
-            + Nova Factura
-          </Link>
+          {isAdmin && (
+            <Link href="/dashboard/billing/new" className="btn btn-primary">
+              + Nova Factura
+            </Link>
+          )}
         </div>
       </div>
 
@@ -279,7 +281,7 @@ export default function BillingPage() {
                     <Link href={`/dashboard/billing/${inv.id}`} className="btn btn-glass" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', marginRight: '0.5rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
                       Veure &rarr;
                     </Link>
-                    {inv.status !== 'Enviada' && (
+                    {isAdmin && inv.status !== 'Enviada' && (
                       <>
                         <Link href={`/dashboard/billing/new?edit=${inv.id}`} className="btn btn-glass" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', marginRight: '0.5rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
                           ✏️ Editar
