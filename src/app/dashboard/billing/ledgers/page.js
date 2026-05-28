@@ -754,53 +754,61 @@ export default function LedgersPage() {
         </div>
       </div>
 
-      <div className="glass-panel" style={{ 
+      <details className="glass-panel" style={{ 
         padding: '1rem 1.5rem', 
         marginBottom: '1.5rem', 
         borderLeft: '4px solid #f1c40f', 
         background: 'rgba(241, 196, 15, 0.05)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '1rem',
         fontSize: '0.9rem',
-        flexWrap: 'wrap'
+        cursor: 'pointer'
       }}>
-        <div style={{ fontSize: '1.5rem' }}>⚠️</div>
-        <div style={{ color: 'var(--color-text-primary)', lineHeight: '1.4' }}>
-          <strong style={{ color: '#f1c40f' }}>Requisit d&apos;importació AEAT (Llibre Acumulatiu des de 2023):</strong> Perquè la importació dels Llibres de Registre funcioni al portal de l&apos;AEAT, cal pujar el llibre complet acumulat fins al període actual (ex: en el 3T s&apos;inclouen automàticament les dades de 1T, 2T i 3T). L&apos;exportació en Excel (`.xlsx`) de l&apos;aplicació ja gestiona aquesta acumulació de forma automàtica segons el trimestre triat.
+        <summary style={{ 
+          color: '#f1c40f', 
+          fontWeight: 'bold',
+          userSelect: 'none',
+          outline: 'none',
+          display: 'list-item'
+        }}>
+          ⚠️ Requisit d&apos;importació AEAT (Llibre Acumulatiu des de 2023)
+        </summary>
+        <div style={{ color: 'var(--color-text-secondary)', lineHeight: '1.5', marginTop: '1rem', paddingLeft: '1.2rem', cursor: 'default' }}>
+          Perquè la importació dels Llibres de Registre funcioni al portal de l&apos;AEAT, cal pujar el llibre complet acumulat fins al període actual (ex: en el 3T s&apos;inclouen automàticament les dades de 1T, 2T i 3T). L&apos;exportació en Excel (`.xlsx`) de l&apos;aplicació ja gestiona aquesta acumulació de forma automàtica segons el trimestre triat.
         </div>
-      </div>
+      </details>
 
       {/* TOTALS COMPUTATION BOX FOR THE DECLARATION */}
       <div className="glass-panel" style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', 
+        display: 'flex', 
+        flexWrap: 'nowrap',
+        overflowX: 'auto',
+        WebkitOverflowScrolling: 'touch',
         gap: '1.5rem', 
         marginBottom: '2rem', 
         background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
-        borderLeft: '4px solid var(--color-accent)'
+        borderLeft: '4px solid var(--color-accent)',
+        padding: '1.2rem'
       }}>
-        <div>
-          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.25rem' }}>Total Base Imposable</div>
-          <div style={{ fontSize: '1.6rem', fontWeight: 'bold', color: 'var(--color-text-primary)' }}>{currentTotals.base.toFixed(2)} €</div>
+        <div style={{ flex: '1 0 auto', minWidth: '150px' }}>
+          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.25rem', whiteSpace: 'nowrap' }}>Total Base Imposable</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-text-primary)' }}>{currentTotals.base.toFixed(2)} €</div>
         </div>
-        <div>
-          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.25rem' }}>
+        <div style={{ flex: '1 0 auto', minWidth: '150px' }}>
+          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.25rem', whiteSpace: 'nowrap' }}>
             {type === 'issued' ? 'Total IVA Repercutit' : 'Total IVA Soportat'}
           </div>
-          <div style={{ fontSize: '1.6rem', fontWeight: 'bold', color: 'var(--color-success)' }}>{currentTotals.vat.toFixed(2)} €</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-success)' }}>{currentTotals.vat.toFixed(2)} €</div>
         </div>
-        <div>
-          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.25rem' }}>Total Retenció IRPF</div>
-          <div style={{ fontSize: '1.6rem', fontWeight: 'bold', color: '#ff6b6b' }}>{currentTotals.irpf.toFixed(2)} €</div>
+        <div style={{ flex: '1 0 auto', minWidth: '150px' }}>
+          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.25rem', whiteSpace: 'nowrap' }}>Total Retenció IRPF</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#ff6b6b' }}>{currentTotals.irpf.toFixed(2)} €</div>
         </div>
-        <div>
-          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.25rem' }}>Total Factura (Base+IVA)</div>
-          <div style={{ fontSize: '1.6rem', fontWeight: 'bold', color: 'var(--color-accent)' }}>{currentTotals.total.toFixed(2)} €</div>
+        <div style={{ flex: '1 0 auto', minWidth: '150px' }}>
+          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.25rem', whiteSpace: 'nowrap' }}>Total Factura (Base+IVA)</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-accent)' }}>{currentTotals.total.toFixed(2)} €</div>
         </div>
-        <div>
-          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.25rem' }}>Nombre de Registres</div>
-          <div style={{ fontSize: '1.6rem', fontWeight: 'bold' }}>{currentList.length}</div>
+        <div style={{ flex: '1 0 auto', minWidth: '150px' }}>
+          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.25rem', whiteSpace: 'nowrap' }}>Nombre de Registres</div>
+          <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{currentList.length}</div>
         </div>
       </div>
 
