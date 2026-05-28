@@ -16,7 +16,6 @@
     "@signpdf/signer-p12": "^3.3.0",
     "@signpdf/signpdf": "^3.3.0",
     "@xmldom/xmldom": "^0.9.10",
-    "dotenv": "^17.4.2",
     "exceljs": "^4.4.0",
     "firebase": "^12.13.0",
     "firebase-admin": "^13.10.0",
