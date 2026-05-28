@@ -21,16 +21,35 @@ import { storage } from '../../../../lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 
-// Helper to format a date string (YYYY-MM-DD) as DD/MM/YYYY with zero-padding
+// Helper to format a date string as DD/MM/YYYY with zero-padding
 const formatDateDDMMYYYY = (dateStr) => {
   if (!dateStr) return '';
-  // Parse directly from the YYYY-MM-DD string to avoid timezone shifts
-  const parts = dateStr.split('-');
-  if (parts.length === 3) {
-    const [yyyy, mm, dd] = parts;
-    return `${dd.padStart(2, '0')}/${mm.padStart(2, '0')}/${yyyy}`;
+  
+  const cleanDate = dateStr.split(/[ T]/)[0];
+  
+  if (cleanDate.includes('-')) {
+    const parts = cleanDate.split('-');
+    if (parts.length === 3) {
+      const [yyyy, mm, dd] = parts;
+      return `${dd.padStart(2, '0')}/${mm.padStart(2, '0')}/${yyyy}`;
+    }
   }
-  // Fallback for other date formats
+  
+  if (cleanDate.includes('/')) {
+    const parts = cleanDate.split('/');
+    if (parts.length === 3) {
+      let day, month, year;
+      if (parts[2].length === 4) {
+        [day, month, year] = parts;
+      } else if (parts[0].length === 4) {
+        [year, month, day] = parts;
+      } else {
+        [day, month, year] = parts;
+      }
+      return `${day.padStart(2, '0')}/${month.padStart(2, '0')}/${year}`;
+    }
+  }
+
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
   const day = String(d.getDate()).padStart(2, '0');
