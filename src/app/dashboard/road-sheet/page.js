@@ -201,49 +201,7 @@ export default function RoadSheetPage() {
     }
   };
 
-  const handleImportWeb = async () => {
-    if (!confirm("Això importarà tot l'històric de concerts de la web antiga a l'App. N'estàs segur?")) return;
-    try {
-      const res = await fetch('/api/import');
-      const data = await res.json();
-      
-      if (data.error) {
-        throw new Error(data.error);
-      }
-      
-      const webConcerts = data.concerts;
-      
-      let count = 0;
-      for (const c of webConcerts) {
-        if (!c.date || c.date.includes('determinar')) continue; // Saltem dates no definides
-        
-        // Convertim DD/MM/YYYY a YYYY-MM-DD
-        const [d, m, y] = c.date.split('/');
-        if (!y || !m || !d) continue;
-        const formattedDate = `${y}-${m}-${d}`;
-        
-        await addGig({
-          date: formattedDate,
-          title: c.show?.ca || '',
-          locationName: c.location || '',
-          showTime: '',
-          municipality: '',
-          address: '',
-          contactPerson: '',
-          contactPhone: '',
-          scheduleDetails: '',
-          status: 'Pendent'
-        });
-        count++;
-      }
-      
-      alert(`S'han importat ${count} concerts exitosament!`);
-      await loadGigs();
-    } catch (error) {
-      console.error(error);
-      alert("S'ha produït un error al llegir la web: " + error.message);
-    }
-  };
+
 
   if (loading || !user) return <div className="container mt-xl text-center">Carregant Road-sheet...</div>;
 
@@ -283,17 +241,12 @@ export default function RoadSheetPage() {
             );
           })()}
           {isAdmin && (
-            <>
-              <button className="btn btn-glass" onClick={handleImportWeb}>
-                ⬇️ Importar Web
-              </button>
-              <button className="btn btn-primary" onClick={() => {
-                setIsAdding(!isAdding);
-                if (isAdding) resetForm();
-              }}>
-                {isAdding ? 'Cancel·lar' : '+ Afegir Bolo'}
-              </button>
-            </>
+            <button className="btn btn-primary" onClick={() => {
+              setIsAdding(!isAdding);
+              if (isAdding) resetForm();
+            }}>
+              {isAdding ? 'Cancel·lar' : '+ Afegir Bolo'}
+            </button>
           )}
         </div>
       </div>

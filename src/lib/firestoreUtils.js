@@ -87,7 +87,7 @@ export const updateGig = async (id, data) => {
   await updateDoc(docRef, data);
 };
 
-// INVOICES (Facturació i VeriFactu)
+// INVOICES (Facturació)
 export const addInvoice = async (invoiceData) => {
   // invoiceData includes: date, invoiceNumber, clientName, clientNif, amount, vat (IVA), irpf, status ('Pendent', 'Enviada', 'Error')
   return await addDoc(collection(db, 'invoices'), {

@@ -487,7 +487,7 @@ export default function LedgersPage() {
               <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
           </Link>
-          <h1 style={{ marginTop: '0.5rem', marginBottom: 0, display: 'inline-block', verticalAlign: 'middle' }}>Llibres de Registre (AEAT)</h1>
+          <h1 style={{ marginTop: '0.5rem', marginBottom: 0, display: 'inline-block', verticalAlign: 'middle' }}>Llibres de registre</h1>
         </div>
         
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>

@@ -162,7 +162,7 @@ export default function BillingPage() {
               <polyline points="12 19 5 12 12 5"></polyline>
             </svg>
           </Link>
-          <h1 style={{ marginTop: '0.5rem', marginBottom: 0, display: 'inline-block', verticalAlign: 'middle' }}>Facturació i VeriFactu</h1>
+          <h1 style={{ marginTop: '0.5rem', marginBottom: 0, display: 'inline-block', verticalAlign: 'middle' }}>Facturació</h1>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <Link href="/dashboard/billing/clients" className="btn btn-glass">
@@ -259,7 +259,7 @@ export default function BillingPage() {
               textDecoration: 'none'
             }}
           >
-            📊 Llibres de Registre
+            📊 Llibres de registre
           </Link>
           <button 
             className="btn btn-glass" 
