@@ -433,7 +433,6 @@ export default function InvoiceDetailPage() {
             </p>
           </div>
           <div className="dates-block" style={{ textAlign: 'right', fontSize: '0.92rem', color: '#334155', display: 'flex', flexDirection: 'column', gap: '0.15rem' }}>
-            <div><strong>Data d&apos;operació:</strong> {formatDate(invoice.operationDate || invoice.date)}</div>
             <div><strong>Data d&apos;emissió:</strong> {formatDate(invoice.date)}</div>
           </div>
         </div>
