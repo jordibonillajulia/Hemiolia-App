@@ -245,7 +245,7 @@ export default function BudgetDetailPage() {
     });
   }
 
-  const isLongBudget = (budget.lines || []).length > 4 || (budget.notes || '').length > 120;
+  const isLongBudget = (budget.lines || []).length > 3 || (budget.notes || '').length > 60;
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-md)', paddingBottom: 'var(--space-xl)' }}>

@@ -167,16 +167,29 @@ export default function BillingClientsPage() {
           </Link>
           <h1 style={{ marginTop: '0.5rem', marginBottom: 0, display: 'inline-block', verticalAlign: 'middle' }}>Clients</h1>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          <button className="btn btn-glass" onClick={handleExportCSV} disabled={clients.length === 0}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <button 
+            className="btn btn-glass" 
+            onClick={handleExportCSV} 
+            disabled={clients.length === 0}
+            style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 1rem', fontSize: '0.85rem', height: '38px', fontWeight: '500', boxSizing: 'border-box', lineHeight: 'normal' }}
+          >
             📤 Exportar CSV
           </button>
           {isAdmin && (
             <>
-              <Link href="/dashboard/billing/clients/import" className="btn btn-glass">
+              <Link 
+                href="/dashboard/billing/clients/import" 
+                className="btn btn-glass"
+                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 1rem', fontSize: '0.85rem', height: '38px', fontWeight: '500', boxSizing: 'border-box', textDecoration: 'none', lineHeight: 'normal' }}
+              >
                 📥 Importar CSV
               </Link>
-              <button className="btn btn-primary" onClick={() => setIsAdding(!isAdding)}>
+              <button 
+                className="btn btn-primary" 
+                onClick={() => setIsAdding(!isAdding)}
+                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 1rem', fontSize: '0.85rem', height: '38px', fontWeight: '500', boxSizing: 'border-box', lineHeight: 'normal' }}
+              >
                 {isAdding ? 'Cancel·lar' : '+ Nou Client'}
               </button>
             </>
@@ -300,39 +313,39 @@ export default function BillingClientsPage() {
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead style={{ background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid var(--color-border)' }}>
             <tr>
-              <th style={{ padding: '1rem' }}>Nom / Raó Social</th>
-              <th style={{ padding: '1rem' }}>NIF (Tipus)</th>
-              <th style={{ padding: '1rem' }}>Població (País)</th>
-              <th style={{ padding: '1rem' }}>Tipus Client</th>
-              <th style={{ padding: '1rem' }}>Accions</th>
+              <th style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'nowrap' }}>Nom / Raó Social</th>
+              <th style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'nowrap' }}>NIF (Tipus)</th>
+              <th style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'nowrap' }}>Població (País)</th>
+              <th style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'nowrap' }}>Tipus Client</th>
+              <th style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'nowrap', textAlign: 'center' }}>Accions</th>
             </tr>
           </thead>
           <tbody>
             {clients.map(client => (
               <tr key={client.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
+                <td style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'nowrap' }}>
                   {formatClientName(client.name)}
                   {(client.dir3OficinaContable || client.dir3OrganoGestor || client.dir3UnidadTramitadora) && (
-                    <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--color-success)', marginTop: '0.2rem', fontWeight: '500' }}>
+                    <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--color-success)', marginTop: '0.15rem', fontWeight: '500' }}>
                       ⚡ e-Fact (DIR3)
                     </span>
                   )}
                 </td>
-                <td style={{ padding: '1rem' }}>
+                <td style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'nowrap' }}>
                   {client.nif} {client.nifType && client.nifType !== 'NIF' ? `(${client.nifType})` : ''}
                 </td>
-                <td style={{ padding: '1rem' }}>
+                <td style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'nowrap' }}>
                   {client.municipality} {client.countryCode ? `(${client.countryCode})` : ''}
                 </td>
-                <td style={{ padding: '1rem' }}>{client.type}</td>
-                <td style={{ padding: '1rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                <td style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'nowrap' }}>{client.type}</td>
+                <td style={{ padding: '0.6rem 0.8rem', verticalAlign: 'middle', whiteSpace: 'nowrap', textAlign: 'center' }}>
                   {isAdmin ? (
                     <>
-                      <button onClick={() => handleEdit(client)} className="btn btn-glass" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', marginRight: '0.5rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>✏️</button>
-                      <button onClick={() => handleDelete(client.id, client.name)} className="btn btn-glass" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', color: '#ff6b6b', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>🗑️</button>
+                      <button onClick={() => handleEdit(client)} className="btn btn-glass" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', marginRight: '0.35rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>✏️</button>
+                      <button onClick={() => handleDelete(client.id, client.name)} className="btn btn-glass" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', color: '#ff6b6b', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>🗑️</button>
                     </>
                   ) : (
-                    <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>Només lectura</span>
+                    <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>Només lectura</span>
                   )}
                 </td>
               </tr>
