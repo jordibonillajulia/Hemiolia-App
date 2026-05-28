@@ -309,7 +309,7 @@ export default function BudgetDetailPage() {
       </div>
 
       {/* BUDGET PAPER (PRINTABLE) */}
-      <div className={`glass-panel ${isLongBudget ? 'print-compact' : ''}`} style={{ 
+      <div className={`glass-panel invoice-paper ${isLongBudget ? 'print-compact' : ''}`} style={{ 
         background: '#ffffff', 
         color: '#000000', 
         borderRadius: '8px', 

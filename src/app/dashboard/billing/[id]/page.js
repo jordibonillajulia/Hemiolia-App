@@ -309,7 +309,7 @@ export default function InvoiceDetailPage() {
       </div>
 
       {/* INVOICE PAPER (PRINTABLE) */}
-      <div className={`glass-panel ${isLongInvoice ? 'print-compact' : ''}`} style={{ 
+      <div className={`glass-panel invoice-paper ${isLongInvoice ? 'print-compact' : ''}`} style={{ 
         background: '#ffffff', 
         color: '#000000', 
         borderRadius: '8px', 
