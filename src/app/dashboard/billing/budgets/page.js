@@ -112,7 +112,7 @@ export default function BudgetsPage() {
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-md)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-lg)' }}>
+      <div className="header-bar-responsive">
         <div>
           <Link href="/dashboard/billing" className="btn-back no-print" title="Tornar a Facturació" style={{ marginRight: '1rem' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -205,7 +205,7 @@ export default function BudgetsPage() {
         )}
       </div>
 
-      <div className="glass-panel" style={{ padding: 0, overflowX: 'auto' }}>
+      <div className="glass-panel table-container-responsive" style={{ padding: 0 }}>
         {budgets.length === 0 ? (
           <p style={{ padding: 'var(--space-lg)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
             Encara no hi ha cap pressupost registrat.

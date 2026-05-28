@@ -68,7 +68,7 @@ export default function CRMPage() {
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-md)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-lg)' }}>
+      <div className="header-bar-responsive">
         <div>
           <Link href="/dashboard" className="btn-back no-print" title="Tornar al panell" style={{ marginRight: '1rem' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -96,7 +96,7 @@ export default function CRMPage() {
       {isAdding && (
         <div className="glass-panel animate-fade-in-up" style={{ marginBottom: 'var(--space-lg)' }}>
           <h3 style={{ color: 'var(--color-accent)' }}>{editingContactId ? 'Editar Contacte' : 'Afegir Nou Contacte'}</h3>
-          <form onSubmit={handleAddContact} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+          <form onSubmit={handleAddContact} className="grid-2col-responsive" style={{ marginTop: '1rem' }}>
             <div className="input-group">
               <label>Nom del programador</label>
               <input className="input-field" value={name} onChange={e => setName(e.target.value)} required />
@@ -124,7 +124,7 @@ export default function CRMPage() {
         </div>
       )}
 
-      <div className="glass-panel" style={{ padding: 0, overflow: 'hidden' }}>
+      <div className="glass-panel table-container-responsive" style={{ padding: 0 }}>
         {contacts.length === 0 ? (
           <p style={{ padding: 'var(--space-lg)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
             Encara no hi ha cap contacte.

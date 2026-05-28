@@ -369,16 +369,18 @@ function NewInvoiceForm() {
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-md)', paddingBottom: 'var(--space-xl)' }}>
-      <div style={{ marginBottom: 'var(--space-lg)' }}>
-        <Link href="/dashboard/billing" className="btn-back no-print" title="Tornar a Facturació" style={{ marginRight: '1rem' }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
-          </svg>
-        </Link>
-        <h1 style={{ marginTop: '0.5rem', marginBottom: 0, color: 'var(--color-accent)', display: 'inline-block', verticalAlign: 'middle' }}>
-          {editId ? `Editar Factura (${invoiceNumber})` : 'Crear Nova Factura'}
-        </h1>
+      <div className="header-bar-responsive">
+        <div>
+          <Link href="/dashboard/billing" className="btn-back no-print" title="Tornar a Facturació" style={{ marginRight: '1rem', verticalAlign: 'middle' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+          </Link>
+          <h1 style={{ marginTop: '0.5rem', marginBottom: 0, color: 'var(--color-accent)', display: 'inline-block', verticalAlign: 'middle' }}>
+            {editId ? `Editar Factura (${invoiceNumber})` : 'Crear Nova Factura'}
+          </h1>
+        </div>
       </div>
 
       <div className="glass-panel animate-fade-in-up">
@@ -436,7 +438,7 @@ function NewInvoiceForm() {
               </select>
             </div>
             {clientData && (
-              <div style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+              <div className="grid-2col-responsive" style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', gap: '0.5rem' }}>
                 <div><strong>Tipus:</strong> {clientData.type}</div>
                 <div><strong>NIF:</strong> {clientData.nif} {clientData.nifType && `(${clientData.nifType})`}</div>
                 <div><strong>Adreça:</strong> {clientData.address}</div>
@@ -547,7 +549,7 @@ function NewInvoiceForm() {
             <h3 style={{ marginBottom: '1rem', color: 'var(--color-accent)' }}>Línies de Factura</h3>
             
             {lines.map((line, index) => (
-              <div key={line.id} style={{ display: 'grid', gridTemplateColumns: '3fr 1fr 1fr auto', gap: '1rem', alignItems: 'center', marginBottom: '1rem', background: line.type === 'discount' ? 'rgba(255,107,107,0.1)' : 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: 'var(--radius-sm)' }}>
+              <div key={line.id} className="line-items-grid-responsive" style={{ marginBottom: '1rem', background: line.type === 'discount' ? 'rgba(255,107,107,0.1)' : 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: 'var(--radius-sm)' }}>
                 <div className="input-group" style={{ marginBottom: 0 }}>
                   <label>Concepte {line.type === 'discount' && '(Descompte)'}</label>
                   <input type="text" className="input-field" value={line.description} onChange={e => updateLine(line.id, 'description', e.target.value)} required />
@@ -580,8 +582,8 @@ function NewInvoiceForm() {
                 </button>
                 
                 {line.isVatExempt && (
-                  <div className="input-group animate-fade-in-up" style={{ gridColumn: '1 / -1', marginTop: '0.5rem', marginBottom: 0, padding: '0.5rem', background: 'rgba(241, 196, 15, 0.05)', borderRadius: 'var(--radius-sm)', border: '1px dashed rgba(241, 196, 15, 0.2)' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' }}>
+                  <div className="input-group grid-span-all-desktop animate-fade-in-up" style={{ marginTop: '0.5rem', marginBottom: 0, padding: '0.5rem', background: 'rgba(241, 196, 15, 0.05)', borderRadius: 'var(--radius-sm)', border: '1px dashed rgba(241, 196, 15, 0.2)' }}>
+                    <div className="grid-2-1-responsive">
                       <div>
                         <label style={{ color: '#f1c40f', fontSize: '0.85rem' }}>Codi d'Exempció AEAT</label>
                         <select className="input-field" value={line.exemptionCause || 'E1'} onChange={e => updateLine(line.id, 'exemptionCause', e.target.value)}>
@@ -603,7 +605,7 @@ function NewInvoiceForm() {
               </div>
             ))}
 
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
               <select className="input-field" style={{ width: 'auto', marginBottom: 0 }} onChange={addProductLine} value="">
                 <option value="">+ Afegir Espectacle / Servei...</option>
                 {products.map(p => (

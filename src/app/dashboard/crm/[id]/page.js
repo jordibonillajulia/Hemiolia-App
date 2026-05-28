@@ -132,26 +132,30 @@ export default function ContactDetailPage() {
             <polyline points="12 19 5 12 12 5"></polyline>
           </svg>
         </Link>
-        <div className="glass-panel" style={{ marginTop: '1rem', position: 'relative' }}>
-          <h1 style={{ marginBottom: '0.5rem', color: 'var(--color-accent)' }}>{contact.name}</h1>
-          <p style={{ margin: 0 }}><strong>{contact.entity}</strong> | {contact.municipality}</p>
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', fontSize: '0.9rem' }}>
+        <div className="glass-panel" style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <h1 style={{ marginBottom: '0.5rem', color: 'var(--color-accent)', marginTop: 0 }}>{contact.name}</h1>
+              <p style={{ margin: 0 }}><strong>{contact.entity}</strong> | {contact.municipality}</p>
+            </div>
+            {contact.email && isAdmin && (
+              <button 
+                className="btn btn-glass" 
+                onClick={handleSendEmail} 
+                style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+              >
+                ✉️ Enviar Correu de Seguiment
+              </button>
+            )}
+          </div>
+          <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.9rem', flexWrap: 'wrap' }}>
             {contact.email && <span>📧 {contact.email}</span>}
             {contact.phone && <span>📞 {contact.phone}</span>}
           </div>
-          {contact.email && isAdmin && (
-            <button 
-              className="btn btn-glass" 
-              onClick={handleSendEmail} 
-              style={{ position: 'absolute', top: '20px', right: '20px', fontSize: '0.8rem' }}
-            >
-              ✉️ Enviar Correu de Seguiment
-            </button>
-          )}
         </div>
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+      <div className="header-bar-responsive" style={{ marginBottom: '1rem' }}>
         <h2>Històric d'Interaccions</h2>
         {isAdmin && (
           <button className="btn btn-primary" onClick={() => setIsAdding(!isAdding)}>
@@ -162,7 +166,7 @@ export default function ContactDetailPage() {
 
       {isAdding && (
         <div className="glass-panel animate-fade-in-up" style={{ marginBottom: 'var(--space-lg)' }}>
-          <form onSubmit={handleAddInteraction} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <form onSubmit={handleAddInteraction} className="grid-2col-responsive">
             <div className="input-group">
               <label>Data</label>
               <input type="date" className="input-field" value={date} onChange={e => setDate(e.target.value)} required />

@@ -154,7 +154,7 @@ export default function BillingPage() {
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-md)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 'var(--space-lg)' }}>
+      <div className="header-bar-responsive">
         <div>
           <Link href="/dashboard" className="btn-back no-print" title="Tornar al panell" style={{ marginRight: '1rem' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -240,11 +240,11 @@ export default function BillingPage() {
           </div>
         )}
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem', flexWrap: 'wrap', gap: '0.5rem' }}>
         <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--color-text-secondary)', fontWeight: 'normal' }}>
           Factures emeses ({filteredInvoices.length})
         </h3>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <Link 
             href="/dashboard/billing/ledgers" 
             className="btn btn-glass" 
@@ -272,7 +272,7 @@ export default function BillingPage() {
         </div>
       </div>
 
-      <div className="glass-panel" style={{ padding: 0, overflowX: 'auto' }}>
+      <div className="glass-panel table-container-responsive" style={{ padding: 0 }}>
         {invoices.length === 0 ? (
           <p style={{ padding: 'var(--space-lg)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
             Encara no hi ha cap factura registrada.

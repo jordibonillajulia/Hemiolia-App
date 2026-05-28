@@ -84,7 +84,7 @@ export default function BillingProductsPage() {
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-md)' }}>
-      <div style={{ marginBottom: 'var(--space-lg)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="header-bar-responsive">
         <div>
           <Link href="/dashboard/billing" className="btn-back no-print" title="Tornar a Facturació" style={{ marginRight: '1rem' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -103,8 +103,8 @@ export default function BillingProductsPage() {
 
       {isAdding && (
         <div className="glass-panel animate-fade-in-up" style={{ marginBottom: 'var(--space-lg)' }}>
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div className="input-group" style={{ gridColumn: '1 / -1' }}>
+          <form onSubmit={handleSubmit} className="grid-2col-responsive">
+            <div className="input-group grid-span-all-desktop">
               <label>Descripció de l'Espectacle o Servei</label>
               <input type="text" className="input-field" value={description} onChange={e => setDescription(e.target.value)} placeholder="Actuació musical 'Layla, un viatge d'esperança'" required />
             </div>
@@ -121,13 +121,13 @@ export default function BillingProductsPage() {
                 <option value="0">0%</option>
               </select>
             </div>
-            <div className="input-group" style={{ gridColumn: '1 / -1', background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: 'var(--radius-sm)' }}>
+            <div className="input-group grid-span-all-desktop" style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: 'var(--radius-sm)' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginBottom: isVatExempt ? '1rem' : 0 }}>
                 <input type="checkbox" checked={isVatExempt} onChange={e => setIsVatExempt(e.target.checked)} style={{ width: 'auto' }} />
                 <span>Article/Servei Exempt d'IVA</span>
               </label>
               {isVatExempt && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem', marginTop: '0.5rem' }}>
+                <div className="grid-2-1-responsive" style={{ marginTop: '0.5rem' }}>
                   <div>
                     <label>Codi d'Exempció</label>
                     <select className="input-field" value={exemptionCause} onChange={e => setExemptionCause(e.target.value)}>
@@ -146,7 +146,7 @@ export default function BillingProductsPage() {
                 </div>
               )}
             </div>
-            <div style={{ gridColumn: '1 / -1', marginTop: '1rem' }}>
+            <div className="grid-span-all-desktop" style={{ marginTop: '1rem' }}>
               <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
                 {editingId ? 'Guardar Canvis' : 'Crear Producte'}
               </button>
@@ -155,7 +155,7 @@ export default function BillingProductsPage() {
         </div>
       )}
 
-      <div className="glass-panel" style={{ padding: 0, overflowX: 'auto' }}>
+      <div className="glass-panel table-container-responsive" style={{ padding: 0 }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead style={{ background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid var(--color-border)' }}>
             <tr>

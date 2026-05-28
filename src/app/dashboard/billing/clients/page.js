@@ -157,7 +157,7 @@ export default function BillingClientsPage() {
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-md)' }}>
-      <div style={{ marginBottom: 'var(--space-lg)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="header-bar-responsive">
         <div>
           <Link href="/dashboard/billing" className="btn-back no-print" title="Tornar a Facturació" style={{ marginRight: '1rem' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -167,7 +167,7 @@ export default function BillingClientsPage() {
           </Link>
           <h1 style={{ marginTop: '0.5rem', marginBottom: 0, display: 'inline-block', verticalAlign: 'middle' }}>Clients (Facturació)</h1>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <button className="btn btn-glass" onClick={handleExportCSV} disabled={clients.length === 0}>
             📤 Exportar CSV
           </button>
@@ -186,8 +186,8 @@ export default function BillingClientsPage() {
 
       {isAdding && (
         <div className="glass-panel animate-fade-in-up" style={{ marginBottom: 'var(--space-lg)' }}>
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-            <div className="input-group" style={{ gridColumn: '1 / -1', borderBottom: '1px dashed var(--color-border)', paddingBottom: '1rem', marginBottom: '0.5rem' }}>
+          <form onSubmit={handleSubmit} className="grid-2col-responsive">
+            <div className="input-group grid-span-all-desktop" style={{ borderBottom: '1px dashed var(--color-border)', paddingBottom: '1rem', marginBottom: '0.5rem' }}>
               <label style={{ color: 'var(--color-accent)', fontWeight: 'bold' }}>⚡ Autocompletar des de DIR3 (Administracions Públiques)</label>
               <select 
                 className="input-field" 
@@ -283,11 +283,11 @@ export default function BillingClientsPage() {
               <label>Òrgan Gestor (DIR3)</label>
               <input type="text" className="input-field" value={dir3OrganoGestor} onChange={e => setDir3OrganoGestor(e.target.value)} placeholder="Ex: A09000000" />
             </div>
-            <div className="input-group" style={{ gridColumn: '1 / -1' }}>
+            <div className="input-group grid-span-all-desktop">
               <label>Unitat Tramitadora (DIR3)</label>
               <input type="text" className="input-field" value={dir3UnidadTramitadora} onChange={e => setDir3UnidadTramitadora(e.target.value)} placeholder="Ex: A09000000" />
             </div>
-            <div style={{ gridColumn: '1 / -1', marginTop: '1rem' }}>
+            <div className="grid-span-all-desktop" style={{ marginTop: '1rem' }}>
               <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
                 {editingId ? 'Guardar Canvis' : 'Crear Client'}
               </button>
@@ -296,7 +296,7 @@ export default function BillingClientsPage() {
         </div>
       )}
 
-      <div className="glass-panel" style={{ padding: 0, overflowX: 'auto' }}>
+      <div className="glass-panel table-container-responsive" style={{ padding: 0 }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead style={{ background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid var(--color-border)' }}>
             <tr>

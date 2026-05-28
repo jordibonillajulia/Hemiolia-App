@@ -479,7 +479,7 @@ export default function LedgersPage() {
   return (
     <div className="container" style={{ paddingTop: 'var(--space-md)', paddingBottom: 'var(--space-xl)' }}>
       {/* HEADER */}
-      <div style={{ marginBottom: 'var(--space-lg)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <div className="header-bar-responsive">
         <div>
           <Link href="/dashboard/billing" className="btn-back no-print" title="Tornar a Facturació" style={{ marginRight: '1rem' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -490,7 +490,7 @@ export default function LedgersPage() {
           <h1 style={{ marginTop: '0.5rem', marginBottom: 0, display: 'inline-block', verticalAlign: 'middle' }}>Llibres de Registre (AEAT)</h1>
         </div>
         
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           {type === 'issued' && isAdmin && (
             <button className="btn btn-glass" onClick={handleSyncInvoices}>
               🔄 Sincronitzar Factures
@@ -547,7 +547,7 @@ export default function LedgersPage() {
               </div>
             )}
 
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
               <button 
                 type="submit" 
                 className="btn btn-primary" 
@@ -582,7 +582,7 @@ export default function LedgersPage() {
           </h3>
           <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
             {scannedFilePath && (
-              <div style={{ gridColumn: 'span 2', display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(46, 204, 113, 0.1)', padding: '0.6rem 1rem', borderRadius: '4px', border: '1px solid var(--color-success)', color: 'var(--color-success)', fontSize: '0.85rem' }}>
+              <div className="grid-span-2-desktop" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'rgba(46, 204, 113, 0.1)', padding: '0.6rem 1rem', borderRadius: '4px', border: '1px solid var(--color-success)', color: 'var(--color-success)', fontSize: '0.85rem' }}>
                 <span>📁 <strong>Factura arxivada:</strong> {scannedFilePath.startsWith('http') ? <a href={scannedFilePath} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-success)', textDecoration: 'underline' }}>Veure document al núvol</a> : scannedFilePath}</span>
               </div>
             )}
@@ -629,7 +629,7 @@ export default function LedgersPage() {
               <input type="text" className="input-field" value={nif} onChange={e => setNif(e.target.value.toUpperCase().trim())} placeholder="Ex: P4315700G" required />
             </div>
 
-            <div className="input-group" style={{ gridColumn: 'span 2' }}>
+            <div className="input-group grid-span-2-desktop">
               <label>{type === 'issued' ? 'Nom / Raó Social Client' : 'Nom Proveïdor'}</label>
               <input type="text" className="input-field" value={name} onChange={e => setName(e.target.value)} placeholder="Ex: Ajuntament de..." required />
             </div>
@@ -683,11 +683,11 @@ export default function LedgersPage() {
               <input type="number" className="input-field" value={total} disabled readOnly />
             </div>
 
-            <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-              <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
+            <div className="grid-span-all-desktop" style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+              <button type="submit" className="btn btn-primary" style={{ flex: '1 1 200px' }}>
                 {editingId ? 'Guardar Canvis' : 'Afegir al Llibre de Registre'}
               </button>
-              <button type="button" className="btn btn-glass" onClick={resetForm} style={{ flex: 0.3 }}>
+              <button type="button" className="btn btn-glass" onClick={resetForm} style={{ flex: '1 1 100px' }}>
                 Cancel·lar
               </button>
             </div>
@@ -754,7 +754,6 @@ export default function LedgersPage() {
         </div>
       </div>
 
-      {/* AEAT CUMULATIVE WARNING */}
       <div className="glass-panel" style={{ 
         padding: '1rem 1.5rem', 
         marginBottom: '1.5rem', 
@@ -763,7 +762,8 @@ export default function LedgersPage() {
         display: 'flex',
         alignItems: 'center',
         gap: '1rem',
-        fontSize: '0.9rem'
+        fontSize: '0.9rem',
+        flexWrap: 'wrap'
       }}>
         <div style={{ fontSize: '1.5rem' }}>⚠️</div>
         <div style={{ color: 'var(--color-text-primary)', lineHeight: '1.4' }}>
@@ -805,7 +805,7 @@ export default function LedgersPage() {
       </div>
 
       {/* LEDGER DATA TABLE */}
-      <div className="glass-panel" style={{ padding: 0, overflowX: 'auto' }}>
+      <div className="glass-panel table-container-responsive" style={{ padding: 0 }}>
         {isLoadingData ? (
           <div style={{ padding: '2rem', textAlign: 'center' }}>Carregant dades del llibre de registre...</div>
         ) : currentList.length === 0 ? (

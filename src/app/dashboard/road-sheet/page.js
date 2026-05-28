@@ -249,7 +249,7 @@ export default function RoadSheetPage() {
 
   return (
     <div className="container mt-xl animate-fade-in-up">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <Link href="/dashboard" className="btn-back no-print" title="Tornar al Dashboard" style={{ marginRight: '1rem' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -259,12 +259,12 @@ export default function RoadSheetPage() {
           </Link>
           <h1 style={{ marginTop: '0.5rem', marginBottom: 0, display: 'inline-block', verticalAlign: 'middle' }}>Road-sheet 🚐</h1>
         </div>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap', width: '100%', justifyContent: 'flex-end' }}>
           <input 
             type="text" 
             placeholder="🔍 Cerca per municipi, sala o espectacle..." 
             className="input-field" 
-            style={{ width: '300px', marginBottom: 0 }}
+            style={{ flex: '1 1 200px', minWidth: '150px', marginBottom: 0 }}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -273,7 +273,7 @@ export default function RoadSheetPage() {
             return (
               <select 
                 className="input-field" 
-                style={{ width: '150px', marginBottom: 0 }}
+                style={{ flex: '1 1 120px', minWidth: '100px', marginBottom: 0 }}
                 value={searchYear}
                 onChange={(e) => setSearchYear(e.target.value)}
               >
@@ -301,7 +301,7 @@ export default function RoadSheetPage() {
       {isAdding && (
         <div className="glass-panel animate-fade-in-up" style={{ marginBottom: 'var(--space-lg)' }}>
           <form onSubmit={handleAddGig} style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="grid-2col-responsive">
               <div className="input-group">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                   <label style={{ marginBottom: 0 }}>Data del bolo</label>
@@ -363,7 +363,7 @@ export default function RoadSheetPage() {
               <label>Adreça completa (Per al GPS)</label>
               <AddressAutocomplete value={address} onChange={setAddress} />
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="grid-2col-responsive">
               <div className="input-group">
                 <label>Persona de contacte / Obre sala</label>
                 <input type="text" className="input-field" value={contactPerson} onChange={e => setContactPerson(e.target.value)} />

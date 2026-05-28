@@ -24,7 +24,7 @@ export default function DashboardLayout({ children }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       {/* Global Navigation Bar */}
-      <nav className="glass-panel no-print" style={{ 
+      <nav className="glass-panel no-print nav-bar-responsive" style={{ 
         borderRadius: '0', 
         borderLeft: 'none', 
         borderRight: 'none', 
