@@ -15,7 +15,13 @@ service cloud.firestore {
       allow write: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
 
-    // Other collections (contacts, shows, interactions, gigs, invoices, budgets, clients_billing, products_billing, ledgers_issued, ledgers_received)
+    // Gigs (Road-sheet) are publicly readable so that the public API can fetch them for the website
+    match /gigs/{gigId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Other collections (contacts, shows, interactions, invoices, budgets, clients_billing, products_billing, ledgers_issued, ledgers_received)
     match /{document=**} {
       allow read: if request.auth != null;
       allow write: if isAdmin();
