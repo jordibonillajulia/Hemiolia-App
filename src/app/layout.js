@@ -23,6 +23,11 @@ export const metadata = {
     statusBarStyle: "default",
     title: "Hemiòlia Gestió",
   },
+  icons: {
+    icon: "/icon-192.png",
+    shortcut: "/icon-192.png",
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export const viewport = {

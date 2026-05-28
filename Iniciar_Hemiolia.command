@@ -46,4 +46,4 @@ echo "  (Pots tancar aquesta finestra per aturar el servidor)"
 echo "-----------------------------------------------------------------"
 echo ""
 
-npm run dev
+npm run dev -- -H 0.0.0.0
