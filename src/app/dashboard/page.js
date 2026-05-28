@@ -22,7 +22,7 @@ export default function DashboardPage() {
       <main className="container animate-fade-in-up" style={{ paddingTop: 'var(--space-xl)', paddingBottom: 'var(--space-xl)' }}>
         <div style={{ marginBottom: '2.5rem' }}>
           <h1 style={{ fontSize: '2.2rem', color: 'var(--color-text-primary)', marginBottom: '0.5rem', fontFamily: 'var(--font-heading)' }}>
-            Benvingut al Panell de Control
+            Benvinguts
           </h1>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: '1.05rem', margin: 0 }}>
             Hola <strong style={{ color: 'var(--color-accent)' }}>{user.email}</strong>. Gestiona l'activitat diària de la companyia musical Hemiòlia.
