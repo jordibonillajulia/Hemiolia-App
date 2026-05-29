@@ -2,7 +2,7 @@
   "name": "Hemiòlia Produccions - Gestió",
   "short_name": "Hemiòlia",
   "description": "Eina unificada de gestió per a Hemiòlia Produccions",
-  "start_url": "/dashboard/billing/ledgers",
+  "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#1d1d1f",
   "theme_color": "#1d1d1f",

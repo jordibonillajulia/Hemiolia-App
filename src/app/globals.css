@@ -730,6 +730,7 @@ a:hover {
     align-items: center !important;
     padding: 0.6rem 0 !important;
     width: 100% !important;
+    max-width: none !important;
     border-bottom: 1px dashed rgba(255, 255, 255, 0.08) !important;
     white-space: normal !important;
     box-sizing: border-box;
