@@ -687,7 +687,7 @@ export default function InvoiceDetailPage() {
                 <th style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#0f172a', textAlign: 'center', width: '22%', whiteSpace: 'nowrap' }}>Data de venciment</th>
                 <th style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#0f172a', textAlign: 'center', width: '18%', whiteSpace: 'nowrap' }}>Import</th>
                 <th style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#0f172a', textAlign: 'center', width: '25%', whiteSpace: 'nowrap' }}>Forma de pagament</th>
-                <th style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#0f172a', textAlign: 'center', width: '35%', whiteSpace: 'nowrap' }}>Compte (IBAN)</th>
+                <th style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#0f172a', textAlign: 'center', width: '35%', whiteSpace: 'nowrap' }}>IBAN</th>
               </tr>
             </thead>
             <tbody>
@@ -701,7 +701,7 @@ export default function InvoiceDetailPage() {
                 <td data-label="Forma de pagament" style={{ padding: '0.55rem 0.5rem', fontSize: '0.9rem', color: '#1e293b', textAlign: 'center', borderRight: '1px solid #e2e8f0' }}>
                   Transferència
                 </td>
-                <td data-label="Compte (IBAN)" style={{ padding: '0.55rem 0.5rem', fontSize: '0.85rem', fontFamily: 'monospace', color: '#1e293b', textAlign: 'center', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
+                <td data-label="IBAN" style={{ padding: '0.55rem 0.5rem', fontSize: '0.85rem', fontFamily: 'monospace', color: '#1e293b', textAlign: 'center', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
                   {invoice.issuerData?.iban}
                 </td>
               </tr>

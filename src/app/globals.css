@@ -1094,14 +1094,14 @@ a:hover {
   }
 
   /* Make IBAN account number smaller and tighter to fit on single line without scrolling */
-  .invoice-paper .payment-box td[data-label*="Compte"],
-  .invoice-paper .payment-box td[data-label*="compte"] {
+  .invoice-paper .payment-box td[data-label*="IBAN"],
+  .invoice-paper .payment-box td[data-label*="iban"] {
     font-size: 0.68rem !important;
     letter-spacing: -0.3px !important;
   }
   
-  .invoice-paper .payment-box td[data-label*="Compte"]::before,
-  .invoice-paper .payment-box td[data-label*="compte"]::before {
+  .invoice-paper .payment-box td[data-label*="IBAN"]::before,
+  .invoice-paper .payment-box td[data-label*="iban"]::before {
     font-size: 0.62rem !important;
     text-transform: none !important;
     letter-spacing: 0px !important;
