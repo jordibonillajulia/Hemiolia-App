@@ -253,6 +253,10 @@ a:hover {
 }
 
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 0.9cm 0.8cm 0.5cm 0.8cm;
+  }
   /* Hide all UI elements */
   nav, .sidebar, .btn, button, footer {
     display: none !important;
@@ -896,28 +900,149 @@ a:hover {
   }
   
   .invoice-paper .table-container {
-    overflow-x: auto !important;
+    overflow-x: visible !important;
     width: 100% !important;
-    -webkit-overflow-scrolling: touch;
   }
   
   .invoice-paper .table-container table {
-    min-width: 550px !important; /* Allow the table to scroll horizontally */
+    min-width: 0 !important;
+    width: 100% !important;
+    display: block !important;
   }
   
+  .invoice-paper .table-container thead {
+    display: none !important;
+  }
+  
+  .invoice-paper .table-container tbody {
+    display: block !important;
+    width: 100% !important;
+  }
+  
+  .invoice-paper .table-container tr {
+    display: block !important;
+    width: 100% !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+    padding: 0.8rem 0 !important;
+    margin-bottom: 0.8rem !important;
+  }
+  
+  .invoice-paper .table-container td {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0.4rem 0 !important;
+    width: 100% !important;
+    text-align: right !important;
+    font-size: 0.85rem !important;
+    border: none !important;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.05) !important;
+    box-sizing: border-box;
+  }
+  
+  .invoice-paper .table-container td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+  
+  /* Concepte card title layout (no data-label prefix) */
+  .invoice-paper .table-container td[data-label="Concepte"] {
+    display: block !important;
+    text-align: left !important;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.05) !important;
+    margin-bottom: 0.4rem !important;
+  }
+  
+  .invoice-paper .table-container td[data-label="Concepte"]::before {
+    display: none !important;
+  }
+
   .invoice-paper .totals-section {
     flex-direction: column !important;
     gap: 1rem !important;
   }
   
   .invoice-paper .payment-box {
-    overflow-x: auto !important;
+    overflow-x: visible !important;
     width: 100% !important;
-    -webkit-overflow-scrolling: touch;
+    border: none !important;
   }
   
   .invoice-paper .payment-box table {
-    min-width: 550px !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    display: block !important;
+  }
+  
+  .invoice-paper .payment-box thead {
+    display: none !important;
+  }
+  
+  .invoice-paper .payment-box tbody {
+    display: block !important;
+    width: 100% !important;
+  }
+  
+  .invoice-paper .payment-box tr {
+    display: block !important;
+    width: 100% !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 6px !important;
+    padding: 0.8rem !important;
+    background: #f8fafc !important;
+    box-sizing: border-box;
+  }
+  
+  .invoice-paper .payment-box td {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0.4rem 0 !important;
+    width: 100% !important;
+    text-align: right !important;
+    font-size: 0.85rem !important;
+    border: none !important;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.05) !important;
+    box-sizing: border-box;
+  }
+  
+  .invoice-paper .payment-box td:last-child {
+    border-bottom: none !important;
+  }
+  
+  .invoice-paper .payment-box td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+  
+  .invoice-paper .huella-box {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.4rem !important;
+    padding: 0.6rem 0.8rem !important;
+    white-space: normal !important;
+    height: auto !important;
+    text-align: center !important;
+  }
+  
+  .invoice-paper .huella-box span {
+    white-space: normal !important;
+    word-break: break-all !important;
+    display: inline-block !important;
+    font-size: 0.72rem !important;
   }
   
   .invoice-paper .signature-stamp-box {

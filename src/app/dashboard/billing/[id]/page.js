@@ -515,7 +515,7 @@ export default function InvoiceDetailPage() {
             </span>
             {invoice.fechaHoraHusoGenRegistro && (
               <>
-                <span style={{ color: '#bdc3c7' }}>|</span>
+                <span className="hide-mobile" style={{ color: '#bdc3c7' }}>|</span>
                 <span style={{ color: '#1e293b' }}>
                   <strong>Registre AEAT:</strong> {formatDateTime(invoice.fechaHoraHusoGenRegistro)}
                 </span>
@@ -544,7 +544,7 @@ export default function InvoiceDetailPage() {
                 
                 return (
                   <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                    <td style={{ padding: '0.75rem 0.8rem', fontSize: '0.9rem', color: '#1e293b' }}>
+                    <td data-label="Concepte" style={{ padding: '0.75rem 0.8rem', fontSize: '0.9rem', color: '#1e293b' }}>
                       <strong style={{ display: 'block', color: '#0f172a' }}>{line.description}</strong>
                       {isExempt && (
                         <span style={{ fontSize: '0.8rem', color: '#64748b', display: 'block', marginTop: '0.1rem' }}>
@@ -552,16 +552,16 @@ export default function InvoiceDetailPage() {
                         </span>
                       )}
                     </td>
-                    <td style={{ padding: '0.75rem 0.8rem', textAlign: 'right', fontSize: '0.9rem', color: '#334155' }}>
+                    <td data-label="Tipus" style={{ padding: '0.75rem 0.8rem', textAlign: 'right', fontSize: '0.9rem', color: '#334155' }}>
                       {vatPercentDisplay}
                     </td>
-                    <td style={{ padding: '0.75rem 0.8rem', textAlign: 'right', fontSize: '0.9rem', color: '#334155' }}>
+                    <td data-label="U." style={{ padding: '0.75rem 0.8rem', textAlign: 'right', fontSize: '0.9rem', color: '#334155' }}>
                       1,00
                     </td>
-                    <td style={{ padding: '0.75rem 0.8rem', textAlign: 'right', fontSize: '0.9rem', color: '#334155' }}>
+                    <td data-label="Preu unitari" style={{ padding: '0.75rem 0.8rem', textAlign: 'right', fontSize: '0.9rem', color: '#334155' }}>
                       {formatCurrency(amt)}
                     </td>
-                    <td style={{ padding: '0.75rem 0.8rem', textAlign: 'right', fontSize: '0.9rem', fontWeight: 'bold', color: '#0f172a' }}>
+                    <td data-label="Import" style={{ padding: '0.75rem 0.8rem', textAlign: 'right', fontSize: '0.9rem', fontWeight: 'bold', color: '#0f172a' }}>
                       {formatCurrency(amt)}
                     </td>
                   </tr>
@@ -689,16 +689,16 @@ export default function InvoiceDetailPage() {
             </thead>
             <tbody>
               <tr>
-                <td style={{ padding: '0.55rem 0.5rem', fontSize: '0.9rem', color: '#1e293b', textAlign: 'center', borderRight: '1px solid #e2e8f0' }}>
+                <td data-label="Data de venciment" style={{ padding: '0.55rem 0.5rem', fontSize: '0.9rem', color: '#1e293b', textAlign: 'center', borderRight: '1px solid #e2e8f0' }}>
                   {getDueDate(invoice.date)}
                 </td>
-                <td style={{ padding: '0.55rem 0.5rem', fontSize: '0.9rem', color: '#1e293b', textAlign: 'center', borderRight: '1px solid #e2e8f0', fontWeight: '500' }}>
+                <td data-label="Import" style={{ padding: '0.55rem 0.5rem', fontSize: '0.9rem', color: '#1e293b', textAlign: 'center', borderRight: '1px solid #e2e8f0', fontWeight: '500' }}>
                   {formatCurrency(invoice.totals?.total)}
                 </td>
-                <td style={{ padding: '0.55rem 0.5rem', fontSize: '0.9rem', color: '#1e293b', textAlign: 'center', borderRight: '1px solid #e2e8f0' }}>
+                <td data-label="Forma de pagament" style={{ padding: '0.55rem 0.5rem', fontSize: '0.9rem', color: '#1e293b', textAlign: 'center', borderRight: '1px solid #e2e8f0' }}>
                   Transferència
                 </td>
-                <td style={{ padding: '0.55rem 0.5rem', fontSize: '0.85rem', fontFamily: 'monospace', color: '#1e293b', textAlign: 'center', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
+                <td data-label="Compte (IBAN)" style={{ padding: '0.55rem 0.5rem', fontSize: '0.85rem', fontFamily: 'monospace', color: '#1e293b', textAlign: 'center', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
                   {invoice.issuerData?.iban}
                 </td>
               </tr>
