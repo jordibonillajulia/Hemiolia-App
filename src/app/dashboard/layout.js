@@ -17,6 +17,28 @@ export default function DashboardLayout({ children }) {
     }
   }, [user, loading, router]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const isNewSession = !sessionStorage.getItem('session_initialized');
+        
+        if (isNewSession) {
+          sessionStorage.setItem('session_initialized', 'true');
+          const path = window.location.pathname;
+          // Clean trailing slash if any to standardize path matching
+          const cleanPath = path.endsWith('/') && path.length > 1 ? path.slice(0, -1) : path;
+          
+          // If starting a new session on a dashboard subpage, redirect to the welcome page (/dashboard)
+          if (cleanPath.startsWith('/dashboard/') && cleanPath !== '/dashboard') {
+            router.push('/dashboard');
+          }
+        }
+      } catch (err) {
+        console.error('Error handling redirect on session start:', err);
+      }
+    }
+  }, [router]);
+
   if (loading || !user) {
     return <div className="container mt-xl text-center">Carregant...</div>;
   }
