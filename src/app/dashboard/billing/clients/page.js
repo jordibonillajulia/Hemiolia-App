@@ -323,7 +323,7 @@ export default function BillingClientsPage() {
           <tbody>
             {clients.map(client => (
               <tr key={client.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <td style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'nowrap' }}>
+                <td style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'normal', maxWidth: '300px' }}>
                   {formatClientName(client.name)}
                   {(client.dir3OficinaContable || client.dir3OrganoGestor || client.dir3UnidadTramitadora) && (
                     <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--color-success)', marginTop: '0.15rem', fontWeight: '500' }}>

@@ -15,9 +15,7 @@ export default function BillingProductsPage() {
   const [description, setDescription] = useState('');
   const [unitPrice, setUnitPrice] = useState('');
   const [vatType, setVatType] = useState('10'); // 0, 4, 10, 21
-  const [isVatExempt, setIsVatExempt] = useState(false);
-  const [exemptionCause, setExemptionCause] = useState('E1');
-  const [exemptionText, setExemptionText] = useState('');
+
 
   useEffect(() => {
     if (user) loadProducts();
@@ -32,9 +30,7 @@ export default function BillingProductsPage() {
     setDescription('');
     setUnitPrice('');
     setVatType('10');
-    setIsVatExempt(false);
-    setExemptionCause('E1');
-    setExemptionText('');
+
     setEditingId(null);
     setIsAdding(false);
   };
@@ -43,12 +39,7 @@ export default function BillingProductsPage() {
     setDescription(product.description || '');
     setUnitPrice(product.unitPrice || '');
     setVatType(product.vatType || '10');
-    setIsVatExempt(product.isVatExempt || false);
-    
-    const cause = product.exemptionCause || '';
-    const isCode = ['E1', 'E2', 'E3', 'E4', 'E5', 'E6'].includes(cause);
-    setExemptionCause(isCode ? cause : 'E1');
-    setExemptionText(product.exemptionText || (!isCode ? cause : ''));
+
     
     setEditingId(product.id);
     setIsAdding(true);
@@ -60,9 +51,9 @@ export default function BillingProductsPage() {
       description, 
       unitPrice: parseFloat(unitPrice), 
       vatType: parseFloat(vatType), 
-      isVatExempt, 
-      exemptionCause: isVatExempt ? exemptionCause : '',
-      exemptionText: isVatExempt ? exemptionText : ''
+      isVatExempt: false, 
+      exemptionCause: '',
+      exemptionText: ''
     };
     if (editingId) {
       await updateBillingProduct(editingId, data);
@@ -114,38 +105,14 @@ export default function BillingProductsPage() {
             </div>
             <div className="input-group">
               <label>Tipus d'IVA (%)</label>
-              <select className="input-field" value={vatType} onChange={e => setVatType(e.target.value)} disabled={isVatExempt}>
+              <select className="input-field" value={vatType} onChange={e => setVatType(e.target.value)}>
                 <option value="21">21% (General)</option>
                 <option value="10">10% (Reduït)</option>
                 <option value="4">4% (Superreduït)</option>
                 <option value="0">0%</option>
               </select>
             </div>
-            <div className="input-group grid-span-all-desktop" style={{ background: 'rgba(255,255,255,0.05)', padding: '1rem', borderRadius: 'var(--radius-sm)' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginBottom: isVatExempt ? '1rem' : 0 }}>
-                <input type="checkbox" checked={isVatExempt} onChange={e => setIsVatExempt(e.target.checked)} style={{ width: 'auto' }} />
-                <span>Article/Servei Exempt d'IVA</span>
-              </label>
-              {isVatExempt && (
-                <div className="grid-2-1-responsive" style={{ marginTop: '0.5rem' }}>
-                  <div>
-                    <label>Codi d'Exempció</label>
-                    <select className="input-field" value={exemptionCause} onChange={e => setExemptionCause(e.target.value)}>
-                      <option value="E1">E1 - Art. 20 (Serveis artístics, mèdics, etc.)</option>
-                      <option value="E2">E2 - Art. 21 (Exportacions)</option>
-                      <option value="E3">E3 - Art. 22 (Operacions assimilades)</option>
-                      <option value="E4">E4 - Art. 24 (Zones franques / dipòsits)</option>
-                      <option value="E5">E5 - Art. 25 (Lliuraments intracomunitaris)</option>
-                      <option value="E6">E6 - Altres motius d'exempció</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label>Detall de l'Exempció (Surt a la factura)</label>
-                    <input type="text" className="input-field" value={exemptionText} onChange={e => setExemptionText(e.target.value)} placeholder="Exempt d'IVA segons..." required={isVatExempt} />
-                  </div>
-                </div>
-              )}
-            </div>
+
             <div className="grid-span-all-desktop" style={{ marginTop: '1rem' }}>
               <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
                 {editingId ? 'Guardar Canvis' : 'Crear Producte'}
@@ -162,7 +129,6 @@ export default function BillingProductsPage() {
               <th style={{ padding: '1rem' }}>Descripció</th>
               <th style={{ padding: '1rem' }}>Import</th>
               <th style={{ padding: '1rem' }}>IVA</th>
-              <th style={{ padding: '1rem' }}>Exempció</th>
               <th style={{ padding: '1rem' }}>Accions</th>
             </tr>
           </thead>
@@ -171,18 +137,7 @@ export default function BillingProductsPage() {
               <tr key={p.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                 <td style={{ padding: '1rem' }}>{p.description}</td>
                 <td style={{ padding: '1rem' }}>{p.unitPrice.toFixed(2)} €</td>
-                <td style={{ padding: '1rem' }}>{p.isVatExempt ? 'Exempt' : `${p.vatType}%`}</td>
-                <td style={{ padding: '1rem', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
-                  {p.isVatExempt ? (
-                    <div>
-                      <strong>{p.exemptionCause || 'E1'}</strong>
-                      {p.exemptionText && <div style={{ fontSize: '0.75rem' }}>{p.exemptionText}</div>}
-                      {!p.exemptionText && p.exemptionCause && !['E1', 'E2', 'E3', 'E4', 'E5', 'E6'].includes(p.exemptionCause) && (
-                        <div style={{ fontSize: '0.75rem' }}>{p.exemptionCause}</div>
-                      )}
-                    </div>
-                  ) : '-'}
-                </td>
+                <td style={{ padding: '1rem' }}>{`${p.vatType}%`}</td>
                 <td style={{ padding: '1rem' }}>
                   {isAdmin ? (
                     <>
@@ -196,7 +151,7 @@ export default function BillingProductsPage() {
               </tr>
             ))}
             {products.length === 0 && (
-              <tr><td colSpan="5" style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-text-secondary)' }}>No hi ha productes registrats.</td></tr>
+              <tr><td colSpan="4" style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-text-secondary)' }}>No hi ha productes registrats.</td></tr>
             )}
           </tbody>
         </table>

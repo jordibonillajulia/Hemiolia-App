@@ -285,7 +285,7 @@ export default function BillingPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead style={{ background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid var(--color-border)' }}>
               <tr>
-                <th style={{ padding: '1rem', whiteSpace: 'nowrap' }}>Dates (Op. / Emissió)</th>
+                <th style={{ padding: '1rem', whiteSpace: 'nowrap' }}>Data d'Emissió</th>
                 <th style={{ padding: '1rem', whiteSpace: 'nowrap' }}>Nº Factura</th>
                 <th style={{ padding: '1rem', whiteSpace: 'nowrap' }}>Client</th>
                 <th style={{ padding: '1rem', whiteSpace: 'nowrap' }}>Base Imposable</th>
@@ -296,12 +296,7 @@ export default function BillingPage() {
             <tbody>
               {filteredInvoices.map(inv => (
                 <tr key={inv.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
-                    <div style={{ display: 'inline-flex', gap: '0.5rem', flexWrap: 'nowrap', alignItems: 'center' }}>
-                      <span style={{ fontSize: '0.85rem' }}>Op: {formatDateDDMMYYYY(inv.operationDate || inv.date)}</span>
-                      <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>| Em: {formatDateDDMMYYYY(inv.date)}</span>
-                    </div>
-                  </td>
+                  <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatDateDDMMYYYY(inv.date)}</td>
                   <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatDisplayInvoiceNumber(inv.invoiceNumber, inv.issuerId)}</td>
                   <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatClientName(inv.clientName)}</td>
                   <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{(parseFloat(inv.totals?.baseImposable) || 0).toFixed(2)} €</td>

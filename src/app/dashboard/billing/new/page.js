@@ -257,8 +257,17 @@ function NewInvoiceForm() {
     setLines(lines.filter(l => l.id !== id));
   };
 
-  const updateLine = (id, field, value) => {
-    setLines(lines.map(l => l.id === id ? { ...l, [field]: value } : l));
+  const updateLine = (id, fieldOrUpdates, value) => {
+    setLines(prevLines => prevLines.map(l => {
+      if (l.id === id) {
+        if (typeof fieldOrUpdates === 'string') {
+          return { ...l, [fieldOrUpdates]: value };
+        } else {
+          return { ...l, ...fieldOrUpdates };
+        }
+      }
+      return l;
+    }));
   };
 
   const handleSaveDraft = async (e) => {
@@ -562,12 +571,17 @@ function NewInvoiceForm() {
                   <label>IVA (%) / Exempció</label>
                   <select className="input-field" value={line.isVatExempt ? 'exempt' : line.vatPercent} onChange={e => {
                     if (e.target.value === 'exempt') {
-                      updateLine(line.id, 'isVatExempt', true);
-                      updateLine(line.id, 'vatPercent', 0);
-                      if (!line.exemptionCause) updateLine(line.id, 'exemptionCause', 'E1');
+                      updateLine(line.id, {
+                        isVatExempt: true,
+                        vatPercent: 0,
+                        exemptionCause: line.exemptionCause || 'E1',
+                        exemptionText: line.exemptionText || "Exempt d'IVA segons l'Art. 20.Un.9è de la Llei 37/1992"
+                      });
                     } else {
-                      updateLine(line.id, 'isVatExempt', false);
-                      updateLine(line.id, 'vatPercent', parseFloat(e.target.value));
+                      updateLine(line.id, {
+                        isVatExempt: false,
+                        vatPercent: parseFloat(e.target.value)
+                      });
                     }
                   }}>
                     <option value="21">21%</option>
@@ -598,6 +612,9 @@ function NewInvoiceForm() {
                       <div>
                         <label style={{ color: '#f1c40f', fontSize: '0.85rem' }}>Detall de l'Exempció (Text legal)</label>
                         <input type="text" className="input-field" value={line.exemptionText || ''} onChange={e => updateLine(line.id, 'exemptionText', e.target.value)} placeholder="Exempt d'IVA segons..." required={line.isVatExempt} />
+                        <span style={{ display: 'block', fontSize: '0.72rem', color: 'var(--color-text-secondary)', marginTop: '0.25rem' }}>
+                          Sugerit per a espectacles educatius: <strong style={{ color: '#f1c40f' }}>Exempt d'IVA segons l'Art. 20.Un.9è de la Llei 37/1992</strong>
+                        </span>
                       </div>
                     </div>
                   </div>
