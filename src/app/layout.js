@@ -17,7 +17,7 @@ const outfit = Outfit({
 export const metadata = {
   title: "Hemiòlia Produccions - Gestió",
   description: "Eina unificada de gestió per a Hemiòlia Produccions",
-  manifest: "/manifest.json",
+  manifest: "/manifest.json?v=2",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
