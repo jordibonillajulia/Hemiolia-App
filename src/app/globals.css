@@ -791,6 +791,18 @@ a:hover {
   width: fit-content;
 }
 
+.text-right-mobile {
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .text-right-mobile {
+    text-align: right !important;
+    width: 100% !important;
+    display: block !important;
+  }
+}
+
 
 .grid-span-2-desktop {
   grid-column: span 2;

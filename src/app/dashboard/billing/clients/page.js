@@ -324,7 +324,9 @@ export default function BillingClientsPage() {
             {clients.map(client => (
               <tr key={client.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                 <td data-label="Nom / Raó Social" style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'normal', maxWidth: '300px' }}>
-                  {formatClientName(client.name)}
+                  <span className="text-right-mobile">
+                    {formatClientName(client.name)}
+                  </span>
                   {(client.dir3OficinaContable || client.dir3OrganoGestor || client.dir3UnidadTramitadora) && (
                     <span className="efact-badge">
                       ⚡ e-Fact (DIR3)

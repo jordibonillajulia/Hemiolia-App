@@ -852,7 +852,9 @@ export default function LedgersPage() {
                   </td>
                   <td data-label={type === 'issued' ? 'Client' : 'Proveïdor'} style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      {type === 'issued' ? formatClientName(item.clientName) : formatClientName(item.supplierName)}
+                      <span className="text-right-mobile">
+                        {type === 'issued' ? formatClientName(item.clientName) : formatClientName(item.supplierName)}
+                      </span>
                       {item.scannedFile && (
                         item.scannedFile.startsWith('http') ? (
                           <a href={item.scannedFile} target="_blank" rel="noopener noreferrer" title="Veure factura arxivada al núvol" style={{ fontSize: '0.95rem', textDecoration: 'none' }}>
