@@ -141,12 +141,6 @@ export default function LoginPage() {
               {isLoading ? 'Iniciant sessió...' : 'Accedir'}
             </button>
           </form>
-
-          <div style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.85rem' }}>
-            <a href="/register" style={{ color: 'var(--color-text-secondary)', textDecoration: 'underline' }}>
-              No tens compte? Registra't aquí
-            </a>
-          </div>
         </div>
       </div>
 
