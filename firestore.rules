@@ -6,6 +6,7 @@ service cloud.firestore {
       return request.auth != null && 
         (request.auth.token.email == 'info@hemiolia.cat' || 
          request.auth.token.email == 'admin@hemiolia.cat' || 
+         request.auth.token.email == 'jordibonillajulia@gmail.com' || 
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
     }
 
