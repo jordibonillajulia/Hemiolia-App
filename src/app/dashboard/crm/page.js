@@ -6,7 +6,7 @@ import { getContacts, addContact, deleteContact, updateContact } from '../../../
 import Link from 'next/link';
 
 export default function CRMPage() {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, isAdmin, isCrm } = useAuth();
   const [contacts, setContacts] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingContactId, setEditingContactId] = useState(null);
@@ -78,7 +78,7 @@ export default function CRMPage() {
           </Link>
           <h1 style={{ marginTop: '0.5rem', marginBottom: 0, display: 'inline-block', verticalAlign: 'middle' }}>CRM i Contactes</h1>
         </div>
-        {isAdmin && (
+        {(isAdmin || isCrm) && (
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <Link href="/dashboard/crm/import" className="btn btn-glass">
               Importar CSV
@@ -149,7 +149,7 @@ export default function CRMPage() {
                     <Link href={`/dashboard/crm/${contact.id}`} className="btn btn-glass" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>
                       Veure &rarr;
                     </Link>
-                    {isAdmin && (
+                    {(isAdmin || isCrm) && (
                       <>
                         <button onClick={() => handleEditClick(contact)} className="btn btn-glass" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }} title="Editar Contacte">
                           ✏️

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { useAuth } from '../../../../lib/AuthContext';
 
 export default function ImportContactsPage() {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, isAdmin, isCrm } = useAuth();
   const [file, setFile] = useState(null);
   const [isImporting, setIsImporting] = useState(false);
   const [results, setResults] = useState(null);
@@ -61,7 +61,7 @@ export default function ImportContactsPage() {
 
   if (loading || !user) return <div className="container mt-xl">Carregant...</div>;
 
-  if (!isAdmin) {
+  if (!isAdmin && !isCrm) {
     return (
       <div className="container" style={{ paddingTop: 'var(--space-md)' }}>
         <div className="glass-panel text-center" style={{ padding: '3rem', maxWidth: '500px', margin: '2rem auto' }}>

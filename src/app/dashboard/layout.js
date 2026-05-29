@@ -8,7 +8,7 @@ import { auth } from '../../lib/firebase';
 import Link from 'next/link';
 
 export default function DashboardLayout({ children }) {
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, isAdmin, isCrm } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -63,7 +63,11 @@ export default function DashboardLayout({ children }) {
           justifyContent: 'center',
           fontWeight: '500'
         }}>
-          <span>👁️ Mode de visualització (Només lectura). No pots modificar camps ni dades.</span>
+          <span>
+            {isCrm 
+              ? '📝 Tens accés per editar el CRM i Contactes. La resta de seccions són de només lectura.' 
+              : '👁️ Mode de visualització (Només lectura). No pots modificar camps ni dades.'}
+          </span>
         </div>
       )}
       

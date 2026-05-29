@@ -46,7 +46,7 @@ const formatDateDDMMYYYY = (dateStr) => {
 export default function ContactDetailPage() {
   const params = useParams();
   const contactId = params.id;
-  const { user, loading, isAdmin } = useAuth();
+  const { user, loading, isAdmin, isCrm } = useAuth();
   
   const [contact, setContact] = useState(null);
   const [interactions, setInteractions] = useState([]);
@@ -138,7 +138,7 @@ export default function ContactDetailPage() {
               <h1 style={{ marginBottom: '0.5rem', color: 'var(--color-accent)', marginTop: 0 }}>{contact.name}</h1>
               <p style={{ margin: 0 }}><strong>{contact.entity}</strong> | {contact.municipality}</p>
             </div>
-            {contact.email && isAdmin && (
+            {contact.email && (isAdmin || isCrm) && (
               <button 
                 className="btn btn-glass" 
                 onClick={handleSendEmail} 
@@ -157,7 +157,7 @@ export default function ContactDetailPage() {
 
       <div className="header-bar-responsive" style={{ marginBottom: '1rem' }}>
         <h2>Històric d'Interaccions</h2>
-        {isAdmin && (
+        {(isAdmin || isCrm) && (
           <button className="btn btn-primary" onClick={() => setIsAdding(!isAdding)}>
             {isAdding ? 'Cancel·lar' : '+ Nova Interacció'}
           </button>

@@ -28,10 +28,32 @@ export const AuthProvider = ({ children }) => {
           const userDocSnap = await getDoc(userDocRef);
           
           if (userDocSnap.exists()) {
-            setRole(userDocSnap.data().role || 'viewer');
+            let currentRole = userDocSnap.data().role || 'viewer';
+            let needsUpdate = false;
+            // Sync with default roles for specific emails
+            if (currentUser.email === 'jordibonillajulia@gmail.com' || currentUser.email === 'info@hemiolia.cat' || currentUser.email === 'admin@hemiolia.cat') {
+              if (currentRole !== 'admin') {
+                currentRole = 'admin';
+                needsUpdate = true;
+              }
+            } else if (currentUser.email === 'unaonadapetitona@gmail.com') {
+              if (currentRole !== 'crm') {
+                currentRole = 'crm';
+                needsUpdate = true;
+              }
+            }
+            if (needsUpdate) {
+              await setDoc(userDocRef, { role: currentRole }, { merge: true });
+            }
+            setRole(currentRole);
           } else {
             // First login or registration
-            const defaultRole = (currentUser.email === 'info@hemiolia.cat' || currentUser.email === 'admin@hemiolia.cat') ? 'admin' : 'viewer';
+            let defaultRole = 'viewer';
+            if (currentUser.email === 'jordibonillajulia@gmail.com' || currentUser.email === 'info@hemiolia.cat' || currentUser.email === 'admin@hemiolia.cat') {
+              defaultRole = 'admin';
+            } else if (currentUser.email === 'unaonadapetitona@gmail.com') {
+              defaultRole = 'crm';
+            }
             await setDoc(userDocRef, {
               email: currentUser.email,
               role: defaultRole,
@@ -42,7 +64,13 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
           console.error("Error loading user role from Firestore:", error);
           // Fallback based on email
-          setRole((currentUser.email === 'info@hemiolia.cat' || currentUser.email === 'admin@hemiolia.cat') ? 'admin' : 'viewer');
+          let fallbackRole = 'viewer';
+          if (currentUser.email === 'jordibonillajulia@gmail.com' || currentUser.email === 'info@hemiolia.cat' || currentUser.email === 'admin@hemiolia.cat') {
+            fallbackRole = 'admin';
+          } else if (currentUser.email === 'unaonadapetitona@gmail.com') {
+            fallbackRole = 'crm';
+          }
+          setRole(fallbackRole);
         }
       } else {
         setRole('viewer');
@@ -64,9 +92,10 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const isAdmin = role === 'admin';
+  const isCrm = role === 'crm' || role === 'admin';
 
   return (
-    <AuthContext.Provider value={{ user, role, isAdmin, loading }}>
+    <AuthContext.Provider value={{ user, role, isAdmin, isCrm, loading }}>
       {children}
     </AuthContext.Provider>
   );
