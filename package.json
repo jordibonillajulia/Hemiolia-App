@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && mkdir -p .next/standalone/certs && cp -r certs/* .next/standalone/certs/ 2>/dev/null || true",
     "start": "next start",
     "lint": "eslint"
   },
