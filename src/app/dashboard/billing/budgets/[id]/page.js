@@ -48,7 +48,7 @@ export default function BudgetDetailPage() {
       const html2canvas = (await import('html2canvas')).default;
       const { jsPDF } = await import('jspdf');
 
-      const element = document.querySelector('.glass-panel');
+      const element = document.querySelector('.invoice-paper');
       if (!element) throw new Error("No s'ha trobat la targeta del pressupost.");
 
       elementToRestore = element;
