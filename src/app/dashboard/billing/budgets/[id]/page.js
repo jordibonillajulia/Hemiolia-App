@@ -548,7 +548,7 @@ export default function BudgetDetailPage() {
             </thead>
             <tbody>
               <tr>
-                <td data-label="Validesa del pressupost" style={{ padding: '0.55rem 0.5rem', fontSize: '0.9rem', color: '#1e293b', textAlign: 'center', borderRight: '1px solid #e2e8f0' }}>
+                <td data-label="Validesa" style={{ padding: '0.55rem 0.5rem', fontSize: '0.9rem', color: '#1e293b', textAlign: 'center', borderRight: '1px solid #e2e8f0' }}>
                   Fins a {getValidityDate(budget.date)} (30 dies)
                 </td>
                 <td data-label="Forma de pagament" style={{ padding: '0.55rem 0.5rem', fontSize: '0.9rem', color: '#1e293b', textAlign: 'center', borderRight: '1px solid #e2e8f0' }}>

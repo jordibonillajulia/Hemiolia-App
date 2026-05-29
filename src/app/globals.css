@@ -920,8 +920,9 @@ a:hover {
   }
   
   .invoice-paper .table-container tr {
-    display: block !important;
-    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.4rem 0.8rem !important;
     border-bottom: 2px solid #e2e8f0 !important;
     padding: 0.8rem 0 !important;
     margin-bottom: 0.8rem !important;
@@ -931,10 +932,10 @@ a:hover {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    padding: 0.4rem 0 !important;
+    padding: 0.3rem 0 !important;
     width: 100% !important;
     text-align: right !important;
-    font-size: 0.85rem !important;
+    font-size: 0.82rem !important;
     border: none !important;
     border-bottom: 1px dashed rgba(0, 0, 0, 0.05) !important;
     box-sizing: border-box;
@@ -945,19 +946,21 @@ a:hover {
     font-weight: bold;
     color: var(--color-text-secondary);
     text-transform: uppercase;
-    font-size: 0.72rem;
-    letter-spacing: 0.5px;
-    margin-right: 1rem;
+    font-size: 0.7rem;
+    letter-spacing: 0px;
+    margin-right: 0.5rem;
     flex-shrink: 0;
   }
   
-  /* Concepte card title layout (no data-label prefix) */
+  /* Concepte spans 2 columns at the top as a header row */
   .invoice-paper .table-container td[data-label="Concepte"] {
+    grid-column: span 2 !important;
     display: block !important;
     text-align: left !important;
-    padding-bottom: 0.5rem !important;
+    padding-bottom: 0.4rem !important;
     border-bottom: 2px solid rgba(0, 0, 0, 0.05) !important;
-    margin-bottom: 0.4rem !important;
+    margin-bottom: 0.2rem !important;
+    font-size: 0.9rem !important;
   }
   
   .invoice-paper .table-container td[data-label="Concepte"]::before {
@@ -1026,6 +1029,19 @@ a:hover {
     letter-spacing: 0.5px;
     margin-right: 1rem;
     flex-shrink: 0;
+  }
+
+  /* Make IBAN account number smaller and tighter to fit on single line without scrolling */
+  .invoice-paper .payment-box td[data-label*="Compte"],
+  .invoice-paper .payment-box td[data-label*="compte"] {
+    font-size: 0.72rem !important;
+    letter-spacing: -0.3px !important;
+  }
+  
+  .invoice-paper .payment-box td[data-label*="Compte"]::before,
+  .invoice-paper .payment-box td[data-label*="compte"]::before {
+    font-size: 0.72rem !important;
+    letter-spacing: 0px !important;
   }
   
   .invoice-paper .huella-box {
