@@ -716,27 +716,29 @@ export default function LedgersPage() {
               </select>
             </div>
 
-            <div className="input-group" style={{ marginBottom: 0, minWidth: '100px' }}>
-              <label style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Exercici</label>
-              <select className="input-field" value={filterYear} onChange={e => setFilterYear(e.target.value)} style={{ padding: '0.4rem 0.8rem' }}>
-                <option value="Tots">Tots els anys</option>
-                <option value="2026">2026</option>
-                <option value="2025">2025</option>
-                <option value="2024">2024</option>
-                <option value="2023">2023</option>
-                <option value="2022">2022</option>
-              </select>
-            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', flex: '1 1 200px' }}>
+              <div className="input-group" style={{ marginBottom: 0, flex: 1, minWidth: '80px' }}>
+                <label style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Exercici</label>
+                <select className="input-field" value={filterYear} onChange={e => setFilterYear(e.target.value)} style={{ padding: '0.4rem 0.8rem', width: '100%' }}>
+                  <option value="Tots">Tots els anys</option>
+                  <option value="2026">2026</option>
+                  <option value="2025">2025</option>
+                  <option value="2024">2024</option>
+                  <option value="2023">2023</option>
+                  <option value="2022">2022</option>
+                </select>
+              </div>
 
-            <div className="input-group" style={{ marginBottom: 0, minWidth: '110px' }}>
-              <label style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Període</label>
-              <select className="input-field" value={filterPeriod} onChange={e => setFilterPeriod(e.target.value)} style={{ padding: '0.4rem 0.8rem' }}>
-                <option value="Tots">Tots els trimestres</option>
-                <option value="1T">1r Trimestre (1T)</option>
-                <option value="2T">2n Trimestre (2T)</option>
-                <option value="3T">3r Trimestre (3T)</option>
-                <option value="4T">4t Trimestre (4T)</option>
-              </select>
+              <div className="input-group" style={{ marginBottom: 0, flex: 1, minWidth: '100px' }}>
+                <label style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>Període</label>
+                <select className="input-field" value={filterPeriod} onChange={e => setFilterPeriod(e.target.value)} style={{ padding: '0.4rem 0.8rem', width: '100%' }}>
+                  <option value="Tots">Tots els trimestres</option>
+                  <option value="1T">1r Trimestre (1T)</option>
+                  <option value="2T">2n Trimestre (2T)</option>
+                  <option value="3T">3r Trimestre (3T)</option>
+                  <option value="4T">4t Trimestre (4T)</option>
+                </select>
+              </div>
             </div>
           </div>
 
@@ -777,38 +779,33 @@ export default function LedgersPage() {
       </details>
 
       {/* TOTALS COMPUTATION BOX FOR THE DECLARATION */}
-      <div className="glass-panel" style={{ 
-        display: 'flex', 
-        flexWrap: 'nowrap',
-        overflowX: 'auto',
-        WebkitOverflowScrolling: 'touch',
-        gap: '1.5rem', 
+      <div className="glass-panel ledgers-totals-grid" style={{ 
         marginBottom: '2rem', 
         background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%)',
         borderLeft: '4px solid var(--color-accent)',
         padding: '1.2rem'
       }}>
-        <div style={{ flex: '1 0 auto', minWidth: '150px' }}>
-          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.25rem', whiteSpace: 'nowrap' }}>Total Base Imposable</div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-text-primary)' }}>{currentTotals.base.toFixed(2)} €</div>
+        <div>
+          <div className="ledgers-total-title">Total Base Imposable</div>
+          <div className="ledgers-total-value value-primary">{currentTotals.base.toFixed(2)} €</div>
         </div>
-        <div style={{ flex: '1 0 auto', minWidth: '150px' }}>
-          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.25rem', whiteSpace: 'nowrap' }}>
+        <div>
+          <div className="ledgers-total-title">
             {type === 'issued' ? 'Total IVA Repercutit' : 'Total IVA Soportat'}
           </div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-success)' }}>{currentTotals.vat.toFixed(2)} €</div>
+          <div className="ledgers-total-value value-success">{currentTotals.vat.toFixed(2)} €</div>
         </div>
-        <div style={{ flex: '1 0 auto', minWidth: '150px' }}>
-          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.25rem', whiteSpace: 'nowrap' }}>Total Retenció IRPF</div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#ff6b6b' }}>{currentTotals.irpf.toFixed(2)} €</div>
+        <div>
+          <div className="ledgers-total-title">Total Retenció IRPF</div>
+          <div className="ledgers-total-value value-error">{currentTotals.irpf.toFixed(2)} €</div>
         </div>
-        <div style={{ flex: '1 0 auto', minWidth: '150px' }}>
-          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.25rem', whiteSpace: 'nowrap' }}>Total Factura (Base+IVA)</div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: 'var(--color-accent)' }}>{currentTotals.total.toFixed(2)} €</div>
+        <div>
+          <div className="ledgers-total-title">Total Factura (Base+IVA)</div>
+          <div className="ledgers-total-value value-accent">{currentTotals.total.toFixed(2)} €</div>
         </div>
-        <div style={{ flex: '1 0 auto', minWidth: '150px' }}>
-          <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', marginBottom: '0.25rem', whiteSpace: 'nowrap' }}>Nombre de Registres</div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{currentList.length}</div>
+        <div>
+          <div className="ledgers-total-title">Nombre de Registres</div>
+          <div className="ledgers-total-value">{currentList.length}</div>
         </div>
       </div>
 
@@ -839,7 +836,7 @@ export default function LedgersPage() {
               {currentList.map(item => (
                 <tr key={item.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <td data-label="Ex / Per" style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
-                    <strong>{item.year}</strong> <span style={{ color: 'var(--color-text-secondary)' }}>({item.period || getQuarterFromDate(item.dateExp || item.dateReceipt)})</span>
+                    <strong>{item.year} ({item.period || getQuarterFromDate(item.dateExp || item.dateReceipt)})</strong>
                   </td>
                   <td data-label="Data Expedició" style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
                     {formatDateDDMMYYYY(item.dateExp)}
@@ -874,11 +871,17 @@ export default function LedgersPage() {
                   <td data-label="Base Imposable" style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
                     {(item.base || 0).toFixed(2)} €
                   </td>
-                  <td data-label="IVA" style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
-                    {(item.vatQuota || 0).toFixed(2)} € <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>({item.vatPercent !== undefined && item.vatPercent !== null ? item.vatPercent : 10}%)</span>
+                  <td data-label={`IVA (${item.vatPercent !== undefined && item.vatPercent !== null ? item.vatPercent : 10}%)`} style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
+                    {(item.vatQuota || 0).toFixed(2)} €
+                    <span className="hide-mobile" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginLeft: '0.4rem' }}>
+                      ({item.vatPercent !== undefined && item.vatPercent !== null ? item.vatPercent : 10}%)
+                    </span>
                   </td>
-                  <td data-label="IRPF" style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', color: (item.irpfQuota || 0) > 0 ? '#ff6b6b' : 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
-                    {(item.irpfQuota || 0).toFixed(2)} € <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>({item.irpfPercent !== undefined && item.irpfPercent !== null ? item.irpfPercent : 15}%)</span>
+                  <td data-label={`IRPF (${item.irpfPercent !== undefined && item.irpfPercent !== null ? item.irpfPercent : 15}%)`} style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', color: (item.irpfQuota || 0) > 0 ? '#ff6b6b' : 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
+                    {(item.irpfQuota || 0).toFixed(2)} €
+                    <span className="hide-mobile" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginLeft: '0.4rem' }}>
+                      ({item.irpfPercent !== undefined && item.irpfPercent !== null ? item.irpfPercent : 15}%)
+                    </span>
                   </td>
                   <td data-label="Total Factura" style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', fontWeight: '500', color: 'var(--color-accent)', whiteSpace: 'nowrap' }}>
                     {(item.total || 0).toFixed(2)} €

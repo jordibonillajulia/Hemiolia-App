@@ -970,5 +970,83 @@ a:hover {
   }
 }
 
+/* Hide elements on mobile vertical views (under 768px) */
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+/* Responsive Grid for Ledgers Totals Summary */
+.ledgers-totals-grid {
+  display: grid !important;
+  grid-template-columns: repeat(2, 1fr) !important;
+  gap: 1rem !important;
+}
+
+.ledgers-total-title {
+  color: var(--color-text-secondary);
+  font-size: 0.82rem;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+}
+
+.ledgers-total-value {
+  font-size: 1.35rem;
+  font-weight: bold;
+  color: var(--color-text-primary);
+}
+
+.ledgers-total-value.value-primary {
+  color: var(--color-text-primary);
+}
+
+.ledgers-total-value.value-success {
+  color: var(--color-success);
+}
+
+.ledgers-total-value.value-error {
+  color: var(--color-error);
+}
+
+.ledgers-total-value.value-accent {
+  color: var(--color-accent);
+}
+
+@media (min-width: 768px) {
+  .ledgers-totals-grid {
+    grid-template-columns: repeat(5, 1fr) !important;
+    gap: 1.5rem !important;
+  }
+  .ledgers-total-value {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ledgers-totals-grid {
+    gap: 0.8rem !important;
+    padding: 1rem !important;
+  }
+  
+  .ledgers-total-value {
+    font-size: 1.15rem;
+  }
+  
+  .ledgers-totals-grid > div:last-child {
+    grid-column: span 2 !important;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    padding-top: 0.6rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .ledgers-totals-grid > div:last-child .ledgers-total-title {
+    margin-bottom: 0;
+  }
+}
+
+
 
 
