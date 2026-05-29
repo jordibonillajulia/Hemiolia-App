@@ -9,9 +9,16 @@ service cloud.firestore {
          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin');
     }
 
+    // Helper function to check if the user has CRM access
+    function isCrmAgent() {
+      return request.auth != null && 
+        (request.auth.token.email == 'unaonadapetitona@gmail.com' || 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'crm');
+    }
+
     // Users collection: users can read/write their own document (excluding role updates), admins can read/write all
     match /users/{userId} {
-      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin() || isCrmAgent());
       allow write: if request.auth != null && (
         isAdmin() || 
         (
@@ -28,7 +35,45 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // Other collections (contacts, shows, interactions, invoices, budgets, clients_billing, products_billing, ledgers_issued, ledgers_received)
+    // CRM / Contacts and Interactions: read and write for Admin and CRM Agent
+    match /contacts/{contactId} {
+      allow read, write: if isAdmin() || isCrmAgent();
+    }
+    match /interactions/{interactionId} {
+      allow read, write: if isAdmin() || isCrmAgent();
+    }
+
+    // Other private collections: read-only for CRM Agent, full access for Admin
+    match /shows/{showId} {
+      allow read: if isAdmin() || isCrmAgent();
+      allow write: if isAdmin();
+    }
+    match /invoices/{invoiceId} {
+      allow read: if isAdmin() || isCrmAgent();
+      allow write: if isAdmin();
+    }
+    match /clients_billing/{clientId} {
+      allow read: if isAdmin() || isCrmAgent();
+      allow write: if isAdmin();
+    }
+    match /products_billing/{productId} {
+      allow read: if isAdmin() || isCrmAgent();
+      allow write: if isAdmin();
+    }
+    match /budgets/{budgetId} {
+      allow read: if isAdmin() || isCrmAgent();
+      allow write: if isAdmin();
+    }
+    match /ledgers_issued/{ledgerId} {
+      allow read: if isAdmin() || isCrmAgent();
+      allow write: if isAdmin();
+    }
+    match /ledgers_received/{ledgerId} {
+      allow read: if isAdmin() || isCrmAgent();
+      allow write: if isAdmin();
+    }
+
+    // Fallback rule for any other collection
     match /{document=**} {
       allow read, write: if isAdmin();
     }

@@ -10,8 +10,16 @@ service firebase.storage {
          firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin');
     }
 
+    // Helper function to check if the user has CRM access
+    function isCrmAgent() {
+      return request.auth != null && 
+        (request.auth.token.email == 'unaonadapetitona@gmail.com' || 
+         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'crm');
+    }
+
     match /{allPaths=**} {
-      allow read, write: if isAdmin();
+      allow read: if isAdmin() || isCrmAgent();
+      allow write: if isAdmin();
     }
   }
 }
