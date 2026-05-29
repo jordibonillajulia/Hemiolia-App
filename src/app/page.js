@@ -53,8 +53,9 @@ export default function LoginPage() {
         padding: '3.5rem',
         borderRight: '1px solid var(--color-border)'
       }}>
-        <div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
           <img src="/logo-hemiolia-light.png" alt="Hemiòlia Logo" style={{ maxHeight: '170px', objectFit: 'contain' }} />
+          <span style={{ fontSize: '2.65rem', fontWeight: 'bold', color: 'var(--color-accent)', letterSpacing: '1px', marginTop: '10px' }}>App</span>
         </div>
         <div style={{ maxWidth: '520px' }}>
           <h2 style={{ fontSize: '2.8rem', color: 'var(--color-text-primary)', fontFamily: 'var(--font-heading)', marginBottom: '1.2rem', lineHeight: '1.15' }}>
@@ -94,12 +95,11 @@ export default function LoginPage() {
         }} />
 
         <div className="glass-panel animate-fade-in-up" style={{ maxWidth: '400px', width: '100%', padding: '2.5rem' }}>
-          <div className="text-center" style={{ marginBottom: '2rem' }}>
-            {/* Logo on mobile only */}
-            <div className="mobile-logo-container" style={{ marginBottom: '1.5rem' }}>
-              <img src="/logo-hemiolia-light.png" alt="Hemiòlia Logo" style={{ maxHeight: '130px', objectFit: 'contain', margin: '0 auto' }} />
+          <div className="text-center" style={{ marginBottom: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', justifyContent: 'center' }}>
+              <img src="/logo-hemiolia-light.png" alt="Hemiòlia Logo" style={{ maxHeight: '80px', width: 'auto', objectFit: 'contain' }} />
+              <span style={{ fontSize: '1.25rem', fontWeight: 'bold', color: 'var(--color-accent)', letterSpacing: '0.5px', marginTop: '4px' }}>App</span>
             </div>
-            <h2 style={{ color: 'var(--color-accent)', marginBottom: '0.5rem', fontFamily: 'var(--font-heading)', fontSize: '2.1rem' }}>Benvinguts</h2>
           </div>
           
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
