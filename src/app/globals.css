@@ -675,10 +675,93 @@ a:hover {
 }
 
 @media (max-width: 768px) {
+  .table-container-responsive {
+    overflow-x: visible !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  
   .table-container-responsive table {
-    min-width: 650px !important; /* Force horizontal scroll for wide tables */
+    min-width: 0 !important;
+    width: 100% !important;
+    display: block !important;
+  }
+  
+  .table-container-responsive thead {
+    display: none !important;
+  }
+  
+  .table-container-responsive tbody {
+    display: block !important;
+    width: 100% !important;
+  }
+  
+  .table-container-responsive tr {
+    display: block !important;
+    width: 100% !important;
+    background: var(--color-bg-glass, rgba(255, 255, 255, 0.03)) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: var(--radius-md) !important;
+    margin-bottom: 1.2rem !important;
+    padding: 1rem !important;
+    box-sizing: border-box;
+    box-shadow: var(--shadow-glass) !important;
+    transition: transform var(--transition-normal), border-color var(--transition-normal);
+  }
+  
+  .table-container-responsive tr:hover {
+    background: var(--color-bg-glass-hover, rgba(255, 255, 255, 0.05)) !important;
+    border-color: var(--color-border-hover) !important;
+    transform: translateY(-2px);
+  }
+  
+  .table-container-responsive td {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 0.6rem 0 !important;
+    width: 100% !important;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.08) !important;
+    white-space: normal !important;
+    box-sizing: border-box;
+    text-align: right !important;
+    font-size: 0.9rem !important;
+  }
+  
+  .table-container-responsive td:last-child {
+    border-bottom: none !important;
+    padding-top: 0.8rem !important;
+    justify-content: flex-end !important;
+    gap: 0.5rem !important;
+    flex-wrap: wrap !important;
+  }
+  
+  /* Show headers on mobile using data-label */
+  .table-container-responsive td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-align: left;
+    margin-right: 1.5rem;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+  
+  .table-container-responsive td[data-label="Accions"]::before,
+  .table-container-responsive td:not([data-label])::before {
+    display: none !important;
+  }
+  
+  .table-container-responsive td[data-label="Accions"] {
+    justify-content: center !important;
+    border-bottom: none !important;
   }
 }
+
 
 .grid-span-2-desktop {
   grid-column: span 2;

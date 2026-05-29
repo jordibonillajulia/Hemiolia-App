@@ -323,7 +323,7 @@ export default function BillingClientsPage() {
           <tbody>
             {clients.map(client => (
               <tr key={client.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <td style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'normal', maxWidth: '300px' }}>
+                <td data-label="Nom / Raó Social" style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'normal', maxWidth: '300px' }}>
                   {formatClientName(client.name)}
                   {(client.dir3OficinaContable || client.dir3OrganoGestor || client.dir3UnidadTramitadora) && (
                     <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--color-success)', marginTop: '0.15rem', fontWeight: '500' }}>
@@ -331,14 +331,14 @@ export default function BillingClientsPage() {
                     </span>
                   )}
                 </td>
-                <td style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'nowrap' }}>
+                <td data-label="NIF (Tipus)" style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'nowrap' }}>
                   {client.nif} {client.nifType && client.nifType !== 'NIF' ? `(${client.nifType})` : ''}
                 </td>
-                <td style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'nowrap' }}>
+                <td data-label="Població (País)" style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'nowrap' }}>
                   {client.municipality} {client.countryCode ? `(${client.countryCode})` : ''}
                 </td>
-                <td style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'nowrap' }}>{client.type}</td>
-                <td style={{ padding: '0.6rem 0.8rem', verticalAlign: 'middle', whiteSpace: 'nowrap', textAlign: 'center' }}>
+                <td data-label="Tipus Client" style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'nowrap' }}>{client.type}</td>
+                <td data-label="Accions" style={{ padding: '0.6rem 0.8rem', verticalAlign: 'middle', whiteSpace: 'nowrap', textAlign: 'center' }}>
                   {isAdmin ? (
                     <>
                       <button onClick={() => handleEdit(client)} className="btn btn-glass" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', marginRight: '0.35rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>✏️</button>

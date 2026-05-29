@@ -838,19 +838,19 @@ export default function LedgersPage() {
             <tbody>
               {currentList.map(item => (
                 <tr key={item.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
+                  <td data-label="Ex / Per" style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
                     <strong>{item.year}</strong> <span style={{ color: 'var(--color-text-secondary)' }}>({item.period || getQuarterFromDate(item.dateExp || item.dateReceipt)})</span>
                   </td>
-                  <td style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
+                  <td data-label="Data Expedició" style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
                     {formatDateDDMMYYYY(item.dateExp)}
                   </td>
-                  <td style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
+                  <td data-label="Nº Factura" style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>
                     {type === 'issued'
                       ? formatDisplayInvoiceNumber(item.invoiceNumber, item.owner === 'Jordi' ? 'JB' : 'PM')
                       : item.invoiceNumber
                     }
                   </td>
-                  <td style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
+                  <td data-label={type === 'issued' ? 'Client' : 'Proveïdor'} style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                       {type === 'issued' ? formatClientName(item.clientName) : formatClientName(item.supplierName)}
                       {item.scannedFile && (
@@ -869,19 +869,19 @@ export default function LedgersPage() {
                       {type === 'issued' ? item.clientNif : item.supplierNif}
                     </div>
                   </td>
-                  <td style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
+                  <td data-label="Base Imposable" style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
                     {(item.base || 0).toFixed(2)} €
                   </td>
-                  <td style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
+                  <td data-label="IVA" style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
                     {(item.vatQuota || 0).toFixed(2)} € <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>({item.vatPercent !== undefined && item.vatPercent !== null ? item.vatPercent : 10}%)</span>
                   </td>
-                  <td style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', color: (item.irpfQuota || 0) > 0 ? '#ff6b6b' : 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
+                  <td data-label="IRPF" style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', color: (item.irpfQuota || 0) > 0 ? '#ff6b6b' : 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
                     {(item.irpfQuota || 0).toFixed(2)} € <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>({item.irpfPercent !== undefined && item.irpfPercent !== null ? item.irpfPercent : 15}%)</span>
                   </td>
-                  <td style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', fontWeight: '500', color: 'var(--color-accent)', whiteSpace: 'nowrap' }}>
+                  <td data-label="Total Factura" style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', fontWeight: '500', color: 'var(--color-accent)', whiteSpace: 'nowrap' }}>
                     {(item.total || 0).toFixed(2)} €
                   </td>
-                  <td style={{ padding: '0.8rem 1rem', verticalAlign: 'middle', whiteSpace: 'nowrap', textAlign: 'center' }}>
+                  <td data-label="Accions" style={{ padding: '0.8rem 1rem', verticalAlign: 'middle', whiteSpace: 'nowrap', textAlign: 'center' }}>
                     {isAdmin ? (
                       <>
                         <button 

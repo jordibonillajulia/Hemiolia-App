@@ -142,10 +142,10 @@ export default function CRMPage() {
             <tbody>
               {contacts.map(contact => (
                 <tr key={contact.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '1rem' }}>{contact.name}</td>
-                  <td style={{ padding: '1rem' }}>{contact.entity}</td>
-                  <td style={{ padding: '1rem' }}>{contact.municipality}</td>
-                  <td style={{ padding: '1rem', display: 'flex', gap: '0.5rem' }}>
+                  <td data-label="Nom" style={{ padding: '1rem' }}>{contact.name}</td>
+                  <td data-label="Entitat" style={{ padding: '1rem' }}>{contact.entity}</td>
+                  <td data-label="Municipi" style={{ padding: '1rem' }}>{contact.municipality}</td>
+                  <td data-label="Accions" style={{ padding: '1rem', display: 'flex', gap: '0.5rem' }}>
                     <Link href={`/dashboard/crm/${contact.id}`} className="btn btn-glass" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>
                       Veure &rarr;
                     </Link>

@@ -296,11 +296,11 @@ export default function BillingPage() {
             <tbody>
               {filteredInvoices.map(inv => (
                 <tr key={inv.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatDateDDMMYYYY(inv.date)}</td>
-                  <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatDisplayInvoiceNumber(inv.invoiceNumber, inv.issuerId)}</td>
-                  <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatClientName(inv.clientName)}</td>
-                  <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{(parseFloat(inv.totals?.baseImposable) || 0).toFixed(2)} €</td>
-                  <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
+                  <td data-label="Data d'Emissió" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatDateDDMMYYYY(inv.date)}</td>
+                  <td data-label="Nº Factura" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatDisplayInvoiceNumber(inv.invoiceNumber, inv.issuerId)}</td>
+                  <td data-label="Client" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatClientName(inv.clientName)}</td>
+                  <td data-label="Base Imposable" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{(parseFloat(inv.totals?.baseImposable) || 0).toFixed(2)} €</td>
+                  <td data-label="Estat" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
                     <span style={{ 
                       padding: '0.2rem 0.5rem', 
                       borderRadius: 'var(--radius-full)', 
@@ -312,7 +312,7 @@ export default function BillingPage() {
                       {inv.status}
                     </span>
                   </td>
-                  <td style={{ padding: '1rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                  <td data-label="Accions" style={{ padding: '1rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                     <Link href={`/dashboard/billing/${inv.id}`} className="btn btn-glass" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', marginRight: '0.5rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
                       Veure &rarr;
                     </Link>

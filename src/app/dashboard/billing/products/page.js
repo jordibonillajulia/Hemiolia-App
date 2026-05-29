@@ -135,10 +135,10 @@ export default function BillingProductsPage() {
           <tbody>
             {products.map(p => (
               <tr key={p.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <td style={{ padding: '1rem' }}>{p.description}</td>
-                <td style={{ padding: '1rem' }}>{p.unitPrice.toFixed(2)} €</td>
-                <td style={{ padding: '1rem' }}>{`${p.vatType}%`}</td>
-                <td style={{ padding: '1rem' }}>
+                <td data-label="Descripció" style={{ padding: '1rem' }}>{p.description}</td>
+                <td data-label="Import" style={{ padding: '1rem' }}>{p.unitPrice.toFixed(2)} €</td>
+                <td data-label="IVA" style={{ padding: '1rem' }}>{`${p.vatType}%`}</td>
+                <td data-label="Accions" style={{ padding: '1rem' }}>
                   {isAdmin ? (
                     <>
                       <button onClick={() => handleEdit(p)} className="btn btn-glass" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', marginRight: '0.5rem' }}>✏️</button>

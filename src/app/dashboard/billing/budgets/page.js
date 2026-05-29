@@ -229,11 +229,11 @@ export default function BudgetsPage() {
             <tbody>
               {filteredBudgets.map(b => (
                 <tr key={b.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatDateDDMMYYYY(b.date)}</td>
-                  <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{b.budgetNumber}</td>
-                  <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatClientName(b.clientName)}</td>
-                  <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{(parseFloat(b.totals?.baseImposable) || 0).toFixed(2)} €</td>
-                  <td style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
+                  <td data-label="Data" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatDateDDMMYYYY(b.date)}</td>
+                  <td data-label="Nº Pressupost" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{b.budgetNumber}</td>
+                  <td data-label="Client" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatClientName(b.clientName)}</td>
+                  <td data-label="Base Imposable" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{(parseFloat(b.totals?.baseImposable) || 0).toFixed(2)} €</td>
+                  <td data-label="Estat" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
                     <span style={{ 
                       padding: '0.2rem 0.5rem', 
                       borderRadius: 'var(--radius-full)', 
@@ -253,7 +253,7 @@ export default function BudgetsPage() {
                       {b.status}
                     </span>
                   </td>
-                  <td style={{ padding: '1rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                  <td data-label="Accions" style={{ padding: '1rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                     <Link href={`/dashboard/billing/budgets/${b.id}`} className="btn btn-glass" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', marginRight: '0.5rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
                       Veure &rarr;
                     </Link>
