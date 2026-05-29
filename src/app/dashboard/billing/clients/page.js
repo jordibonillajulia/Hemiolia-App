@@ -326,7 +326,7 @@ export default function BillingClientsPage() {
                 <td data-label="Nom / Raó Social" style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'normal', maxWidth: '300px' }}>
                   {formatClientName(client.name)}
                   {(client.dir3OficinaContable || client.dir3OrganoGestor || client.dir3UnidadTramitadora) && (
-                    <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--color-success)', marginTop: '0.15rem', fontWeight: '500' }}>
+                    <span className="efact-badge">
                       ⚡ e-Fact (DIR3)
                     </span>
                   )}

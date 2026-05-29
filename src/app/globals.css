@@ -626,13 +626,19 @@ a:hover {
   .header-bar-responsive > div {
     width: 100% !important;
   }
-  .header-bar-responsive .btn, 
-  .header-bar-responsive a.btn,
   .header-bar-responsive div[style*="display: flex"] {
     width: 100% !important;
     flex-direction: column !important;
     align-items: stretch !important;
     gap: 0.5rem !important;
+  }
+  .header-bar-responsive .btn, 
+  .header-bar-responsive a.btn {
+    width: 100% !important;
+    display: inline-flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    align-items: center !important;
   }
 }
 
@@ -709,6 +715,7 @@ a:hover {
     box-sizing: border-box;
     box-shadow: var(--shadow-glass) !important;
     transition: transform var(--transition-normal), border-color var(--transition-normal);
+    position: relative !important;
   }
   
   .table-container-responsive tr:hover {
@@ -760,6 +767,28 @@ a:hover {
     justify-content: center !important;
     border-bottom: none !important;
   }
+  
+  .efact-badge {
+    position: absolute !important;
+    bottom: 1.1rem !important;
+    right: 1rem !important;
+    margin: 0 !important;
+    background: rgba(46, 204, 113, 0.1) !important;
+    border: 1px solid rgba(46, 204, 113, 0.2) !important;
+    padding: 0.15rem 0.35rem !important;
+    border-radius: 4px !important;
+    font-size: 0.65rem !important;
+    display: inline-block !important;
+  }
+}
+
+.efact-badge {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--color-success);
+  margin-top: 0.15rem;
+  font-weight: 500;
+  width: fit-content;
 }
 
 
