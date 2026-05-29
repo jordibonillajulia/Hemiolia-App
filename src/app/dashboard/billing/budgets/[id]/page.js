@@ -543,7 +543,9 @@ export default function BudgetDetailPage() {
               <tr style={{ background: '#f1f5f9', borderBottom: '1px solid #e2e8f0' }}>
                 <th style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#0f172a', textAlign: 'center', width: '30%', whiteSpace: 'nowrap' }}>Validesa del pressupost</th>
                 <th style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#0f172a', textAlign: 'center', width: '30%', whiteSpace: 'nowrap' }}>Forma de pagament</th>
-                <th style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#0f172a', textAlign: 'center', width: '40%', whiteSpace: 'nowrap' }}>Compte bancari si s&apos;accepta</th>
+                <th style={{ padding: '0.4rem 0.5rem', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#0f172a', textAlign: 'center', width: '40%', whiteSpace: 'nowrap' }}>
+                  Compte bancari <span style={{ fontSize: '0.62rem', textTransform: 'none', fontWeight: 'normal', color: '#475569' }}>(si s&apos;accepta)</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -554,7 +556,7 @@ export default function BudgetDetailPage() {
                 <td data-label="Forma de pagament" style={{ padding: '0.55rem 0.5rem', fontSize: '0.9rem', color: '#1e293b', textAlign: 'center', borderRight: '1px solid #e2e8f0' }}>
                   Transferència bancària
                 </td>
-                <td data-label="Compte bancari si s'accepta" style={{ padding: '0.55rem 0.5rem', fontSize: '0.85rem', fontFamily: 'monospace', color: '#1e293b', textAlign: 'center', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
+                <td data-label="Compte bancari (si s'accepta)" style={{ padding: '0.55rem 0.5rem', fontSize: '0.85rem', fontFamily: 'monospace', color: '#1e293b', textAlign: 'center', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
                   {budget.issuerData?.iban}
                 </td>
               </tr>
