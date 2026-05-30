@@ -571,7 +571,7 @@ export default function BudgetDetailPage() {
                 <td data-label="Forma de pagament" style={{ padding: '0.55rem 0.5rem', fontSize: '0.9rem', color: '#1e293b', textAlign: 'center', borderRight: '1px solid #e2e8f0' }}>
                   Transferència bancària
                 </td>
-                <td data-label="IBAN (si s'accepta)" style={{ padding: '0.55rem 0.5rem', fontSize: '0.85rem', fontFamily: 'monospace', color: '#1e293b', textAlign: 'center', letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>
+                <td data-label="IBAN (si s'accepta)" style={{ padding: '0.55rem 0.5rem', fontSize: '0.9rem', fontFamily: 'monospace', color: '#1e293b', textAlign: 'center', letterSpacing: '0.2px', whiteSpace: 'nowrap' }}>
                   {budget.issuerData?.iban}
                 </td>
               </tr>
