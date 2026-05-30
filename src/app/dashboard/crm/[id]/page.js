@@ -369,7 +369,16 @@ export default function ContactDetailPage() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                 <div>
                   <h4 style={{ fontSize: '0.82rem', marginBottom: '0.5rem', color: 'var(--color-accent)', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.2rem' }}>Fets / Bolos</h4>
-                  {['Un Nadal Màgic', 'Layla', 'Cavernus', 'Silencis Trencats', 'Sinfonia Corporativa'].map(title => (
+                  {[
+                    "Layla, un viatge d'esperança",
+                    "Layla, el contacontes",
+                    "Cavernus, una evolució musical",
+                    "Un Nadal Màgic",
+                    "Silencis Trencats",
+                    "Marcel, cartes des del front",
+                    "El petit Leonardo",
+                    "Simfonia Corporativa"
+                  ].map(title => (
                     <label key={title} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', marginBottom: '0.4rem', cursor: 'pointer', userSelect: 'none' }}>
                       <input type="checkbox" checked={performedShows.includes(title)} onChange={() => handleToggleShow(title, 'performed')} />
                       {title}
@@ -378,7 +387,16 @@ export default function ContactDetailPage() {
                 </div>
                 <div>
                   <h4 style={{ fontSize: '0.82rem', marginBottom: '0.5rem', color: 'var(--color-accent)', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.2rem' }}>Interessats / Oferts</h4>
-                  {['Un Nadal Màgic', 'Layla', 'Cavernus', 'Silencis Trencats', 'Sinfonia Corporativa'].map(title => (
+                  {[
+                    "Layla, un viatge d'esperança",
+                    "Layla, el contacontes",
+                    "Cavernus, una evolució musical",
+                    "Un Nadal Màgic",
+                    "Silencis Trencats",
+                    "Marcel, cartes des del front",
+                    "El petit Leonardo",
+                    "Simfonia Corporativa"
+                  ].map(title => (
                     <label key={title} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', marginBottom: '0.4rem', cursor: 'pointer', userSelect: 'none' }}>
                       <input type="checkbox" checked={interestedShows.includes(title)} onChange={() => handleToggleShow(title, 'interested')} />
                       {title}
@@ -462,6 +480,9 @@ export default function ContactDetailPage() {
                 <option value="Cavernus, una evolució musical" />
                 <option value="Un Nadal Màgic" />
                 <option value="Silencis Trencats" />
+                <option value="Marcel, cartes des del front" />
+                <option value="El petit Leonardo" />
+                <option value="Simfonia Corporativa" />
               </datalist>
             </div>
 

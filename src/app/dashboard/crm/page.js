@@ -303,11 +303,14 @@ export default function CRMPage() {
               style={{ background: 'var(--color-background-input)', color: 'var(--color-text-primary)' }}
             >
               <option value="Tots">Tots els espectacles</option>
+              <option value="Layla, un viatge d'esperança">Layla, un viatge d'esperança</option>
+              <option value="Layla, el contacontes">Layla, el contacontes</option>
+              <option value="Cavernus, una evolució musical">Cavernus, una evolució musical</option>
               <option value="Un Nadal Màgic">Un Nadal Màgic</option>
-              <option value="Layla">Layla</option>
-              <option value="Cavernus">Cavernus</option>
               <option value="Silencis Trencats">Silencis Trencats</option>
-              <option value="Sinfonia Corporativa">Sinfonia Corporativa</option>
+              <option value="Marcel, cartes des del front">Marcel, cartes des del front (en creació)</option>
+              <option value="El petit Leonardo">El petit Leonardo (en creació)</option>
+              <option value="Simfonia Corporativa">Simfonia Corporativa (en creació)</option>
             </select>
           </div>
           

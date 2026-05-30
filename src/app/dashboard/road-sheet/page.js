@@ -302,6 +302,9 @@ export default function RoadSheetPage() {
                 <option value="Cavernus, una evolució musical" />
                 <option value="Un Nadal Màgic" />
                 <option value="Silencis Trencats" />
+                <option value="Marcel, cartes des del front" />
+                <option value="El petit Leonardo" />
+                <option value="Simfonia Corporativa" />
               </datalist>
             </div>
             <div className="input-group">
