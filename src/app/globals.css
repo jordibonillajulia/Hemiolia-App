@@ -1239,3 +1239,112 @@ a:hover {
     margin: 0.9cm 0.8cm 0.5cm 0.8cm;
   }
 }
+
+/* Force standard A4 desktop styles temporarily during PDF generation snapshot on mobile devices */
+body.generating-pdf {
+  min-width: 1024px !important;
+}
+
+body.generating-pdf .invoice-paper {
+  width: 794px !important;
+  min-height: 1123px !important;
+  padding: 2.5rem 2.5rem 0.6rem 2.5rem !important;
+  box-sizing: border-box !important;
+  box-shadow: none !important;
+  border: none !important;
+  background: #ffffff !important;
+}
+
+body.generating-pdf .invoice-paper .table-container table {
+  display: table !important;
+  width: 100% !important;
+}
+
+body.generating-pdf .invoice-paper .table-container thead {
+  display: table-header-group !important;
+}
+
+body.generating-pdf .invoice-paper .table-container tbody {
+  display: table-row-group !important;
+}
+
+body.generating-pdf .invoice-paper .table-container tr {
+  display: table-row !important;
+}
+
+body.generating-pdf .invoice-paper .table-container td {
+  display: table-cell !important;
+  text-align: right !important;
+  font-size: 0.85rem !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+body.generating-pdf .invoice-paper .table-container td[data-label="Concepte"] {
+  text-align: left !important;
+}
+
+body.generating-pdf .invoice-paper .table-container td::before {
+  display: none !important;
+}
+
+body.generating-pdf .invoice-paper .payment-box table {
+  display: table !important;
+}
+
+body.generating-pdf .invoice-paper .payment-box thead {
+  display: table-header-group !important;
+}
+
+body.generating-pdf .invoice-paper .payment-box tbody {
+  display: table-row-group !important;
+}
+
+body.generating-pdf .invoice-paper .payment-box tr {
+  display: table-row !important;
+  border: none !important;
+  background: none !important;
+}
+
+body.generating-pdf .invoice-paper .payment-box td {
+  display: table-cell !important;
+  text-align: center !important;
+  font-size: 0.85rem !important;
+  border-right: 1px solid #e2e8f0 !important;
+  border-bottom: none !important;
+}
+
+body.generating-pdf .invoice-paper .payment-box td::before {
+  display: none !important;
+}
+
+body.generating-pdf .invoice-paper .huella-box {
+  flex-direction: row !important;
+  gap: 0.6rem !important;
+}
+
+body.generating-pdf .invoice-paper .huella-box span {
+  display: inline !important;
+  font-size: 0.72rem !important;
+}
+
+body.generating-pdf .invoice-paper .huella-box span span {
+  font-size: 0.68rem !important;
+}
+
+body.generating-pdf .invoice-paper .huella-box .hide-mobile {
+  display: inline !important;
+}
+
+body.generating-pdf .invoice-paper .legal-note-vat10 {
+  white-space: nowrap !important;
+  font-size: 0.52rem !important;
+}
+
+body.generating-pdf .invoice-paper .legal-note-vat10 .legal-line-1,
+body.generating-pdf .invoice-paper .legal-note-vat10 .legal-line-2 {
+  display: inline !important;
+}
+
+body.generating-pdf .invoice-paper .legal-note-vat10 .legal-sep {
+  display: inline !important;
+}

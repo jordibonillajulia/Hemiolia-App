@@ -44,6 +44,11 @@ export default function BudgetDetailPage() {
         await new Promise(resolve => setTimeout(resolve, 150));
       }
 
+      // Add a class to body to force desktop layout for high-quality snapshot
+      document.body.classList.add('generating-pdf');
+      // Small timeout to allow DOM/styles layout to recalculate
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       // Dynamically import client-side modules to prevent SSR reference errors
       const html2canvas = (await import('html2canvas')).default;
       const { jsPDF } = await import('jspdf');
@@ -63,8 +68,17 @@ export default function BudgetDetailPage() {
         scale: 2, // High resolution
         useCORS: true,
         backgroundColor: '#ffffff',
-        logging: false
+        logging: false,
+        width: 794,
+        height: 1123,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: 794,
+        windowHeight: 1123
       });
+
+      // Remove the layout override class immediately after snapshot is captured
+      document.body.classList.remove('generating-pdf');
 
       const imgData = canvas.toDataURL('image/jpeg', 0.95);
 
@@ -121,6 +135,7 @@ export default function BudgetDetailPage() {
       console.error('Error signant el pressupost:', err);
       alert(`Error en signar digitalment: ${err.message}\nAssegura't de posar les contrasenyes del certificat al .env.local!`);
     } finally {
+      document.body.classList.remove('generating-pdf');
       setIsSigningPDF(false);
       // Restore previous signature state if it wasn't visually signed
       if (!wasSigned) {
