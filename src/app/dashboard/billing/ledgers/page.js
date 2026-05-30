@@ -309,6 +309,10 @@ export default function LedgersPage() {
       setIsFormOpen(true);
       setIsScannerOpen(false);
       setScanFile(null);
+      const mainInput = document.getElementById('main-file-input');
+      if (mainInput) mainInput.value = '';
+      const camInput = document.getElementById('camera-capture-input');
+      if (camInput) camInput.value = '';
     } catch (err) {
       console.error(err);
       setScanError(err.message);
@@ -522,7 +526,7 @@ export default function LedgersPage() {
             📷 Lector de Factures de Despesa (IA)
           </h3>
           <p style={{ fontSize: '0.9rem', color: 'var(--color-text-secondary)', marginBottom: '1.5rem' }}>
-            Puja una factura en format PDF o imatge (JPG, PNG). El lector de Gemini extraurà automàticament les dades de facturació i arxivarà el document a la carpeta:
+            Puja una factura en format PDF o imatge (JPG, PNG) o <strong>fes una foto directament amb la càmera</strong> des de la teva tauleta o mòbil. El lector de Gemini extraurà automàticament les dades de facturació i arxivarà el document a la carpeta:
             <br />
             <code style={{ background: 'rgba(255,255,255,0.05)', padding: '0.2rem 0.4rem', borderRadius: '4px', display: 'inline-block', marginTop: '0.5rem', fontFamily: 'monospace' }}>
               despeses {owner}/{filterYear === 'Tots' ? new Date().getFullYear() : filterYear}-{filterPeriod === 'Tots' ? '1T' : filterPeriod}/
@@ -531,14 +535,66 @@ export default function LedgersPage() {
           
           <form onSubmit={handleScanFile} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div className="input-group">
-              <label>Selecciona la Factura (PDF, PNG, JPG)</label>
-              <input 
-                type="file" 
-                className="input-field" 
-                accept="application/pdf, image/*" 
-                onChange={e => setScanFile(e.target.files[0])} 
-                required 
-              />
+              <label>Selecciona la Factura (PDF, PNG, JPG) o fes una Foto</label>
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                <input 
+                  type="file" 
+                  id="main-file-input"
+                  className="input-field" 
+                  style={{ flex: '1', minWidth: '200px' }}
+                  accept="application/pdf, image/*" 
+                  onChange={e => {
+                    if (e.target.files && e.target.files[0]) {
+                      setScanFile(e.target.files[0]);
+                      const camInput = document.getElementById('camera-capture-input');
+                      if (camInput) camInput.value = '';
+                    }
+                  }} 
+                />
+                
+                <input 
+                  type="file" 
+                  id="camera-capture-input"
+                  accept="image/*" 
+                  capture="environment" 
+                  style={{ display: 'none' }}
+                  onChange={e => {
+                    if (e.target.files && e.target.files[0]) {
+                      setScanFile(e.target.files[0]);
+                      const mainInput = document.getElementById('main-file-input');
+                      if (mainInput) mainInput.value = '';
+                    }
+                  }} 
+                />
+                
+                <button
+                  type="button"
+                  className="btn btn-glass"
+                  style={{ 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    gap: '0.4rem', 
+                    padding: '0.75rem 1.2rem',
+                    borderRadius: 'var(--radius-sm)',
+                    border: '1px solid rgba(212, 175, 55, 0.3)',
+                    color: 'var(--color-accent)',
+                    background: 'rgba(212, 175, 55, 0.05)',
+                    fontWeight: '500'
+                  }}
+                  onClick={() => {
+                    const camInput = document.getElementById('camera-capture-input');
+                    if (camInput) camInput.click();
+                  }}
+                >
+                  📷 Fer Foto
+                </button>
+              </div>
+
+              {scanFile && (
+                <div style={{ fontSize: '0.85rem', color: 'var(--color-success)', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                  <span>✓ Fitxer seleccionat: <strong>{scanFile.name}</strong> ({ (scanFile.size / 1024 / 1024).toFixed(2) } MB)</span>
+                </div>
+              )}
             </div>
 
             {scanError && (
@@ -563,6 +619,10 @@ export default function LedgersPage() {
                   setIsScannerOpen(false);
                   setScanFile(null);
                   setScanError('');
+                  const mainInput = document.getElementById('main-file-input');
+                  if (mainInput) mainInput.value = '';
+                  const camInput = document.getElementById('camera-capture-input');
+                  if (camInput) camInput.value = '';
                 }}
                 disabled={isScanning}
                 style={{ flex: 0.3 }}
