@@ -18,7 +18,7 @@ import {
 import Link from 'next/link';
 import Papa from 'papaparse';
 import { storage } from '../../../../lib/firebase';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, deleteObject, listAll } from 'firebase/storage';
 
 
 // Helper to format a date string as DD/MM/YYYY with zero-padding
@@ -255,6 +255,46 @@ export default function LedgersPage() {
         }
       }
 
+      // 3. Clean up orphaned files in Firebase Storage for received invoices (expenses)
+      let cleanedStorageFilesCount = 0;
+      try {
+        const latestReceived = await getLedgersReceived();
+        const currentYear = new Date().getFullYear();
+        const yearsToClean = new Set([currentYear]);
+        if (filterYear !== 'Tots') {
+          yearsToClean.add(parseInt(filterYear, 10));
+        }
+        
+        const quarters = ['1T', '2T', '3T', '4T'];
+        for (const y of yearsToClean) {
+          for (const q of quarters) {
+            const folderPath = `expenses/${owner}/${y}-${q}`;
+            const folderRef = ref(storage, folderPath);
+            try {
+              const res = await listAll(folderRef);
+              for (const itemRef of res.items) {
+                const filename = itemRef.name;
+                const isReferenced = latestReceived.some(r => 
+                  r.scannedFile && 
+                  r.scannedFile.includes(encodeURIComponent(filename))
+                );
+                if (!isReferenced) {
+                  await deleteObject(itemRef);
+                  cleanedStorageFilesCount++;
+                  console.log(`Orphaned file deleted during sync: ${itemRef.fullPath}`);
+                }
+              }
+            } catch (err) {
+              if (err.code !== 'storage/object-not-found') {
+                console.error(`Error listing folder ${folderPath} during sync:`, err);
+              }
+            }
+          }
+        }
+      } catch (storageErr) {
+        console.error("Error during storage cleanup:", storageErr);
+      }
+
       await loadData();
       
       let msg = `Sincronitzat correctament!`;
@@ -264,8 +304,11 @@ export default function LedgersPage() {
       if (deletedCount > 0) {
         msg += ` S'han suprimit ${deletedCount} registres de factures esborrades/cancel·lades.`;
       }
-      if (importedCount === 0 && deletedCount === 0) {
-        msg += ` Tots els registres estan al dia.`;
+      if (cleanedStorageFilesCount > 0) {
+        msg += ` S'han eliminat ${cleanedStorageFilesCount} fitxers orfes del servidor.`;
+      }
+      if (importedCount === 0 && deletedCount === 0 && cleanedStorageFilesCount === 0) {
+        msg += ` Tots els registres estan al dia i el servidor net.`;
       }
       
       setSyncStatus(msg);
@@ -455,6 +498,11 @@ export default function LedgersPage() {
   };
 
   const resetForm = () => {
+    // If we were creating a new record and scanned a file, but are cancelling the form, clean up the file
+    if (!editingId && scannedFilePath && scannedFilePath.startsWith('http')) {
+      const fileRef = ref(storage, scannedFilePath);
+      deleteObject(fileRef).catch(err => console.error("Error deleting cancelled file:", err));
+    }
     setEditingId(null);
     setYear(new Date().getFullYear());
     setPeriod('1T');
