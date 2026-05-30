@@ -18,7 +18,7 @@ import {
 import Link from 'next/link';
 import Papa from 'papaparse';
 import { storage } from '../../../../lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 
 // Helper to format a date string as DD/MM/YYYY with zero-padding
@@ -192,12 +192,23 @@ export default function LedgersPage() {
       );
 
       // Get current list of issued ledgers for this owner
-      const existingLedgerNumbers = new Set(
-        issued
-          .filter(l => l.owner === owner)
-          .map(l => l.invoiceNumber)
+      const existingLedgers = issued.filter(l => l.owner === owner);
+      const existingLedgerNumbers = new Set(existingLedgers.map(l => l.invoiceNumber));
+
+      // 1. Delete ledgers that were previously synced but no longer exist in app invoices (deleted or cancelled)
+      const activeAppInvoiceNumbers = new Set(filteredAppInvoices.map(inv => inv.invoiceNumber));
+      const ledgersToDelete = existingLedgers.filter(l => 
+        (l.source === 'sync' || /^(?:R\d)?\d{12}$/.test(l.invoiceNumber)) &&
+        !activeAppInvoiceNumbers.has(l.invoiceNumber)
       );
 
+      let deletedCount = 0;
+      for (const l of ledgersToDelete) {
+        await deleteLedgerIssued(l.id);
+        deletedCount++;
+      }
+
+      // 2. Import any new app invoices
       let importedCount = 0;
 
       for (const inv of filteredAppInvoices) {
@@ -235,7 +246,8 @@ export default function LedgersPage() {
             eqTaxPercent: null,
             eqTaxQuota: null,
             irpfPercent: parseFloat(inv.irpfPercent || 0),
-            irpfQuota: parseFloat(inv.totals.totalIrpf || 0)
+            irpfQuota: parseFloat(inv.totals.totalIrpf || 0),
+            source: 'sync' // Tag to identify records imported via sync
           };
 
           await addLedgerIssued(ledgerRecord);
@@ -244,8 +256,20 @@ export default function LedgersPage() {
       }
 
       await loadData();
-      setSyncStatus(`Sincronitzat correctament! S'han importat ${importedCount} factures noves.`);
-      setTimeout(() => setSyncStatus(''), 5000);
+      
+      let msg = `Sincronitzat correctament!`;
+      if (importedCount > 0) {
+        msg += ` S'han importat ${importedCount} factures noves.`;
+      }
+      if (deletedCount > 0) {
+        msg += ` S'han suprimit ${deletedCount} registres de factures esborrades/cancel·lades.`;
+      }
+      if (importedCount === 0 && deletedCount === 0) {
+        msg += ` Tots els registres estan al dia.`;
+      }
+      
+      setSyncStatus(msg);
+      setTimeout(() => setSyncStatus(''), 6000);
     } catch (err) {
       console.error(err);
       setSyncStatus('Error en la sincronització.');
@@ -406,12 +430,25 @@ export default function LedgersPage() {
     setIsFormOpen(true);
   };
 
-  const handleDelete = async (id, invNum) => {
-    if (confirm(`Segur que vols esborrar el registre ${invNum}?`)) {
+  const handleDelete = async (item) => {
+    const displayNum = item.invoiceNumber || 'sense número';
+    if (confirm(`Segur que vols esborrar el registre ${displayNum}?`)) {
+      // 1. If there's an associated file uploaded to Firebase Storage, delete it first
+      if (item.scannedFile && item.scannedFile.startsWith('http')) {
+        try {
+          const fileRef = ref(storage, item.scannedFile);
+          await deleteObject(fileRef);
+          console.log("File deleted successfully from Storage:", item.scannedFile);
+        } catch (err) {
+          console.error("Error deleting file from Storage:", err);
+        }
+      }
+
+      // 2. Delete database entry from Firestore
       if (type === 'issued') {
-        await deleteLedgerIssued(id);
+        await deleteLedgerIssued(item.id);
       } else {
-        await deleteLedgerReceived(id);
+        await deleteLedgerReceived(item.id);
       }
       loadData();
     }
@@ -960,7 +997,7 @@ export default function LedgersPage() {
                           ✏️
                         </button>
                         <button 
-                          onClick={() => handleDelete(item.id, item.invoiceNumber)} 
+                          onClick={() => handleDelete(item)} 
                           className="btn btn-glass" 
                           style={{ padding: '0.3rem 0.5rem', fontSize: '0.8rem', color: '#ff6b6b' }}
                           title="Esborrar"
