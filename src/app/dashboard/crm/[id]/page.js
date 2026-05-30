@@ -76,6 +76,18 @@ export default function ContactDetailPage() {
   const [shows, setShows] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
 
+  // General contact fields edit state
+  const [isEditingContact, setIsEditingContact] = useState(false);
+  const [name, setName] = useState('');
+  const [entity, setEntity] = useState('');
+  const [municipality, setMunicipality] = useState('');
+  const [province, setProvince] = useState('');
+  const [status, setStatus] = useState('Pendent');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [feedbackSummary, setFeedbackSummary] = useState('');
+  const [notes, setNotes] = useState('');
+
   // Interaction form
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [showId, setShowId] = useState('');
@@ -102,6 +114,16 @@ export default function ContactDetailPage() {
   const loadData = async () => {
     const c = await getContactById(contactId);
     setContact(c);
+    setName(c?.name || '');
+    setEntity(c?.entity || '');
+    setMunicipality(c?.municipality || '');
+    setProvince(c?.province || '');
+    setStatus(c?.status || 'Pendent');
+    setEmail(c?.email || '');
+    setPhone(c?.phone || '');
+    setFeedbackSummary(c?.feedbackSummary || '');
+    setNotes(c?.notes || '');
+    
     setNextActionDate(c?.nextActionDate || '');
     setNextActionNotes(c?.nextActionNotes || '');
     setPerformedShows(c?.performedShows || []);
@@ -160,6 +182,23 @@ export default function ContactDetailPage() {
       interestedShows
     });
     setIsEditingShows(false);
+    loadData();
+  };
+
+  const handleSaveContact = async (e) => {
+    e.preventDefault();
+    await updateContact(contactId, {
+      name,
+      entity,
+      municipality,
+      province,
+      status,
+      email,
+      phone,
+      feedbackSummary,
+      notes
+    });
+    setIsEditingContact(false);
     loadData();
   };
 
@@ -235,66 +274,149 @@ export default function ContactDetailPage() {
           </svg>
         </Link>
         <div className="glass-panel" style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-            <div>
-              <h1 style={{ marginBottom: '0.5rem', color: 'var(--color-accent)', marginTop: 0 }}>{contact.name}</h1>
-              <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                <strong>{contact.entity}</strong> | {contact.municipality}
-                {contact.province && <span>({contact.province})</span>}
-                {contact.status && (
-                  <span style={getStatusBadgeStyle(contact.status)}>
-                    {contact.status}
-                  </span>
-                )}
-              </p>
-            </div>
-            {contact.email && (isAdmin || isCrm) && (
-              <button 
-                className="btn btn-glass" 
-                onClick={handleSendEmail} 
-                style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}
-              >
-                ✉️ Enviar Correu de Seguiment
-              </button>
-            )}
-          </div>
-          
-          <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.9rem', flexWrap: 'wrap' }}>
-            {contact.email && <span>📧 {contact.email}</span>}
-            {contact.phone && <span>📞 {contact.phone}</span>}
-          </div>
+          {isEditingContact ? (
+            <form onSubmit={handleSaveContact} className="grid-2col-responsive" style={{ gap: '1rem' }}>
+              <div className="input-group">
+                <label>Nom del programador / contacte</label>
+                <input className="input-field" value={name} onChange={e => setName(e.target.value)} required />
+              </div>
+              <div className="input-group">
+                <label>Entitat (Teatre, Festival...)</label>
+                <input className="input-field" value={entity} onChange={e => setEntity(e.target.value)} required />
+              </div>
+              <div className="input-group">
+                <label>Municipi</label>
+                <input className="input-field" value={municipality} onChange={e => setMunicipality(e.target.value)} required />
+              </div>
+              <div className="input-group">
+                <label>Província / Regió</label>
+                <select 
+                  className="input-field" 
+                  value={province} 
+                  onChange={e => setProvince(e.target.value)}
+                  style={{ background: 'var(--color-background-input)', color: 'var(--color-text-primary)' }}
+                >
+                  <option value="">Tria província...</option>
+                  <option value="Barcelona">Barcelona</option>
+                  <option value="Girona">Girona</option>
+                  <option value="Lleida">Lleida</option>
+                  <option value="Tarragona">Tarragona</option>
+                  <option value="Ses Illes">Ses Illes</option>
+                  <option value="El Mataranya">El Mataranya</option>
+                  <option value="València">València</option>
+                </select>
+              </div>
+              <div className="input-group">
+                <label>Estat de la sol·licitud</label>
+                <select 
+                  className="input-field" 
+                  value={status} 
+                  onChange={e => setStatus(e.target.value)}
+                  style={{ background: 'var(--color-background-input)', color: 'var(--color-text-primary)' }}
+                >
+                  <option value="Pendent">Pendent</option>
+                  <option value="Instància feta">Instància feta</option>
+                  <option value="Entrevista pendent">Entrevista pendent</option>
+                  <option value="Entrevista feta">Entrevista feta</option>
+                  <option value="Error / No possible">Error / No possible</option>
+                </select>
+              </div>
+              <div className="input-group">
+                <label>Correu</label>
+                <input type="email" className="input-field" value={email} onChange={e => setEmail(e.target.value)} />
+              </div>
+              <div className="input-group">
+                <label>Telèfon</label>
+                <input className="input-field" value={phone} onChange={e => setPhone(e.target.value)} />
+              </div>
+              <div className="input-group" style={{ gridColumn: '1 / -1' }}>
+                <label>Feedback destacat d'entrevista (opcional)</label>
+                <textarea className="input-field" rows="2" value={feedbackSummary} onChange={e => setFeedbackSummary(e.target.value)} placeholder="Resum ràpid de l'entrevista..." />
+              </div>
+              <div className="input-group" style={{ gridColumn: '1 / -1' }}>
+                <label>Historial d'Interaccions i Notes generals</label>
+                <textarea className="input-field" rows="6" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notes i resum de trucades o converses..." />
+              </div>
+              <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                <button type="submit" className="btn btn-primary">Desar Fitxa</button>
+                <button type="button" className="btn btn-glass" onClick={() => { setIsEditingContact(false); loadData(); }}>Cancel·lar</button>
+              </div>
+            </form>
+          ) : (
+            <>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <h1 style={{ marginBottom: '0.5rem', color: 'var(--color-accent)', marginTop: 0 }}>{contact.name}</h1>
+                  <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                    <strong>{contact.entity}</strong> | {contact.municipality}
+                    {contact.province && <span>({contact.province})</span>}
+                    {contact.status && (
+                      <span style={getStatusBadgeStyle(contact.status)}>
+                        {contact.status}
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {contact.email && (isAdmin || isCrm) && (
+                    <button 
+                      className="btn btn-glass" 
+                      onClick={handleSendEmail} 
+                      style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+                    >
+                      ✉️ Enviar Correu de Seguiment
+                    </button>
+                  )}
+                  {(isAdmin || isCrm) && (
+                    <button 
+                      className="btn btn-glass" 
+                      onClick={() => setIsEditingContact(true)} 
+                      style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+                    >
+                      ✏️ Editar Dades
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.9rem', flexWrap: 'wrap' }}>
+                {contact.email && <span>📧 {contact.email}</span>}
+                {contact.phone && <span>📞 {contact.phone}</span>}
+              </div>
 
-          {/* Feedback destacat */}
-          {contact.feedbackSummary && (
-            <div style={{ 
-              marginTop: '0.2rem', 
-              padding: '0.8rem 1rem', 
-              background: 'rgba(255,255,255,0.01)', 
-              borderRadius: '4px', 
-              borderLeft: '4px solid var(--color-accent)',
-              fontSize: '0.9rem',
-              color: 'var(--color-text-secondary)',
-              fontStyle: 'italic'
-            }}>
-              <strong>Feedback destacat d'entrevista:</strong> "{contact.feedbackSummary}"
-            </div>
-          )}
+              {/* Feedback destacat */}
+              {contact.feedbackSummary && (
+                <div style={{ 
+                  marginTop: '0.2rem', 
+                  padding: '0.8rem 1rem', 
+                  background: 'rgba(255,255,255,0.01)', 
+                  borderRadius: '4px', 
+                  borderLeft: '4px solid var(--color-accent)',
+                  fontSize: '0.9rem',
+                  color: 'var(--color-text-secondary)',
+                  fontStyle: 'italic'
+                }}>
+                  <strong>Feedback destacat d'entrevista:</strong> "{contact.feedbackSummary}"
+                </div>
+              )}
 
-          {/* Historial del Document Word original */}
-          {contact.notes && (
-            <div style={{ 
-              marginTop: '0.2rem', 
-              padding: '1rem', 
-              background: 'rgba(0,0,0,0.2)', 
-              borderRadius: '4px',
-              fontSize: '0.88rem',
-              border: '1px solid rgba(255,255,255,0.04)',
-              maxHeight: '150px',
-              overflowY: 'auto'
-            }}>
-              <strong style={{ color: 'var(--color-text-primary)' }}>Historial d'Interaccions i Notes:</strong>
-              <p style={{ margin: '0.4rem 0 0 0', whiteSpace: 'pre-wrap', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>{contact.notes}</p>
-            </div>
+              {/* Historial del Document Word original */}
+              {contact.notes && (
+                <div style={{ 
+                  marginTop: '0.2rem', 
+                  padding: '1rem', 
+                  background: 'rgba(0,0,0,0.2)', 
+                  borderRadius: '4px',
+                  fontSize: '0.88rem',
+                  border: '1px solid rgba(255,255,255,0.04)',
+                  maxHeight: '150px',
+                  overflowY: 'auto'
+                }}>
+                  <strong style={{ color: 'var(--color-text-primary)' }}>Historial d'Interaccions i Notes:</strong>
+                  <p style={{ margin: '0.4rem 0 0 0', whiteSpace: 'pre-wrap', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>{contact.notes}</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
