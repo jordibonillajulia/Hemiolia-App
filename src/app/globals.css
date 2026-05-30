@@ -1243,6 +1243,17 @@ a:hover {
 /* Force standard A4 desktop styles temporarily during PDF generation snapshot on mobile devices */
 body.generating-pdf {
   min-width: 1024px !important;
+  background: #ffffff !important;
+}
+
+body.generating-pdf nav,
+body.generating-pdf nav + div,
+body.generating-pdf .no-print,
+body.generating-pdf .no-print-header,
+body.generating-pdf .no-print-actions,
+body.generating-pdf button,
+body.generating-pdf a.btn {
+  display: none !important;
 }
 
 body.generating-pdf .invoice-paper {
