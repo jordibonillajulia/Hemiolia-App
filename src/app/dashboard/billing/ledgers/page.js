@@ -848,24 +848,26 @@ export default function LedgersPage() {
                     }
                   </td>
                   <td data-label={type === 'issued' ? 'Client' : 'Proveïdor'} style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <span className="text-right-mobile">
-                        {type === 'issued' ? formatClientName(item.clientName) : formatClientName(item.supplierName)}
-                      </span>
-                      {item.scannedFile && (
-                        item.scannedFile.startsWith('http') ? (
-                          <a href={item.scannedFile} target="_blank" rel="noopener noreferrer" title="Veure factura arxivada al núvol" style={{ fontSize: '0.95rem', textDecoration: 'none' }}>
-                            📁
-                          </a>
-                        ) : (
-                          <span title={`Factura arxivada localment: ${item.scannedFile}`} style={{ cursor: 'help', fontSize: '0.95rem' }}>
-                            📁
-                          </span>
-                        )
-                      )}
-                    </div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', fontFamily: 'monospace' }}>
-                      {type === 'issued' ? item.clientNif : item.supplierNif}
+                    <div className="client-cell-container">
+                      <div className="client-name-container" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <span className="text-right-mobile">
+                          {type === 'issued' ? formatClientName(item.clientName) : formatClientName(item.supplierName)}
+                        </span>
+                        {item.scannedFile && (
+                          item.scannedFile.startsWith('http') ? (
+                            <a href={item.scannedFile} target="_blank" rel="noopener noreferrer" title="Veure factura arxivada al núvol" style={{ fontSize: '0.95rem', textDecoration: 'none' }}>
+                              📁
+                            </a>
+                          ) : (
+                            <span title={`Factura arxivada localment: ${item.scannedFile}`} style={{ cursor: 'help', fontSize: '0.95rem' }}>
+                              📁
+                            </span>
+                          )
+                        )}
+                      </div>
+                      <div className="client-nif-container" style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', fontFamily: 'monospace' }}>
+                        {type === 'issued' ? item.clientNif : item.supplierNif}
+                      </div>
                     </div>
                   </td>
                   <td data-label="Base Imposable" style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
