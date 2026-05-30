@@ -34,18 +34,96 @@ export default function ImportContactsPage() {
         let errorCount = 0;
 
         for (const row of rows) {
-          try {
-            await addContact({
-              name: row['Nom'] || row['name'] || 'Desconegut',
-              entity: row['Entitat'] || row['entity'] || 'Sense especificar',
-              municipality: row['Municipi'] || row['municipality'] || '',
-              email: row['Correu'] || row['email'] || '',
-              phone: row['Telefon'] || row['Telèfon'] || row['phone'] || ''
-            });
-            successCount++;
-          } catch (error) {
-            console.error("Error inserting row", row, error);
-            errorCount++;
+          // Check if new format or old format
+          const isNewFormat = row['Contacte 1: Nom'] !== undefined || row['Població / Municipi'] !== undefined;
+          
+          if (isNewFormat) {
+            const municipality = row['Població / Municipi'] || '';
+            const province = row['Província / Regió'] || '';
+            const status = row['Estat'] || 'Pendent';
+            const performedShowsRaw = row['Espectacles Realitzats'] || '';
+            const interestedShowsRaw = row['Espectacles d\'Interès'] || '';
+            const feedbackSummary = row['Detalls / Feedback'] || '';
+            const notes = row['Historial d\'Interaccions'] || '';
+
+            const performedShows = performedShowsRaw ? performedShowsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+            const interestedShows = interestedShowsRaw ? interestedShowsRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+            // Extract up to 3 contacts
+            const contacts = [];
+            for (let i = 1; i <= 3; i++) {
+              const cName = row[`Contacte ${i}: Nom`] || '';
+              const cRole = row[`Contacte ${i}: Càrrec`] || '';
+              const cEmail = row[`Contacte ${i}: Correu`] || '';
+              const cPhone = row[`Contacte ${i}: Telèfon`] || '';
+
+              if (cName.trim() || cEmail.trim()) {
+                contacts.push({
+                  name: cName.trim(),
+                  role: cRole.trim(),
+                  email: cEmail.trim(),
+                  phone: cPhone.trim()
+                });
+              }
+            }
+
+            // If no contacts, create placeholder for the municipality
+            if (contacts.length === 0 && municipality.trim()) {
+              contacts.push({
+                name: `Ajuntament de ${municipality.trim()}`,
+                role: 'General',
+                email: '',
+                phone: ''
+              });
+            }
+
+            // Save contacts
+            for (const contact of contacts) {
+              try {
+                await addContact({
+                  name: contact.name,
+                  entity: contact.role || 'Ajuntament',
+                  municipality: municipality.trim(),
+                  province: province.trim(),
+                  email: contact.email,
+                  phone: contact.phone,
+                  status: status.trim(),
+                  performedShows,
+                  interestedShows,
+                  feedbackSummary,
+                  notes,
+                  nextActionDate: '',
+                  nextActionNotes: ''
+                });
+                successCount++;
+              } catch (error) {
+                console.error("Error inserting contact", contact, error);
+                errorCount++;
+              }
+            }
+          } else {
+            // Old format fallback
+            try {
+              await addContact({
+                name: row['Nom'] || row['name'] || 'Desconegut',
+                entity: row['Entitat'] || row['entity'] || 'Sense especificar',
+                municipality: row['Municipi'] || row['municipality'] || '',
+                province: '',
+                email: row['Correu'] || row['email'] || '',
+                phone: row['Telefon'] || row['Telèfon'] || row['phone'] || '',
+                status: 'Pendent',
+                performedShows: [],
+                interestedShows: [],
+                feedbackSummary: '',
+                notes: '',
+                nextActionDate: '',
+                nextActionNotes: ''
+              });
+              successCount++;
+            } catch (error) {
+              console.error("Error inserting row", row, error);
+              errorCount++;
+            }
           }
         }
         

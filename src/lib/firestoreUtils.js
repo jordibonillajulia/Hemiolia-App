@@ -25,6 +25,22 @@ export const getContactById = async (id) => {
 };
 
 export const deleteContact = async (id) => {
+  try {
+    const docRef = doc(db, 'contacts', id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const contact = docSnap.data();
+      if (contact.calendarEventId) {
+        fetch('/api/calendar/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'reminder', action: 'delete', calendarEventId: contact.calendarEventId })
+        }).catch(err => console.error("Calendar delete error:", err));
+      }
+    }
+  } catch (e) {
+    console.error("Error before deleting contact:", e);
+  }
   const docRef = doc(db, 'contacts', id);
   await deleteDoc(docRef);
 };
@@ -32,6 +48,13 @@ export const deleteContact = async (id) => {
 export const updateContact = async (id, data) => {
   const docRef = doc(db, 'contacts', id);
   await updateDoc(docRef, data);
+  if (data.nextActionDate !== undefined || data.nextActionNotes !== undefined || data.municipality !== undefined || data.name !== undefined) {
+    fetch('/api/calendar/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'reminder', id })
+    }).catch(err => console.error("Calendar sync error:", err));
+  }
 };
 
 // SHOWS
@@ -65,10 +88,16 @@ export const getInteractionsByContact = async (contactId) => {
 
 // GIGS (Road-sheet)
 export const addGig = async (gigData) => {
-  return await addDoc(collection(db, 'gigs'), {
+  const docRef = await addDoc(collection(db, 'gigs'), {
     ...gigData,
     createdAt: new Date().toISOString()
   });
+  fetch('/api/calendar/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'gig', id: docRef.id })
+  }).catch(err => console.error("Calendar sync error:", err));
+  return docRef;
 };
 
 export const getUpcomingGigs = async () => {
@@ -78,6 +107,22 @@ export const getUpcomingGigs = async () => {
 };
 
 export const deleteGig = async (id) => {
+  try {
+    const docRef = doc(db, 'gigs', id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const gig = docSnap.data();
+      if (gig.calendarEventId) {
+        fetch('/api/calendar/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'gig', action: 'delete', calendarEventId: gig.calendarEventId })
+        }).catch(err => console.error("Calendar delete error:", err));
+      }
+    }
+  } catch (e) {
+    console.error("Error before deleting gig:", e);
+  }
   const docRef = doc(db, 'gigs', id);
   await deleteDoc(docRef);
 };
@@ -85,6 +130,11 @@ export const deleteGig = async (id) => {
 export const updateGig = async (id, data) => {
   const docRef = doc(db, 'gigs', id);
   await updateDoc(docRef, data);
+  fetch('/api/calendar/sync', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type: 'gig', id })
+  }).catch(err => console.error("Calendar sync error:", err));
 };
 
 // INVOICES (Facturació)
