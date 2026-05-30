@@ -1,10 +1,42 @@
 import { collection, addDoc, getDocs, doc, getDoc, query, where, orderBy, updateDoc, deleteDoc, limit } from 'firebase/firestore';
 import { db } from './firebase';
 
+// Helper to generate contact name dynamically if it is blank or placeholder
+const getCleanName = (name, entity, municipality) => {
+  const currentName = (name || '').trim();
+  if (currentName && currentName !== '-' && currentName.toLowerCase() !== 'no especificat') {
+    return currentName;
+  }
+
+  const ent = (entity || '').trim();
+  const muni = (municipality || '').trim();
+  if (!ent && !muni) return 'Contacte sense nom';
+  if (!ent) return muni;
+  if (!muni) return ent;
+
+  // Avoid redundancy if entity already contains municipality name (e.g. "Ajuntament de Reus")
+  if (ent.toLowerCase().includes(muni.toLowerCase())) {
+    return ent;
+  }
+
+  // Catalan contraction rule: "d'" if starts with vowel or 'h'
+  const startsWithVowel = /^[aeiouhàèéíòóúAEIOUHÀÈÉÍÒÓÚ]/i.test(muni);
+  if (startsWithVowel) {
+    if (ent.endsWith("'")) {
+      return `${ent}${muni}`;
+    }
+    return `${ent} d'${muni}`;
+  } else {
+    return `${ent} de ${muni}`;
+  }
+};
+
 // CONTACTS
 export const addContact = async (contactData) => {
+  const cleanName = getCleanName(contactData.name, contactData.entity, contactData.municipality);
   return await addDoc(collection(db, 'contacts'), {
     ...contactData,
+    name: cleanName,
     createdAt: new Date().toISOString()
   });
 };
@@ -47,8 +79,28 @@ export const deleteContact = async (id) => {
 
 export const updateContact = async (id, data) => {
   const docRef = doc(db, 'contacts', id);
-  await updateDoc(docRef, data);
-  if (data.nextActionDate !== undefined || data.nextActionNotes !== undefined || data.municipality !== undefined || data.name !== undefined) {
+  
+  // If name, entity, or municipality are being updated, check if we need to auto-resolve a blank name
+  let updatedData = { ...data };
+  if (data.name !== undefined || data.entity !== undefined || data.municipality !== undefined) {
+    try {
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const currentData = docSnap.data();
+        const finalName = getCleanName(
+          data.name !== undefined ? data.name : currentData.name,
+          data.entity !== undefined ? data.entity : currentData.entity,
+          data.municipality !== undefined ? data.municipality : currentData.municipality
+        );
+        updatedData.name = finalName;
+      }
+    } catch (e) {
+      console.error("Error reading contact for name update:", e);
+    }
+  }
+
+  await updateDoc(docRef, updatedData);
+  if (updatedData.nextActionDate !== undefined || updatedData.nextActionNotes !== undefined || updatedData.municipality !== undefined || updatedData.name !== undefined) {
     fetch('/api/calendar/sync', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
