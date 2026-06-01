@@ -729,10 +729,7 @@ export default function ContactDetailPage() {
                 </div>
               </div>
 
-              <div className="input-group" style={{ gridColumn: '1 / -1' }}>
-                <label>Feedback destacat d'entrevista (opcional)</label>
-                <textarea className="input-field" rows="2" value={feedbackSummary} onChange={e => setFeedbackSummary(e.target.value)} placeholder="Resum ràpid de l'entrevista..." />
-              </div>
+
               <div className="input-group" style={{ gridColumn: '1 / -1' }}>
                 <label>Historial inicial</label>
                 <textarea className="input-field" rows="6" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notes i resum de trucades o converses..." />
@@ -875,22 +872,6 @@ export default function ContactDetailPage() {
                 )}
               </div>
 
-              {/* Feedback destacat */}
-              {contact.feedbackSummary && (
-                <div style={{ 
-                  marginTop: '0.2rem', 
-                  padding: '0.8rem 1rem', 
-                  background: 'rgba(255,255,255,0.01)', 
-                  borderRadius: '4px', 
-                  borderLeft: '4px solid var(--color-accent)',
-                  fontSize: '0.9rem',
-                  color: 'var(--color-text-secondary)',
-                  fontStyle: 'italic'
-                }}>
-                  <strong>Feedback destacat d'entrevista:</strong> "{contact.feedbackSummary}"
-                </div>
-              )}
-
               {/* Historial inicial */}
               {contact.notes && (
                 <div style={{ 
@@ -904,7 +885,18 @@ export default function ContactDetailPage() {
                   overflowY: 'auto'
                 }}>
                   <strong style={{ color: 'var(--color-text-primary)' }}>Historial inicial:</strong>
-                  <p style={{ margin: '0.4rem 0 0 0', whiteSpace: 'pre-wrap', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>{formatNotesWithLineBreaks(contact.notes)}</p>
+                  <p style={{ margin: '0.4rem 0 0 0', whiteSpace: 'pre-wrap', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>
+                    {(() => {
+                      const parts = formatNotesWithLineBreaks(contact.notes).split(/(\b\d{2}\/\d{2}\/\d{2,4}\b)/g);
+                      return parts.map((part, index) => {
+                        const isDate = /^\d{2}\/\d{2}\/\d{2,4}$/.test(part);
+                        if (isDate) {
+                          return <span key={index} style={{ color: 'var(--color-accent)', fontWeight: 'bold' }}>{part}</span>;
+                        }
+                        return part;
+                      });
+                    })()}
+                  </p>
                 </div>
               )}
             </>
