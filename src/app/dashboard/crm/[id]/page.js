@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../../../lib/AuthContext';
-import { getContactById, getInteractionsByContact, addInteraction, getShows, updateContact } from '../../../../lib/firestoreUtils';
+import { getContactById, getInteractionsByContact, addInteraction, getShows, updateContact, getUpcomingGigs, getContacts } from '../../../../lib/firestoreUtils';
 import Link from 'next/link';
+import { normalizeText } from '../../../../lib/utils';
 
 // Helper to format date as DD/MM/YYYY with padding
 const formatDateDDMMYYYY = (dateStr) => {
@@ -49,7 +50,8 @@ const getStatusBadgeStyle = (status) => {
     borderRadius: '4px',
     fontSize: '0.8rem',
     fontWeight: 'bold',
-    display: 'inline-block'
+    display: 'inline-block',
+    whiteSpace: 'nowrap'
   };
   
   switch(status) {
@@ -66,11 +68,84 @@ const getStatusBadgeStyle = (status) => {
   }
 };
 
+const MOODS = [
+  { key: 'molt_be',  label: 'Ha anat molt bé', color: '#22c55e', bg: 'rgba(34,197,94,0.12)' },
+  { key: 'be',       label: 'Ha anat bé',       color: '#60a5fa', bg: 'rgba(96,165,250,0.12)' },
+  { key: 'neutral',  label: 'Ni fu ni fa',      color: '#fbbf24', bg: 'rgba(251,191,36,0.12)' },
+  { key: 'malament', label: 'No ha agradat',     color: '#f87171', bg: 'rgba(248,113,113,0.12)' },
+];
+
+const MoodIcon = ({ moodKey, size = 22, ...rest }) => {
+  const s = size;
+  const cx = s / 2, cy = s / 2, r = s / 2 - 1;
+  const common = { width: s, height: s, viewBox: `0 0 ${s} ${s}`, fill: 'none', xmlns: 'http://www.w3.org/2000/svg', ...rest };
+  const m = MOODS.find(m => m.key === moodKey);
+  if (!m) return null;
+  const c = m.color;
+
+  const leyX = cx - s * 0.18, reyX = cx + s * 0.18, eyY = cy - s * 0.08;
+
+  if (moodKey === 'molt_be') {
+    return (
+      <svg {...common}>
+        <circle cx={cx} cy={cy} r={r} stroke={c} strokeWidth="1.5" fill={m.bg} />
+        <path d={`M${leyX - 2} ${eyY + 0.5} Q${leyX} ${eyY - 2.5} ${leyX + 2} ${eyY + 0.5}`} stroke={c} strokeWidth="1.6" strokeLinecap="round" fill="none" />
+        <path d={`M${reyX - 2} ${eyY + 0.5} Q${reyX} ${eyY - 2.5} ${reyX + 2} ${eyY + 0.5}`} stroke={c} strokeWidth="1.6" strokeLinecap="round" fill="none" />
+        <path d={`M${cx - s * 0.25} ${cy + s * 0.08} Q${cx} ${cy + s * 0.36} ${cx + s * 0.25} ${cy + s * 0.08}`} stroke={c} strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      </svg>
+    );
+  }
+  if (moodKey === 'be') {
+    return (
+      <svg {...common}>
+        <circle cx={cx} cy={cy} r={r} stroke={c} strokeWidth="1.5" fill={m.bg} />
+        <circle cx={leyX} cy={eyY} r="1.3" fill={c} />
+        <circle cx={reyX} cy={eyY} r="1.3" fill={c} />
+        <path d={`M${cx - s * 0.2} ${cy + s * 0.1} Q${cx} ${cy + s * 0.28} ${cx + s * 0.2} ${cy + s * 0.1}`} stroke={c} strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      </svg>
+    );
+  }
+  if (moodKey === 'neutral') {
+    return (
+      <svg {...common}>
+        <circle cx={cx} cy={cy} r={r} stroke={c} strokeWidth="1.5" fill={m.bg} />
+        <circle cx={leyX} cy={eyY} r="1.3" fill={c} />
+        <circle cx={reyX} cy={eyY} r="1.3" fill={c} />
+        <line x1={cx - s * 0.18} y1={cy + s * 0.14} x2={cx + s * 0.18} y2={cy + s * 0.14} stroke={c} strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...common}>
+      <circle cx={cx} cy={cy} r={r} stroke={c} strokeWidth="1.5" fill={m.bg} />
+      <circle cx={leyX} cy={eyY} r="1.3" fill={c} />
+      <circle cx={reyX} cy={eyY} r="1.3" fill={c} />
+      <path d={`M${cx - s * 0.2} ${cy + s * 0.22} Q${cx} ${cy + s * 0.06} ${cx + s * 0.2} ${cy + s * 0.22}`} stroke={c} strokeWidth="1.5" strokeLinecap="round" fill="none" />
+    </svg>
+  );
+};
+
+const detectMoodFromNotes = (notes, feedbackSummary) => {
+  if (!notes && !feedbackSummary) return null;
+  const text = ((notes || '') + ' ' + (feedbackSummary || '')).toLowerCase();
+
+  const veryGoodKw = ['molt bé', 'molt be', 'excel·lent', 'excel.lent', 'fantàstic', 'fantastic', 'molt interessat', 'molt interessada', 'entusiasta', 'genial', 'perfecte', 'molt positiu', 'encantats', 'encantat', 'encantada', 'molt favorable', 'molt content', 'molt contenta', 'molt entusiasta'];
+  const badKw     = ['no interessa', 'no li interessa', 'no els interessa', 'malament', 'negatiu', 'negativa', 'impossible', 'no pot', 'no vol', 'rebutja', 'rebutjat', 'difícil de convèncer', 'molest', 'molesta', 'enfadat', 'enfadada', 'no ho veu', 'no els va', 'fora de pressupost', 'no els agrada'];
+  const goodKw    = ['bé', 'interessat', 'interessada', 'positiu', 'positiva', 'favorable', 'obert', 'oberta', 'disposat', 'disposada', 'considera', 'podria', 'content', 'contenta', 'ha agradat'];
+  const neutralKw = ['potser', 'possiblement', 'a veure', 'no sap', 'pendent', 'dubte', 'dubtes', 'pensarà', 'consultarà', 'ho mirarà', 'ho consultarà', 'sense confirmar'];
+
+  if (veryGoodKw.some(kw => text.includes(kw))) return 'molt_be';
+  if (badKw.some(kw => text.includes(kw)))      return 'malament';
+  if (goodKw.some(kw => text.includes(kw)))     return 'be';
+  if (neutralKw.some(kw => text.includes(kw)))  return 'neutral';
+  return null;
+};
+
 export default function ContactDetailPage() {
   const params = useParams();
   const contactId = params.id;
   const { user, loading, isAdmin, isCrm } = useAuth();
-  
+  const router = useRouter();
   const [contact, setContact] = useState(null);
   const [interactions, setInteractions] = useState([]);
   const [shows, setShows] = useState([]);
@@ -78,15 +153,34 @@ export default function ContactDetailPage() {
 
   // General contact fields edit state
   const [isEditingContact, setIsEditingContact] = useState(false);
-  const [name, setName] = useState('');
   const [entity, setEntity] = useState('');
   const [municipality, setMunicipality] = useState('');
   const [province, setProvince] = useState('');
   const [status, setStatus] = useState('Pendent');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const [feedbackSummary, setFeedbackSummary] = useState('');
   const [notes, setNotes] = useState('');
+  const [mood, setMood] = useState('');
+
+  // Contact 1-4 fields
+  const [c1Name, setC1Name] = useState('');
+  const [c1Role, setC1Role] = useState('');
+  const [c1Email, setC1Email] = useState('');
+  const [c1Phone, setC1Phone] = useState('');
+
+  const [c2Name, setC2Name] = useState('');
+  const [c2Role, setC2Role] = useState('');
+  const [c2Email, setC2Email] = useState('');
+  const [c2Phone, setC2Phone] = useState('');
+
+  const [c3Name, setC3Name] = useState('');
+  const [c3Role, setC3Role] = useState('');
+  const [c3Email, setC3Email] = useState('');
+  const [c3Phone, setC3Phone] = useState('');
+
+  const [c4Name, setC4Name] = useState('');
+  const [c4Role, setC4Role] = useState('');
+  const [c4Email, setC4Email] = useState('');
+  const [c4Phone, setC4Phone] = useState('');
 
   // Interaction form
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -101,38 +195,156 @@ export default function ContactDetailPage() {
   const [isEditingReminder, setIsEditingReminder] = useState(false);
 
   // Show checklist states
-  const [performedShows, setPerformedShows] = useState([]);
+  const [linkedGigIds, setLinkedGigIds] = useState([]);
   const [interestedShows, setInterestedShows] = useState([]);
+  const [performedShows, setPerformedShows] = useState([]);
   const [isEditingShows, setIsEditingShows] = useState(false);
+  const [allGigs, setAllGigs] = useState([]);
+  const [gigSearchQuery, setGigSearchQuery] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [allContacts, setAllContacts] = useState([]);
+
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (user && contactId) {
-      loadData();
+      loadData().then(() => {
+        if (searchParams.get('edit') === '1') {
+          setIsEditingContact(true);
+        }
+      });
     }
   }, [user, contactId]);
 
   const loadData = async () => {
     const c = await getContactById(contactId);
     setContact(c);
-    setName(c?.name || '');
     setEntity(c?.entity || '');
     setMunicipality(c?.municipality || '');
     setProvince(c?.province || '');
     setStatus(c?.status || 'Pendent');
-    setEmail(c?.email || '');
-    setPhone(c?.phone || '');
     setFeedbackSummary(c?.feedbackSummary || '');
     setNotes(c?.notes || '');
+    setMood(c?.mood || '');
+
+    const c1 = c?.contact1 || {};
+    setC1Name(c1.name || c?.name || '');
+    setC1Role(c1.role || '');
+    setC1Email(c1.email || c?.email || '');
+    setC1Phone(c1.phone || c?.phone || '');
+
+    const c2 = c?.contact2 || {};
+    setC2Name(c2.name || '');
+    setC2Role(c2.role || '');
+    setC2Email(c2.email || '');
+    setC2Phone(c2.phone || '');
+
+    const c3 = c?.contact3 || {};
+    setC3Name(c3.name || '');
+    setC3Role(c3.role || '');
+    setC3Email(c3.email || '');
+    setC3Phone(c3.phone || '');
+
+    const c4 = c?.contact4 || {};
+    setC4Name(c4.name || '');
+    setC4Role(c4.role || '');
+    setC4Email(c4.email || '');
+    setC4Phone(c4.phone || '');
     
+    const showMapping = {
+      "cavernus": "Cavernus, una evolució musical",
+      "cavernus, una evolució musica": "Cavernus, una evolució musical",
+      "layla": "Layla, un viatge d'esperança",
+      "concert duo": "Concert Duo Hemiòlia",
+      "concert trio": "Concert Trio Hemiòlia",
+      "el contacontes, un viatge d'esperança": "Layla, el contacontes",
+      "layla, el contacontes, un viatge d'esperança": "Layla, el contacontes",
+      "el contacontes": "Layla, el contacontes",
+      "un viatge d'esperança": "Layla, un viatge d'esperança",
+      "un viatge d’esperança": "Layla, un viatge d'esperança"
+    };
+    const normalizeShows = (showsArray) => {
+      const uniqueNormalized = new Set();
+      (showsArray || []).forEach(show => {
+        const parts = show.includes(' i ') ? show.split(' i ') : (show.includes(' y ') ? show.split(' y ') : [show]);
+        parts.forEach(part => {
+          const clean = (part || '').trim().toLowerCase();
+          if (!clean) return;
+          const target = showMapping[clean] || part.trim();
+          uniqueNormalized.add(target);
+        });
+      });
+      return Array.from(uniqueNormalized);
+    };
+
     setNextActionDate(c?.nextActionDate || '');
     setNextActionNotes(c?.nextActionNotes || '');
-    setPerformedShows(c?.performedShows || []);
-    setInterestedShows(c?.interestedShows || []);
+    setLinkedGigIds(c?.linkedGigIds || []);
+    setInterestedShows(normalizeShows(c?.interestedShows));
+    setPerformedShows(normalizeShows(c?.performedShows));
 
     const i = await getInteractionsByContact(contactId);
     setInteractions(i);
     const s = await getShows();
     setShows(s);
+    const g = await getUpcomingGigs();
+    setAllGigs(g);
+    const allC = await getContacts();
+    setAllContacts(allC);
+  };
+
+  const getSearchQuery = (showTitle) => {
+    if (!contact) return '';
+    if (showTitle) {
+      const s = showTitle.toLowerCase();
+      if (s.includes('concert duo')) return 'Concert duo';
+      if (s.includes('concert trio')) return 'Concert trio';
+      if (s.includes('layla') && s.includes('contacontes')) return 'contacontes';
+      if (s.includes('layla')) return 'Layla';
+      if (s.includes('cavernus')) return 'Cavernus';
+      if (s.includes('nadal')) return 'Nadal';
+      if (s.includes('silencis')) return 'Silencis';
+      if (s.includes('marcel')) return 'Marcel';
+      if (s.includes('leonardo')) return 'Leonardo';
+      if (s.includes('simfonia')) return 'Simfonia';
+      return showTitle;
+    }
+    const entityVal = (contact.entity || '').trim();
+    const muniVal = (contact.municipality || '').trim();
+    if (entityVal.toLowerCase().includes('biblioteques') && entityVal.toLowerCase().includes('ebre')) {
+      return 'Biblioteca';
+    }
+    if (!entityVal || entityVal.toLowerCase() === 'ajuntament') {
+      return muniVal;
+    }
+    return entityVal;
+  };
+
+  const getMatchingGigs = () => {
+    if (!contact || !allGigs) return [];
+    const entityLower = (contact.entity || '').toLowerCase().trim();
+    const muniLower = (contact.municipality || '').toLowerCase().trim();
+    const isEbreLibs = entityLower.includes('biblioteques') && entityLower.includes('ebre');
+
+    return allGigs.filter(g => {
+      const gigLocLower = (g.locationName || '').toLowerCase().trim();
+      const gigMuniLower = (g.municipality || '').toLowerCase().trim();
+      
+      if (isEbreLibs) {
+        const ebreTowns = ['tortosa', 'amposta', 'gandesa', "móra d'ebre", 'móra d’ebre', "l'aldea", 'l\'aldea'];
+        const isLibrary = gigLocLower.includes('biblioteca') || gigLocLower.includes('biblioteques') || (g.title || '').toLowerCase().includes('biblioteca') || (g.title || '').toLowerCase().includes('biblioteques');
+        const isEbreTown = ebreTowns.includes(gigMuniLower);
+        return isLibrary && isEbreTown;
+      }
+
+      if (entityLower === 'ajuntament') {
+        return gigMuniLower === muniLower;
+      } else {
+        const muniMatch = gigMuniLower === muniLower;
+        const nameMatch = gigLocLower.includes(entityLower) || entityLower.includes(gigLocLower);
+        return nameMatch && muniMatch;
+      }
+    });
   };
 
   const handleAddInteraction = async (e) => {
@@ -177,9 +389,16 @@ export default function ContactDetailPage() {
   };
 
   const handleSaveShows = async () => {
+    const linkedTitles = allGigs
+      .filter(g => (linkedGigIds || []).includes(g.id))
+      .map(g => g.title)
+      .filter(Boolean);
+    const updatedPerformedShows = Array.from(new Set([...performedShows, ...linkedTitles]));
+
     await updateContact(contactId, {
-      performedShows,
-      interestedShows
+      linkedGigIds,
+      interestedShows,
+      performedShows: updatedPerformedShows
     });
     setIsEditingShows(false);
     loadData();
@@ -188,26 +407,40 @@ export default function ContactDetailPage() {
   const handleSaveContact = async (e) => {
     e.preventDefault();
     await updateContact(contactId, {
-      name,
       entity,
       municipality,
       province,
       status,
-      email,
-      phone,
       feedbackSummary,
-      notes
+      notes,
+      mood,
+      contact1: { name: c1Name, role: c1Role, email: c1Email, phone: c1Phone },
+      contact2: { name: c2Name, role: c2Role, email: c2Email, phone: c2Phone },
+      contact3: { name: c3Name, role: c3Role, email: c3Email, phone: c3Phone },
+      contact4: { name: c4Name, role: c4Role, email: c4Email, phone: c4Phone }
     });
     setIsEditingContact(false);
     loadData();
   };
 
-  const handleToggleShow = (showTitle, listType) => {
-    if (listType === 'performed') {
-      setPerformedShows(prev => 
-        prev.includes(showTitle) ? prev.filter(s => s !== showTitle) : [...prev, showTitle]
-      );
+  const handleSaveMood = async (newMood) => {
+    const updated = mood === newMood ? '' : newMood;
+    setMood(updated);
+    await updateContact(contactId, { mood: updated });
+  };
+
+  const handleAutoDetectMood = async () => {
+    const detected = detectMoodFromNotes(notes, feedbackSummary);
+    if (detected) {
+      setMood(detected);
+      await updateContact(contactId, { mood: detected });
     } else {
+      alert('No s\'ha pogut detectar la valoració automàticament a partir de les notes. Tria-la manualment.');
+    }
+  };
+
+  const handleToggleShow = (showTitle, listType) => {
+    if (listType === 'interested') {
       setInterestedShows(prev => 
         prev.includes(showTitle) ? prev.filter(s => s !== showTitle) : [...prev, showTitle]
       );
@@ -215,18 +448,19 @@ export default function ContactDetailPage() {
   };
 
   const handleSendEmail = async () => {
-    if (!contact.email) return alert("Aquest contacte no té correu electrònic.");
+    const contact1 = contact.contact1 || { name: contact.name, email: contact.email };
+    if (!contact1.email) return alert("Aquest contacte no té correu electrònic.");
     
-    if (!confirm(`Vols enviar un correu automàtic de seguiment a ${contact.email}?`)) return;
+    if (!confirm(`Vols enviar un correu automàtic de seguiment a ${contact1.email}?`)) return;
 
     try {
       const res = await fetch('/api/emails/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          to: contact.email,
+          to: contact1.email,
           subject: 'Salutacions des d\'Hemiòlia Produccions',
-          text: `Hola ${contact.name},\n\nEns posem en contacte amb tu per fer el seguiment de les nostres propostes per al vostre municipi (${contact.municipality}).\n\nQualsevol cosa estem a la teva disposició.\n\nAtentament,\nL'equip d'Hemiòlia Produccions.`
+          text: `Hola ${contact1.name || contact.entity},\n\nEns posem en contacte amb tu per fer el seguiment de les nostres propostes per al vostre municipi (${contact.municipality}).\n\nQualsevol cosa estem a la teva disposició.\n\nAtentament,\nL'equip d'Hemiòlia Produccions.`
         })
       });
 
@@ -245,6 +479,100 @@ export default function ContactDetailPage() {
 
   const todayStr = new Date().toISOString().split('T')[0];
   const isReminderDue = contact.nextActionDate && contact.nextActionDate <= todayStr;
+  const activeContact1 = contact.contact1 || { name: contact.name || 'Sense especificar', role: '', email: contact.email || '', phone: contact.phone || '' };
+  const activeContact2 = contact.contact2 || {};
+  const activeContact3 = contact.contact3 || {};
+  const activeContact4 = contact.contact4 || {};
+
+  const searchQuery = searchParams.get('search') || '';
+  const filterProvince = searchParams.get('province') || 'Tots';
+  const filterStatus = searchParams.get('status') || 'Tots';
+  const filterShow = searchParams.get('show') || 'Tots';
+  const filterReminder = searchParams.get('reminder') === '1';
+
+  const filteredContacts = allContacts.filter(c => {
+    const c1 = c.contact1 || { name: c.name, email: c.email, phone: c.phone, role: '' };
+    const c2 = c.contact2 || {};
+    const c3 = c.contact3 || {};
+    const c4 = c.contact4 || {};
+
+    const cleanQuery = normalizeText(searchQuery);
+    const matchesSearch = 
+      normalizeText(c.entity).includes(cleanQuery) ||
+      normalizeText(c.municipality).includes(cleanQuery) ||
+      normalizeText(c1.name).includes(cleanQuery) ||
+      normalizeText(c1.role).includes(cleanQuery) ||
+      normalizeText(c1.email).includes(cleanQuery) ||
+      normalizeText(c1.phone).includes(cleanQuery) ||
+      normalizeText(c2.name).includes(cleanQuery) ||
+      normalizeText(c2.role).includes(cleanQuery) ||
+      normalizeText(c2.email).includes(cleanQuery) ||
+      normalizeText(c2.phone).includes(cleanQuery) ||
+      normalizeText(c3.name).includes(cleanQuery) ||
+      normalizeText(c4.name).includes(cleanQuery) ||
+      normalizeText(c.notes).includes(cleanQuery) ||
+      normalizeText(c.feedbackSummary).includes(cleanQuery) ||
+      normalizeText(c.nextActionNotes).includes(cleanQuery);
+      
+    const matchesProvince = filterProvince === 'Tots' || (c.province || '') === filterProvince;
+    const matchesStatus = filterStatus === 'Tots' || 
+      (filterStatus === 'Sense estat' ? (!c.status || c.status === '') : c.status === filterStatus);
+    
+    const matchesShow = filterShow === 'Tots' || 
+      (c.interestedShows && c.interestedShows.includes(filterShow)) ||
+      (c.performedShows && c.performedShows.includes(filterShow));
+      
+    let matchesReminder = true;
+    if (filterReminder) {
+      const today = new Date().toISOString().split('T')[0];
+      matchesReminder = c.nextActionDate && c.nextActionDate <= today;
+    }
+    
+    return matchesSearch && matchesProvince && matchesStatus && matchesShow && matchesReminder;
+  });
+
+  const currentIndex = filteredContacts.findIndex(c => c.id === contactId);
+  const prevContact = currentIndex > 0 ? filteredContacts[currentIndex - 1] : null;
+  const nextContact = currentIndex !== -1 && currentIndex < filteredContacts.length - 1 ? filteredContacts[currentIndex + 1] : null;
+
+  const getNavigationUrl = (targetId) => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set('search', searchQuery);
+    if (filterProvince !== 'Tots') params.set('province', filterProvince);
+    if (filterStatus !== 'Tots') params.set('status', filterStatus);
+    if (filterShow !== 'Tots') params.set('show', filterShow);
+    if (filterReminder) params.set('reminder', '1');
+    const qs = params.toString();
+    return `/dashboard/crm/${targetId}${qs ? '?' + qs : ''}`;
+  };
+
+  const getBackUrl = () => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.set('search', searchQuery);
+    if (filterProvince !== 'Tots') params.set('province', filterProvince);
+    if (filterStatus !== 'Tots') params.set('status', filterStatus);
+    if (filterShow !== 'Tots') params.set('show', filterShow);
+    if (filterReminder) params.set('reminder', '1');
+    const qs = params.toString();
+    return `/dashboard/crm${qs ? '?' + qs : ''}`;
+  };
+
+  const standardShows = [
+    "Layla, un viatge d'esperança",
+    "Layla, el contacontes",
+    "Cavernus, una evolució musical",
+    "Un Nadal Màgic",
+    "Silencis Trencats",
+    "Concert Duo Hemiòlia",
+    "Concert Trio Hemiòlia",
+    "Marcel, cartes des del front",
+    "Simfonia Corporativa",
+    "El petit Leonardo"
+  ];
+
+  const uniqueGigTitles = Array.from(new Set(allGigs.map(g => g.title).filter(Boolean))).sort();
+  const allAvailableShows = Array.from(new Set([...standardShows, ...uniqueGigTitles])).sort();
+  const matchingGigs = getMatchingGigs();
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-md)' }}>
@@ -267,77 +595,193 @@ export default function ContactDetailPage() {
       )}
 
       <div style={{ marginBottom: 'var(--space-lg)' }}>
-        <Link href="/dashboard/crm" className="btn-back no-print" title="Tornar a CRM">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="19" y1="12" x2="5" y2="12"></line>
-            <polyline points="12 19 5 12 12 5"></polyline>
-          </svg>
-        </Link>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} className="no-print">
+          <Link href={getBackUrl()} className="btn-back" title="Tornar a CRM">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+          </Link>
+          
+          {filteredContacts.length > 1 && (
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.82rem', color: 'var(--color-text-secondary)', marginRight: '0.4rem' }}>
+                {currentIndex + 1} de {filteredContacts.length}
+              </span>
+              <Link 
+                href={prevContact ? getNavigationUrl(prevContact.id) : '#'} 
+                className={`btn btn-glass ${!prevContact ? 'disabled' : ''}`}
+                style={{ 
+                  padding: '0.4rem 0.8rem', 
+                  fontSize: '0.82rem', 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  gap: '0.3rem',
+                  textDecoration: 'none',
+                  opacity: prevContact ? 1 : 0.35,
+                  pointerEvents: prevContact ? 'auto' : 'none'
+                }}
+                title={prevContact ? `Anar a ${prevContact.entity || prevContact.name}` : ''}
+              >
+                ◀ Anterior
+              </Link>
+              <Link 
+                href={nextContact ? getNavigationUrl(nextContact.id) : '#'} 
+                className={`btn btn-glass ${!nextContact ? 'disabled' : ''}`}
+                style={{ 
+                  padding: '0.4rem 0.8rem', 
+                  fontSize: '0.82rem', 
+                  display: 'inline-flex', 
+                  alignItems: 'center', 
+                  gap: '0.3rem',
+                  textDecoration: 'none',
+                  opacity: nextContact ? 1 : 0.35,
+                  pointerEvents: nextContact ? 'auto' : 'none'
+                }}
+                title={nextContact ? `Anar a ${nextContact.entity || nextContact.name}` : ''}
+              >
+                Següent ▶
+              </Link>
+            </div>
+          )}
+        </div>
         <div className="glass-panel" style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {isEditingContact ? (
-            <form onSubmit={handleSaveContact} className="grid-2col-responsive" style={{ gap: '1rem' }}>
-              <div className="input-group">
-                <label>Nom del programador / contacte</label>
-                <input className="input-field" value={name} onChange={e => setName(e.target.value)} required />
+            <form onSubmit={handleSaveContact} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div className="grid-2col-responsive" style={{ gap: '1rem' }}>
+                <div className="input-group">
+                  <label>Entitat (Teatre, Festival...)</label>
+                  <input className="input-field" value={entity} onChange={e => setEntity(e.target.value)} required />
+                </div>
+                <div className="input-group">
+                  <label>Municipi</label>
+                  <input className="input-field" value={municipality} onChange={e => setMunicipality(e.target.value)} required />
+                </div>
+                <div className="input-group">
+                  <label>Província / Regió</label>
+                  <select 
+                    className="input-field" 
+                    value={province} 
+                    onChange={e => setProvince(e.target.value)}
+                    style={{ background: 'var(--color-background-input)', color: 'var(--color-text-primary)' }}
+                  >
+                    <option value="">Tria província...</option>
+                    <option value="Barcelona">Barcelona</option>
+                    <option value="Girona">Girona</option>
+                    <option value="Lleida">Lleida</option>
+                    <option value="Tarragona">Tarragona</option>
+                    <option value="Ses Illes">Ses Illes</option>
+                    <option value="El Mataranya">El Mataranya</option>
+                    <option value="Castelló">Castelló</option>
+                  </select>
+                </div>
+                <div className="input-group">
+                  <label>Estat de la sol·licitud</label>
+                  <select 
+                    className="input-field" 
+                    value={status} 
+                    onChange={e => setStatus(e.target.value)}
+                    style={{ background: 'var(--color-background-input)', color: 'var(--color-text-primary)' }}
+                  >
+                    <option value=""></option>
+                    <option value="Pendent">Pendent</option>
+                    <option value="Instància feta">Instància feta</option>
+                    <option value="Entrevista pendent">Entrevista pendent</option>
+                    <option value="Entrevista feta">Entrevista feta</option>
+                    <option value="Error / No possible">Error / No possible</option>
+                  </select>
+                </div>
               </div>
-              <div className="input-group">
-                <label>Entitat (Teatre, Festival...)</label>
-                <input className="input-field" value={entity} onChange={e => setEntity(e.target.value)} required />
+
+              {/* Edit Contacts Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.2rem' }}>
+                {/* Contacte 1 */}
+                <div style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.08)' }}>
+                  <h4 style={{ color: 'var(--color-accent)', marginTop: 0, marginBottom: '0.8rem' }}>🟡 Contacte</h4>
+                  <div className="input-group" style={{ marginBottom: '0.6rem' }}><label style={{ fontSize: '0.75rem' }}>Nom</label><input className="input-field" value={c1Name} onChange={e => setC1Name(e.target.value)} required /></div>
+                  <div className="input-group" style={{ marginBottom: '0.6rem' }}><label style={{ fontSize: '0.75rem' }}>Càrrec</label><input className="input-field" value={c1Role} onChange={e => setC1Role(e.target.value)} /></div>
+                  <div className="input-group" style={{ marginBottom: '0.6rem' }}><label style={{ fontSize: '0.75rem' }}>Correu</label><input type="email" className="input-field" value={c1Email} onChange={e => setC1Email(e.target.value)} /></div>
+                  <div className="input-group" style={{ marginBottom: 0 }}><label style={{ fontSize: '0.75rem' }}>Telèfon</label><input className="input-field" value={c1Phone} onChange={e => setC1Phone(e.target.value)} /></div>
+                </div>
+                {/* Contacte 2 */}
+                <div style={{ background: 'rgba(255,255,255,0.01)', padding: '1rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                  <h4 style={{ color: 'rgba(255,255,255,0.7)', marginTop: 0, marginBottom: '0.8rem' }}>👤 Contacte 2</h4>
+                  <div className="input-group" style={{ marginBottom: '0.6rem' }}><label style={{ fontSize: '0.75rem' }}>Nom</label><input className="input-field" value={c2Name} onChange={e => setC2Name(e.target.value)} /></div>
+                  <div className="input-group" style={{ marginBottom: '0.6rem' }}><label style={{ fontSize: '0.75rem' }}>Càrrec</label><input className="input-field" value={c2Role} onChange={e => setC2Role(e.target.value)} /></div>
+                  <div className="input-group" style={{ marginBottom: '0.6rem' }}><label style={{ fontSize: '0.75rem' }}>Correu</label><input type="email" className="input-field" value={c2Email} onChange={e => setC2Email(e.target.value)} /></div>
+                  <div className="input-group" style={{ marginBottom: 0 }}><label style={{ fontSize: '0.75rem' }}>Telèfon</label><input className="input-field" value={c2Phone} onChange={e => setC2Phone(e.target.value)} /></div>
+                </div>
+                {/* Contacte 3 */}
+                <div style={{ background: 'rgba(255,255,255,0.01)', padding: '1rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                  <h4 style={{ color: 'rgba(255,255,255,0.7)', marginTop: 0, marginBottom: '0.8rem' }}>👤 Contacte 3</h4>
+                  <div className="input-group" style={{ marginBottom: '0.6rem' }}><label style={{ fontSize: '0.75rem' }}>Nom</label><input className="input-field" value={c3Name} onChange={e => setC3Name(e.target.value)} /></div>
+                  <div className="input-group" style={{ marginBottom: '0.6rem' }}><label style={{ fontSize: '0.75rem' }}>Càrrec</label><input className="input-field" value={c3Role} onChange={e => setC3Role(e.target.value)} /></div>
+                  <div className="input-group" style={{ marginBottom: '0.6rem' }}><label style={{ fontSize: '0.75rem' }}>Correu</label><input type="email" className="input-field" value={c3Email} onChange={e => setC3Email(e.target.value)} /></div>
+                  <div className="input-group" style={{ marginBottom: 0 }}><label style={{ fontSize: '0.75rem' }}>Telèfon</label><input className="input-field" value={c3Phone} onChange={e => setC3Phone(e.target.value)} /></div>
+                </div>
+                {/* Contacte 4 */}
+                <div style={{ background: 'rgba(255,255,255,0.01)', padding: '1rem', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.04)' }}>
+                  <h4 style={{ color: 'rgba(255,255,255,0.7)', marginTop: 0, marginBottom: '0.8rem' }}>👤 Contacte 4</h4>
+                  <div className="input-group" style={{ marginBottom: '0.6rem' }}><label style={{ fontSize: '0.75rem' }}>Nom</label><input className="input-field" value={c4Name} onChange={e => setC4Name(e.target.value)} /></div>
+                  <div className="input-group" style={{ marginBottom: '0.6rem' }}><label style={{ fontSize: '0.75rem' }}>Càrrec</label><input className="input-field" value={c4Role} onChange={e => setC4Role(e.target.value)} /></div>
+                  <div className="input-group" style={{ marginBottom: '0.6rem' }}><label style={{ fontSize: '0.75rem' }}>Correu</label><input type="email" className="input-field" value={c4Email} onChange={e => setC4Email(e.target.value)} /></div>
+                  <div className="input-group" style={{ marginBottom: 0 }}><label style={{ fontSize: '0.75rem' }}>Telèfon</label><input className="input-field" value={c4Phone} onChange={e => setC4Phone(e.target.value)} /></div>
+                </div>
               </div>
-              <div className="input-group">
-                <label>Municipi</label>
-                <input className="input-field" value={municipality} onChange={e => setMunicipality(e.target.value)} required />
-              </div>
-              <div className="input-group">
-                <label>Província / Regió</label>
-                <select 
-                  className="input-field" 
-                  value={province} 
-                  onChange={e => setProvince(e.target.value)}
-                  style={{ background: 'var(--color-background-input)', color: 'var(--color-text-primary)' }}
-                >
-                  <option value="">Tria província...</option>
-                  <option value="Barcelona">Barcelona</option>
-                  <option value="Girona">Girona</option>
-                  <option value="Lleida">Lleida</option>
-                  <option value="Tarragona">Tarragona</option>
-                  <option value="Ses Illes">Ses Illes</option>
-                  <option value="El Mataranya">El Mataranya</option>
-                  <option value="València">València</option>
-                </select>
-              </div>
-              <div className="input-group">
-                <label>Estat de la sol·licitud</label>
-                <select 
-                  className="input-field" 
-                  value={status} 
-                  onChange={e => setStatus(e.target.value)}
-                  style={{ background: 'var(--color-background-input)', color: 'var(--color-text-primary)' }}
-                >
-                  <option value="Pendent">Pendent</option>
-                  <option value="Instància feta">Instància feta</option>
-                  <option value="Entrevista pendent">Entrevista pendent</option>
-                  <option value="Entrevista feta">Entrevista feta</option>
-                  <option value="Error / No possible">Error / No possible</option>
-                </select>
-              </div>
-              <div className="input-group">
-                <label>Correu</label>
-                <input type="email" className="input-field" value={email} onChange={e => setEmail(e.target.value)} />
-              </div>
-              <div className="input-group">
-                <label>Telèfon</label>
-                <input className="input-field" value={phone} onChange={e => setPhone(e.target.value)} />
-              </div>
+
               <div className="input-group" style={{ gridColumn: '1 / -1' }}>
                 <label>Feedback destacat d'entrevista (opcional)</label>
                 <textarea className="input-field" rows="2" value={feedbackSummary} onChange={e => setFeedbackSummary(e.target.value)} placeholder="Resum ràpid de l'entrevista..." />
               </div>
               <div className="input-group" style={{ gridColumn: '1 / -1' }}>
-                <label>Historial d'Interaccions i Notes generals</label>
+                <label>Historial inicial</label>
                 <textarea className="input-field" rows="6" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Notes i resum de trucades o converses..." />
               </div>
-              <div style={{ gridColumn: '1 / -1', display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+              {/* Valoració de l'entrevista (dins edició) */}
+              {status === 'Entrevista feta' && (
+                <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--color-text-secondary)', fontWeight: '500' }}>Valoració:</span>
+                  {MOODS.map(m => {
+                    const isSelected = mood === m.key;
+                    return (
+                      <button
+                        key={m.key}
+                        type="button"
+                        title={m.label}
+                        onClick={() => handleSaveMood(m.key)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem',
+                          background: isSelected ? m.bg : 'transparent',
+                          border: isSelected ? `2px solid ${m.color}` : '2px solid transparent',
+                          borderRadius: '20px',
+                          padding: '0.2rem 0.5rem',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease',
+                          opacity: mood && !isSelected ? 0.35 : 1,
+                          transform: isSelected ? 'scale(1.08)' : 'scale(1)',
+                        }}
+                      >
+                        <MoodIcon moodKey={m.key} size={20} />
+                        {isSelected && (
+                          <span style={{ fontSize: '0.72rem', fontWeight: '600', color: m.color, whiteSpace: 'nowrap' }}>{m.label}</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                  <button
+                    type="button"
+                    onClick={handleAutoDetectMood}
+                    className="btn btn-glass"
+                    title="Detecta la valoració automàticament a partir de les notes"
+                    style={{ fontSize: '0.72rem', padding: '0.2rem 0.55rem', marginLeft: '0.15rem' }}
+                  >
+                    🤖 Auto
+                  </button>
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                 <button type="submit" className="btn btn-primary">Desar Fitxa</button>
                 <button type="button" className="btn btn-glass" onClick={() => { setIsEditingContact(false); loadData(); }}>Cancel·lar</button>
               </div>
@@ -346,19 +790,26 @@ export default function ContactDetailPage() {
             <>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
-                  <h1 style={{ marginBottom: '0.5rem', color: 'var(--color-accent)', marginTop: 0 }}>{contact.name}</h1>
+                  <h1 style={{ marginBottom: '0.5rem', color: 'var(--color-accent)', marginTop: 0 }}>{activeContact1.name}</h1>
                   <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                     <strong>{contact.entity}</strong> | {contact.municipality}
                     {contact.province && <span>({contact.province})</span>}
                     {contact.status && (
-                      <span style={getStatusBadgeStyle(contact.status)}>
-                        {contact.status}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+                        <span style={getStatusBadgeStyle(contact.status)}>
+                          {contact.status}
+                        </span>
+                        {contact.status === 'Entrevista feta' && contact.mood && (
+                          <span title={MOODS.find(m2 => m2.key === contact.mood)?.label} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                            <MoodIcon moodKey={contact.mood} size={20} />
+                          </span>
+                        )}
                       </span>
                     )}
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  {contact.email && (isAdmin || isCrm) && (
+                  {activeContact1.email && (isAdmin || isCrm) && (
                     <button 
                       className="btn btn-glass" 
                       onClick={handleSendEmail} 
@@ -379,9 +830,49 @@ export default function ContactDetailPage() {
                 </div>
               </div>
               
-              <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.9rem', flexWrap: 'wrap' }}>
-                {contact.email && <span>📧 {contact.email}</span>}
-                {contact.phone && <span>📞 {contact.phone}</span>}
+              {/* Display Contacts Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginTop: '0.5rem', marginBottom: '0.5rem' }}>
+                {/* Contact Card 1 */}
+                <div style={{ background: 'rgba(255, 183, 3, 0.04)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255, 183, 3, 0.15)', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--color-accent)', textTransform: 'uppercase' }}>🟡 Contacte</span>
+                  <div style={{ fontWeight: '600', fontSize: '1rem' }}>{activeContact1.name}</div>
+                  {activeContact1.role && <div style={{ fontSize: '0.85rem', opacity: 0.8 }}>💼 {activeContact1.role}</div>}
+                  {activeContact1.email && <div style={{ fontSize: '0.85rem' }}>📧 <a href={`mailto:${activeContact1.email}`} style={{ color: 'inherit', textDecoration: 'underline' }}>{activeContact1.email}</a></div>}
+                  {activeContact1.phone && <div style={{ fontSize: '0.85rem' }}>📞 <a href={`tel:${activeContact1.phone}`} style={{ color: 'inherit', textDecoration: 'underline' }}>{activeContact1.phone}</a></div>}
+                </div>
+
+                {/* Contact Card 2 */}
+                {(activeContact2.name || activeContact2.email || activeContact2.phone) && (
+                  <div style={{ background: 'rgba(255, 255, 255, 0.01)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>👤 Contacte 2</span>
+                    <div style={{ fontWeight: '600', fontSize: '1rem' }}>{activeContact2.name || 'Sense nom'}</div>
+                    {activeContact2.role && <div style={{ fontSize: '0.85rem', opacity: 0.8 }}>💼 {activeContact2.role}</div>}
+                    {activeContact2.email && <div style={{ fontSize: '0.85rem' }}>📧 <a href={`mailto:${activeContact2.email}`} style={{ color: 'inherit', textDecoration: 'underline' }}>{activeContact2.email}</a></div>}
+                    {activeContact2.phone && <div style={{ fontSize: '0.85rem' }}>📞 <a href={`tel:${activeContact2.phone}`} style={{ color: 'inherit', textDecoration: 'underline' }}>{activeContact2.phone}</a></div>}
+                  </div>
+                )}
+
+                {/* Contact Card 3 */}
+                {(activeContact3.name || activeContact3.email || activeContact3.phone) && (
+                  <div style={{ background: 'rgba(255, 255, 255, 0.01)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>👤 Contacte 3</span>
+                    <div style={{ fontWeight: '600', fontSize: '1rem' }}>{activeContact3.name || 'Sense nom'}</div>
+                    {activeContact3.role && <div style={{ fontSize: '0.85rem', opacity: 0.8 }}>💼 {activeContact3.role}</div>}
+                    {activeContact3.email && <div style={{ fontSize: '0.85rem' }}>📧 <a href={`mailto:${activeContact3.email}`} style={{ color: 'inherit', textDecoration: 'underline' }}>{activeContact3.email}</a></div>}
+                    {activeContact3.phone && <div style={{ fontSize: '0.85rem' }}>📞 <a href={`tel:${activeContact3.phone}`} style={{ color: 'inherit', textDecoration: 'underline' }}>{activeContact3.phone}</a></div>}
+                  </div>
+                )}
+
+                {/* Contact Card 4 */}
+                {(activeContact4.name || activeContact4.email || activeContact4.phone) && (
+                  <div style={{ background: 'rgba(255, 255, 255, 0.01)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.05)', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>👤 Contacte 4</span>
+                    <div style={{ fontWeight: '600', fontSize: '1rem' }}>{activeContact4.name || 'Sense nom'}</div>
+                    {activeContact4.role && <div style={{ fontSize: '0.85rem', opacity: 0.8 }}>💼 {activeContact4.role}</div>}
+                    {activeContact4.email && <div style={{ fontSize: '0.85rem' }}>📧 <a href={`mailto:${activeContact4.email}`} style={{ color: 'inherit', textDecoration: 'underline' }}>{activeContact4.email}</a></div>}
+                    {activeContact4.phone && <div style={{ fontSize: '0.85rem' }}>📞 <a href={`tel:${activeContact4.phone}`} style={{ color: 'inherit', textDecoration: 'underline' }}>{activeContact4.phone}</a></div>}
+                  </div>
+                )}
               </div>
 
               {/* Feedback destacat */}
@@ -400,7 +891,7 @@ export default function ContactDetailPage() {
                 </div>
               )}
 
-              {/* Historial del Document Word original */}
+              {/* Historial inicial */}
               {contact.notes && (
                 <div style={{ 
                   marginTop: '0.2rem', 
@@ -412,7 +903,7 @@ export default function ContactDetailPage() {
                   maxHeight: '150px',
                   overflowY: 'auto'
                 }}>
-                  <strong style={{ color: 'var(--color-text-primary)' }}>Historial d'Interaccions i Notes:</strong>
+                  <strong style={{ color: 'var(--color-text-primary)' }}>Historial inicial:</strong>
                   <p style={{ margin: '0.4rem 0 0 0', whiteSpace: 'pre-wrap', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>{contact.notes}</p>
                 </div>
               )}
@@ -461,7 +952,7 @@ export default function ContactDetailPage() {
                   </div>
                   <div style={{ display: 'flex', gap: '0.5rem' }}>
                     <button type="submit" className="btn btn-primary" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>Desar</button>
-                    <button type="button" className="btn btn-glass" onClick={() => setIsEditingReminder(false)} style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>Cancel·lar</button>
+                    <button type="button" className="btn btn-glass" onClick={() => { setIsEditingReminder(false); loadData(); }} style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem' }}>Cancel·lar</button>
                   </div>
                 </form>
               ) : (
@@ -484,72 +975,262 @@ export default function ContactDetailPage() {
         <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '1.5rem' }}>
           <div>
             <h3 style={{ color: 'var(--color-accent)', marginTop: 0, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '1.2rem' }}>
-              🎭 Segmentació d'Espectacles
+              🎭 Espectacles
             </h3>
             
-            {isEditingShows ? (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                <div>
-                  <h4 style={{ fontSize: '0.82rem', marginBottom: '0.5rem', color: 'var(--color-accent)', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.2rem' }}>Fets / Bolos</h4>
-                  {[
-                    "Layla, un viatge d'esperança",
-                    "Layla, el contacontes",
-                    "Cavernus, una evolució musical",
-                    "Un Nadal Màgic",
-                    "Silencis Trencats",
-                    "Marcel, cartes des del front",
-                    "El petit Leonardo",
-                    "Simfonia Corporativa"
-                  ].map(title => (
-                    <label key={title} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', marginBottom: '0.4rem', cursor: 'pointer', userSelect: 'none' }}>
-                      <input type="checkbox" checked={performedShows.includes(title)} onChange={() => handleToggleShow(title, 'performed')} />
-                      {title}
-                    </label>
-                  ))}
-                </div>
-                <div>
-                  <h4 style={{ fontSize: '0.82rem', marginBottom: '0.5rem', color: 'var(--color-accent)', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.2rem' }}>Interessats / Oferts</h4>
-                  {[
-                    "Layla, un viatge d'esperança",
-                    "Layla, el contacontes",
-                    "Cavernus, una evolució musical",
-                    "Un Nadal Màgic",
-                    "Silencis Trencats",
-                    "Marcel, cartes des del front",
-                    "El petit Leonardo",
-                    "Simfonia Corporativa"
-                  ].map(title => (
-                    <label key={title} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', marginBottom: '0.4rem', cursor: 'pointer', userSelect: 'none' }}>
-                      <input type="checkbox" checked={interestedShows.includes(title)} onChange={() => handleToggleShow(title, 'interested')} />
-                      {title}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div style={{ marginBottom: '1.2rem', fontSize: '0.92rem', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                <div>
-                  <strong style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--color-text-primary)' }}>Espectacles realitzats (Bolo):</strong>
-                  {performedShows.length > 0 ? (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
-                      {performedShows.map(s => <span key={s} style={{ background: 'rgba(46, 196, 182, 0.12)', color: '#2ec4b6', padding: '0.2rem 0.5rem', borderRadius: '3px', fontSize: '0.78rem', fontWeight: 'bold', border: '1px solid rgba(46, 196, 182, 0.2)' }}>{s}</span>)}
+            {isEditingShows ? (() => {
+              const suggestedGigs = getMatchingGigs();
+              const suggestedIds = new Set(suggestedGigs.map(m => m.id));
+              const linkedGigs = allGigs.filter(g => (linkedGigIds || []).includes(g.id)).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+              
+              const filteredGigsToLink = allGigs.filter(g => {
+                const q = normalizeText(gigSearchQuery);
+                return !q || 
+                  normalizeText(g.title).includes(q) || 
+                  normalizeText(g.locationName).includes(q) || 
+                  normalizeText(g.municipality).includes(q);
+              });
+              
+              const sortedGigsToLink = [...filteredGigsToLink].sort((a, b) => {
+                const aSuggested = suggestedIds.has(a.id) ? 1 : 0;
+                const bSuggested = suggestedIds.has(b.id) ? 1 : 0;
+                if (aSuggested !== bSuggested) return bSuggested - aSuggested;
+                return (b.date || '').localeCompare(a.date || '');
+              });
+
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem', marginBottom: '0.5rem' }}>
+                    <div>
+                      <h4 style={{ fontSize: '0.82rem', marginBottom: '0.4rem', color: 'var(--color-accent)', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.2rem' }}>Vincula bolos (Road-sheet)</h4>
+                      
+                      {/* Linked gigs as chips */}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.8rem', minHeight: '30px' }}>
+                        {linkedGigs.map(g => (
+                          <span 
+                            key={g.id} 
+                            style={{ 
+                              display: 'inline-flex', 
+                              alignItems: 'center', 
+                              gap: '0.3rem', 
+                              padding: '0.25rem 0.55rem', 
+                              background: 'rgba(46, 196, 182, 0.12)', 
+                              border: '1px solid rgba(46, 196, 182, 0.25)', 
+                              borderRadius: '16px', 
+                              color: '#2ec4b6', 
+                              fontSize: '0.74rem',
+                              fontWeight: '600',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            📅 {formatDateDDMMYYYY(g.date)} - {g.title} ({g.locationName && g.municipality && g.locationName !== g.municipality ? `${g.municipality} (${g.locationName})` : (g.municipality || g.locationName || '')})
+                            <button 
+                              type="button" 
+                              onClick={() => setLinkedGigIds(prev => prev.filter(id => id !== g.id))}
+                              style={{ 
+                                border: 'none', 
+                                background: 'transparent', 
+                                color: '#ff6b6b', 
+                                cursor: 'pointer', 
+                                padding: '0 0.1rem', 
+                                fontSize: '0.85rem',
+                                fontWeight: 'bold', 
+                                display: 'inline-flex', 
+                                alignItems: 'center'
+                              }}
+                              title="Desvincular"
+                            >
+                              &times;
+                            </button>
+                          </span>
+                        ))}
+                        {linkedGigs.length === 0 && (
+                          <span style={{ fontStyle: 'italic', opacity: 0.5, fontSize: '0.78rem', paddingTop: '0.2rem' }}>Cap bolo vinculat</span>
+                        )}
+                      </div>
+
+                      {/* Autocomplete search input & dropdown list */}
+                      <div style={{ position: 'relative' }}>
+                        <input 
+                          type="text" 
+                          placeholder="🔍 Cerca i afegeix bolos per data, municipi o títol..." 
+                          value={gigSearchQuery}
+                          onChange={e => setGigSearchQuery(e.target.value)}
+                          onFocus={() => setIsDropdownOpen(true)}
+                          onBlur={() => {
+                            // Delay slightly to allow click events on items to fire first
+                            setTimeout(() => setIsDropdownOpen(false), 200);
+                          }}
+                          className="input-field"
+                          style={{ padding: '0.45rem 0.75rem', fontSize: '0.8rem', width: '100%', display: 'block', marginBottom: '0.2rem' }}
+                        />
+                        {/* Dropdown panel, only show when active/focused */}
+                        {isDropdownOpen && (
+                          <div style={{ 
+                            position: 'absolute', 
+                            top: '100%', 
+                            left: 0, 
+                            width: 'max-content',
+                            minWidth: '100%',
+                            maxWidth: '650px',
+                            backgroundColor: 'var(--color-background-soft)', 
+                            border: '1px solid var(--color-border)', 
+                            borderRadius: 'var(--radius-md)', 
+                            zIndex: 100, 
+                            maxHeight: '350px', 
+                            overflowY: 'auto', 
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                            backdropFilter: 'blur(12px)',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '1px',
+                            padding: '0.3rem'
+                          }}>
+                          {sortedGigsToLink.filter(g => !linkedGigIds.includes(g.id)).map(g => {
+                            const isSuggested = suggestedIds.has(g.id);
+                            return (
+                              <div 
+                                key={g.id} 
+                                style={{ 
+                                  padding: '0.45rem 0.55rem', 
+                                  cursor: 'pointer', 
+                                  borderRadius: '4px',
+                                  fontSize: '0.78rem',
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  gap: '0.5rem',
+                                  background: isSuggested ? 'rgba(255, 183, 3, 0.03)' : 'transparent',
+                                  border: isSuggested ? '1px solid rgba(255, 183, 3, 0.1)' : '1px solid transparent',
+                                }}
+                                onClick={() => {
+                                  setLinkedGigIds(prev => [...prev, g.id]);
+                                  setGigSearchQuery('');
+                                }}
+                                onMouseEnter={e => {
+                                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)';
+                                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                                }}
+                                onMouseLeave={e => {
+                                  e.currentTarget.style.backgroundColor = isSuggested ? 'rgba(255, 183, 3, 0.03)' : 'transparent';
+                                  e.currentTarget.style.borderColor = isSuggested ? 'rgba(255, 183, 3, 0.1)' : 'transparent';
+                                }}
+                              >
+                                <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                                  📅 {formatDateDDMMYYYY(g.date)} - {g.title} ({g.locationName && g.municipality && g.locationName !== g.municipality ? `${g.municipality} (${g.locationName})` : (g.municipality || g.locationName || '')})
+                                </span>
+                                {isSuggested && <span style={{ fontSize: '0.65rem', color: '#ffb703', fontWeight: 'bold', background: 'rgba(255, 183, 3, 0.08)', padding: '0.05rem 0.25rem', borderRadius: '3px', whiteSpace: 'nowrap' }}>💡 Sugerit</span>}
+                              </div>
+                            );
+                          })}
+                          {sortedGigsToLink.filter(g => !linkedGigIds.includes(g.id)).length === 0 && (
+                            <div style={{ padding: '0.6rem', fontSize: '0.78rem', color: 'var(--color-text-secondary)', textAlign: 'center', fontStyle: 'italic' }}>
+                              Cap bolo disponible per vincular
+                            </div>
+                          )}
+                        </div>
+                        )}
+                      </div>
                     </div>
-                  ) : (
-                    <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', fontStyle: 'italic' }}>Cap espectacle contractat encara</span>
-                  )}
-                </div>
-                <div>
-                  <strong style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--color-text-primary)' }}>Espectacles d'interès:</strong>
-                  {interestedShows.length > 0 ? (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
-                      {interestedShows.map(s => <span key={s} style={{ background: 'rgba(255, 183, 3, 0.12)', color: '#ffb703', padding: '0.2rem 0.5rem', borderRadius: '3px', fontSize: '0.78rem', fontWeight: 'bold', border: '1px solid rgba(255, 183, 3, 0.2)' }}>{s}</span>)}
+                    <div>
+                      <h4 style={{ fontSize: '0.82rem', marginBottom: '0.5rem', color: 'var(--color-accent)', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.2rem' }}>Interessats / Oferts</h4>
+                      <div style={{ maxHeight: '250px', overflowY: 'auto', paddingRight: '0.5rem' }}>
+                        {standardShows.map(title => (
+                          <label key={title} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', marginBottom: '0.4rem', cursor: 'pointer', userSelect: 'none' }}>
+                            <input type="checkbox" checked={interestedShows.includes(title)} onChange={() => handleToggleShow(title, 'interested')} />
+                            {title}
+                          </label>
+                        ))}
+                      </div>
                     </div>
-                  ) : (
-                    <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', fontStyle: 'italic' }}>Cap interès o proposta pendent</span>
-                  )}
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })() : (() => {
+              const linkedGigs = allGigs.filter(g => (linkedGigIds || []).includes(g.id)).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+              
+              const showMapping = {
+                "cavernus": "Cavernus, una evolució musical",
+                "cavernus, una evolució musica": "Cavernus, una evolució musical",
+                "layla": "Layla, un viatge d'esperança",
+                "concert duo": "Concert Duo Hemiòlia",
+                "concert trio": "Concert Trio Hemiòlia",
+                "el contacontes, un viatge d'esperança": "Layla, el contacontes",
+                "layla, el contacontes, un viatge d'esperança": "Layla, el contacontes",
+                "el contacontes": "Layla, el contacontes",
+                "un viatge d'esperança": "Layla, un viatge d'esperança",
+                "un viatge d’esperança": "Layla, un viatge d'esperança"
+              };
+              const getNormalizedShowName = (t) => {
+                const clean = (t || '')
+                  .trim()
+                  .toLowerCase()
+                  .replace(/’/g, "'")
+                  .replace(/\s*-\s*estrena/g, '')
+                  .replace(/\s*\(estrena\)/g, '')
+                  .replace(/\s*\(.*?\)/g, '')
+                  .trim();
+                return showMapping[clean] || clean;
+              };
+              const linkedTitlesNormalized = linkedGigs.map(g => getNormalizedShowName(g.title));
+              const unlinkedPerformed = performedShows.filter(title => !linkedTitlesNormalized.includes(getNormalizedShowName(title)));
+
+              const getReturnUrl = () => {
+                const params = new URLSearchParams();
+                if (searchQuery) params.set('search', searchQuery);
+                if (filterProvince !== 'Tots') params.set('province', filterProvince);
+                if (filterStatus !== 'Tots') params.set('status', filterStatus);
+                if (filterShow !== 'Tots') params.set('show', filterShow);
+                if (filterReminder) params.set('reminder', '1');
+                const qs = params.toString();
+                return `/dashboard/crm/${contactId}${qs ? '?' + qs : ''}`;
+              };
+
+              return (
+                <div style={{ marginBottom: '1.2rem', fontSize: '0.92rem', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                  <div>
+                    <strong style={{ display: 'block', marginBottom: '0.4rem', color: 'var(--color-text-primary)' }}>Espectacles realitzats:</strong>
+                    
+                    {/* Linked Gigs from Road-sheet */}
+                    {linkedGigs.length > 0 && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '0.6rem' }}>
+                        {linkedGigs.map(g => (
+                          <div key={g.id} style={{ fontSize: '0.82rem', padding: '0.4rem', background: 'rgba(46, 196, 182, 0.05)', borderRadius: '4px', border: '1px solid rgba(46, 196, 182, 0.15)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>📅 {formatDateDDMMYYYY(g.date)} - <strong>{g.title}</strong></span>
+                            <Link href={`/dashboard/road-sheet?q=${encodeURIComponent(g.municipality || g.locationName || '')}&highlight=${g.id}&returnTo=${encodeURIComponent(getReturnUrl())}`} style={{ color: '#2ec4b6', textDecoration: 'none', fontWeight: 'bold' }}>Obrir 🚐</Link>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {/* Unlinked Historical Performed Shows */}
+                    {unlinkedPerformed.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.4rem' }}>
+                        {unlinkedPerformed.map(s => (
+                          <span key={s} style={{ background: 'rgba(46, 196, 182, 0.06)', color: '#2ec4b6', opacity: 0.85, padding: '0.2rem 0.5rem', borderRadius: '3px', fontSize: '0.78rem', fontWeight: 'bold', border: '1px solid rgba(46, 196, 182, 0.12)' }} title="Històric (sense bolo enllaçat)">
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {linkedGigs.length === 0 && unlinkedPerformed.length === 0 && (
+                      <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', fontStyle: 'italic' }}>Cap espectacle registrat</span>
+                    )}
+                  </div>
+                  <div>
+                    <strong style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--color-text-primary)' }}>Espectacles d'interès:</strong>
+                    {interestedShows.length > 0 ? (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                        {interestedShows.map(s => <span key={s} style={{ background: 'rgba(255, 183, 3, 0.12)', color: '#ffb703', padding: '0.2rem 0.5rem', borderRadius: '3px', fontSize: '0.78rem', fontWeight: 'bold', border: '1px solid rgba(255, 183, 3, 0.2)' }}>{s}</span>)}
+                      </div>
+                    ) : (
+                      <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', fontStyle: 'italic' }}>Cap interès o proposta pendent</span>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </div>
           
           {(isAdmin || isCrm) && (
@@ -605,6 +1286,8 @@ export default function ContactDetailPage() {
                 <option value="Marcel, cartes des del front" />
                 <option value="El petit Leonardo" />
                 <option value="Simfonia Corporativa" />
+                <option value="Concert Duo Hemiòlia" />
+                <option value="Concert Trio Hemiòlia" />
               </datalist>
             </div>
 

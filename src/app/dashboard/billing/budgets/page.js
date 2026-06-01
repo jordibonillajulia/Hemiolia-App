@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../../../lib/AuthContext';
 import { getBudgets, deleteBudget, getBillingClients, formatClientName } from '../../../../lib/firestoreUtils';
 import Link from 'next/link';
+import { normalizeText } from '../../../../lib/utils';
 
 // Helper to format a date string as DD/MM/YYYY with zero-padding
 const formatDateDDMMYYYY = (dateStr) => {
@@ -83,12 +84,14 @@ export default function BudgetsPage() {
   })();
 
   const filteredBudgets = budgets.filter(b => {
+    const cleanClient = normalizeText(filterClient);
     const matchClient = !filterClient || 
-      b.clientName?.toLowerCase().includes(filterClient.toLowerCase()) || 
-      b.clientNif?.toLowerCase().includes(filterClient.toLowerCase());
+      normalizeText(b.clientName).includes(cleanClient) || 
+      normalizeText(b.clientNif).includes(cleanClient);
       
+    const cleanNum = normalizeText(filterBudgetNumber);
     const matchNumber = !filterBudgetNumber || 
-      b.budgetNumber?.toLowerCase().includes(filterBudgetNumber.toLowerCase());
+      normalizeText(b.budgetNumber).includes(cleanNum);
       
     const matchIssuer = filterIssuer === 'Tots' || 
       b.issuerId === filterIssuer;

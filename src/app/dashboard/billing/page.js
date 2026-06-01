@@ -5,6 +5,7 @@ import { useAuth } from '../../../lib/AuthContext';
 import { getInvoices, deleteInvoice, formatDisplayInvoiceNumber, getBillingClients, formatClientName } from '../../../lib/firestoreUtils';
 import Link from 'next/link';
 import Papa from 'papaparse';
+import { normalizeText } from '../../../lib/utils';
 
 // Helper to format a date string as DD/MM/YYYY with zero-padding
 const formatDateDDMMYYYY = (dateStr) => {
@@ -83,14 +84,16 @@ export default function BillingPage() {
   })();
 
   const filteredInvoices = invoices.filter(inv => {
+    const cleanClient = normalizeText(filterClient);
     const matchClient = !filterClient || 
-      inv.clientName?.toLowerCase().includes(filterClient.toLowerCase()) || 
-      inv.clientNif?.toLowerCase().includes(filterClient.toLowerCase());
+      normalizeText(inv.clientName).includes(cleanClient) || 
+      normalizeText(inv.clientNif).includes(cleanClient);
       
     const displayNum = formatDisplayInvoiceNumber(inv.invoiceNumber, inv.issuerId);
+    const cleanNum = normalizeText(filterInvoiceNumber);
     const matchNumber = !filterInvoiceNumber || 
-      inv.invoiceNumber?.toLowerCase().includes(filterInvoiceNumber.toLowerCase()) ||
-      displayNum.toLowerCase().includes(filterInvoiceNumber.toLowerCase());
+      normalizeText(inv.invoiceNumber).includes(cleanNum) ||
+      normalizeText(displayNum).includes(cleanNum);
       
     const matchIssuer = filterIssuer === 'Tots' || 
       inv.issuerId === filterIssuer;

@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../../lib/AuthContext';
 import { getUpcomingGigs, addGig, deleteGig, updateGig } from '../../../lib/firestoreUtils';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { normalizeText } from '../../../lib/utils';
 
 // Helper to format date as DD/MM/YYYY with padding
 const formatDateDDMMYYYY = (dateStr) => {
@@ -108,6 +110,29 @@ export default function RoadSheetPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchYear, setSearchYear] = useState('');
 
+  const searchParams = useSearchParams();
+  const highlightId = searchParams.get('highlight');
+  const returnTo = searchParams.get('returnTo');
+
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q) {
+      setSearchQuery(q);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    const highlightId = searchParams.get('highlight');
+    if (highlightId && gigs.length > 0) {
+      setTimeout(() => {
+        const el = document.getElementById(`gig-card-${highlightId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 300);
+    }
+  }, [searchParams, gigs]);
+
   // Form state
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [showTime, setShowTime] = useState('');
@@ -209,7 +234,7 @@ export default function RoadSheetPage() {
     <div className="container mt-xl animate-fade-in-up">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-md)', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <Link href="/dashboard" className="btn-back no-print" title="Tornar al Dashboard" style={{ marginRight: '1rem' }}>
+          <Link href={returnTo || '/dashboard'} className="btn-back no-print" title={returnTo ? "Tornar a la fitxa" : "Tornar al Dashboard"} style={{ marginRight: '1rem' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="19" y1="12" x2="5" y2="12"></line>
               <polyline points="12 19 5 12 12 5"></polyline>
@@ -305,6 +330,8 @@ export default function RoadSheetPage() {
                 <option value="Marcel, cartes des del front" />
                 <option value="El petit Leonardo" />
                 <option value="Simfonia Corporativa" />
+                <option value="Concert Duo Hemiòlia" />
+                <option value="Concert Trio Hemiòlia" />
               </datalist>
             </div>
             <div className="input-group">
@@ -356,10 +383,10 @@ export default function RoadSheetPage() {
             
             const combinedGigs = [...upcomingGigs, ...pastGigs];
             const filteredGigs = combinedGigs.filter(g => {
-              const q = searchQuery.toLowerCase();
-              const matchesText = (g.title || '').toLowerCase().includes(q) || 
-                                  (g.locationName || '').toLowerCase().includes(q) ||
-                                  (g.municipality || '').toLowerCase().includes(q);
+              const q = normalizeText(searchQuery);
+              const matchesText = normalizeText(g.title || '').includes(q) || 
+                                  normalizeText(g.locationName || '').includes(q) ||
+                                  normalizeText(g.municipality || '').includes(q);
               const matchesYear = searchYear === '' || (g.date && g.date.startsWith(searchYear));
               return matchesText && matchesYear;
             });
@@ -389,10 +416,20 @@ export default function RoadSheetPage() {
                 'Cobrat': '#2ecc71',
                 'No remunerat': '#95a5a6'
               };
-              
-              return (
-                <div key={gig.id} className="glass-panel" style={{ padding: 'var(--space-md)' }}>
-                  <div style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
+               const isHighlighted = highlightId === gig.id;
+               return (
+                 <div 
+                   id={`gig-card-${gig.id}`}
+                   key={gig.id} 
+                   className="glass-panel" 
+                   style={{ 
+                     padding: 'var(--space-md)',
+                     border: isHighlighted ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
+                     boxShadow: isHighlighted ? '0 0 20px rgba(255, 183, 3, 0.45)' : 'none',
+                     transition: 'all 0.3s ease-in-out'
+                   }}
+                 >
+                   <div style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
                         <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--color-primary)' }}>{gig.title}</h3>
