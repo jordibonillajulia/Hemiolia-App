@@ -1186,7 +1186,7 @@ export default function ContactDetailPage() {
                         style={{ padding: '0.45rem 0.75rem', fontSize: '0.8rem', width: '100%', display: 'block' }}
                       >
                         <option value="" disabled>➕ Afegeix un espectacle a la llista d'interès...</option>
-                        {allAvailableShows.filter(s => !interestedShows.includes(s)).map(s => (
+                        {standardShows.filter(s => !interestedShows.includes(s)).map(s => (
                           <option key={s} value={s}>{s}</option>
                         ))}
                       </select>
