@@ -103,7 +103,7 @@ export default function CRMPage() {
   const [entity, setEntity] = useState(''); // Teatre o Ajuntament
   const [municipality, setMunicipality] = useState('');
   const [province, setProvince] = useState('');
-  const [status, setStatus] = useState('Pendent');
+  const [status, setStatus] = useState('');
 
   // Contact 1-4 form states
   const [c1Name, setC1Name] = useState('');
@@ -188,7 +188,7 @@ export default function CRMPage() {
 
   const resetForm = () => {
     setEditingContactId(null);
-    setEntity(''); setMunicipality(''); setProvince(''); setStatus('Pendent');
+    setEntity(''); setMunicipality(''); setProvince(''); setStatus('');
     setC1Name(''); setC1Role(''); setC1Email(''); setC1Phone('');
     setC2Name(''); setC2Role(''); setC2Email(''); setC2Phone('');
     setC3Name(''); setC3Role(''); setC3Email(''); setC3Phone('');
@@ -200,7 +200,7 @@ export default function CRMPage() {
     setEntity(contact.entity || '');
     setMunicipality(contact.municipality || '');
     setProvince(contact.province || '');
-    setStatus(contact.status || 'Pendent');
+    setStatus(contact.status || '');
     
     // Fallback to older model fields if nested ones are missing
     const c1 = contact.contact1 || {};
@@ -273,7 +273,7 @@ export default function CRMPage() {
       
     const matchesProvince = filterProvince === 'Tots' || (contact.province || '') === filterProvince;
     const matchesStatus = filterStatus === 'Tots' || 
-      (filterStatus === 'Sense estat' ? (!contact.status || contact.status === '') : contact.status === filterStatus);
+      (filterStatus === 'Sense estat' ? (!contact.status || contact.status === '' || contact.status === 'Sense estat') : contact.status === filterStatus);
     
     const matchesShow = filterShow === 'Tots' || 
       (contact.interestedShows && contact.interestedShows.includes(filterShow)) ||
@@ -360,10 +360,10 @@ export default function CRMPage() {
                   style={{ background: 'var(--color-background-input)', color: 'var(--color-text-primary)' }}
                 >
                   <option value=""></option>
-                  <option value="Pendent">Pendent</option>
+                  <option value="Sense estat">Sense estat</option>
+                  <option value="Entrevista feta">Entrevista feta</option>
                   <option value="Instància feta">Instància feta</option>
                   <option value="Entrevista pendent">Entrevista pendent</option>
-                  <option value="Entrevista feta">Entrevista feta</option>
                   <option value="Entrevista rebutjada">Entrevista rebutjada</option>
                   <option value="Error / No possible">Error / No possible</option>
                 </select>

@@ -158,7 +158,7 @@ export default function ContactDetailPage() {
   const [entity, setEntity] = useState('');
   const [municipality, setMunicipality] = useState('');
   const [province, setProvince] = useState('');
-  const [status, setStatus] = useState('Pendent');
+  const [status, setStatus] = useState('');
   const [feedbackSummary, setFeedbackSummary] = useState('');
   const [notes, setNotes] = useState('');
   const [mood, setMood] = useState('');
@@ -224,7 +224,7 @@ export default function ContactDetailPage() {
     setEntity(c?.entity || '');
     setMunicipality(c?.municipality || '');
     setProvince(c?.province || '');
-    setStatus(c?.status || 'Pendent');
+    setStatus(c?.status || '');
     setFeedbackSummary(c?.feedbackSummary || '');
     setNotes(formatNotesWithLineBreaks(c?.notes || ''));
     setMood(c?.mood || '');
@@ -686,10 +686,10 @@ export default function ContactDetailPage() {
                     style={{ background: 'var(--color-background-input)', color: 'var(--color-text-primary)' }}
                   >
                     <option value=""></option>
-                    <option value="Pendent">Pendent</option>
+                    <option value="Sense estat">Sense estat</option>
+                    <option value="Entrevista feta">Entrevista feta</option>
                     <option value="Instància feta">Instància feta</option>
                     <option value="Entrevista pendent">Entrevista pendent</option>
-                    <option value="Entrevista feta">Entrevista feta</option>
                     <option value="Entrevista rebutjada">Entrevista rebutjada</option>
                     <option value="Error / No possible">Error / No possible</option>
                   </select>
