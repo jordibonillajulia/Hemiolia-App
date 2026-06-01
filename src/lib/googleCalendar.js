@@ -100,7 +100,7 @@ async function syncGig(gigId) {
   }
 
   // Construct Calendar Event fields
-  const title = `Consell / Bolo: ${gig.title || 'Bolo'} - ${gig.municipality || ''}`;
+  const title = `Bolo: ${gig.title || 'Bolo'} - ${gig.municipality || ''}`;
   const location = `${gig.locationName || ''} (${gig.address || ''})`.trim();
   
   let description = `🚐 LOGÍSTICA DE BOLO\n`;
