@@ -1270,7 +1270,6 @@ body.generating-pdf {
 }
 
 body.generating-pdf nav,
-body.generating-pdf nav + div,
 body.generating-pdf .no-print,
 body.generating-pdf .no-print-header,
 body.generating-pdf .no-print-actions,
