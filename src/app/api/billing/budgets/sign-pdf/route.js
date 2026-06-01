@@ -55,7 +55,7 @@ export async function POST(req) {
     });
 
     // Save PDF Document with placeholder
-    const pdfWithPlaceholder = await pdfDoc.save();
+    const pdfWithPlaceholder = await pdfDoc.save({ useObjectStreams: false });
 
     // Load P12 Certificate
     const p12Buffer = fs.readFileSync(certPath);
