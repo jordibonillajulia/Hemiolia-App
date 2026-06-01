@@ -1126,13 +1126,70 @@ export default function ContactDetailPage() {
                   
                   <div>
                     <h4 style={{ fontSize: '0.82rem', marginBottom: '0.5rem', color: 'var(--color-accent)', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.2rem' }}>Interessats / Oferts</h4>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '0.5rem' }}>
-                      {standardShows.map(title => (
-                        <label key={title} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', cursor: 'pointer', userSelect: 'none' }}>
-                          <input type="checkbox" checked={interestedShows.includes(title)} onChange={() => handleToggleShow(title, 'interested')} />
-                          {title}
-                        </label>
+                    
+                    {/* Selected interested shows as chips */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.8rem', minHeight: '30px' }}>
+                      {interestedShows.map(s => (
+                        <span 
+                          key={s} 
+                          style={{ 
+                            display: 'inline-flex', 
+                            alignItems: 'center', 
+                            gap: '0.3rem', 
+                            padding: '0.25rem 0.55rem', 
+                            background: 'rgba(255, 183, 3, 0.12)', 
+                            border: '1px solid rgba(255, 183, 3, 0.25)', 
+                            borderRadius: '16px', 
+                            color: '#ffb703', 
+                            fontSize: '0.74rem',
+                            fontWeight: '600',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          {s}
+                          <button 
+                            type="button" 
+                            onClick={() => setInterestedShows(prev => prev.filter(item => item !== s))}
+                            style={{ 
+                              border: 'none', 
+                              background: 'transparent', 
+                              color: '#ff6b6b', 
+                              cursor: 'pointer', 
+                              padding: '0 0.1rem', 
+                              fontSize: '0.85rem',
+                              fontWeight: 'bold', 
+                              display: 'inline-flex', 
+                              alignItems: 'center'
+                            }}
+                            title="Eliminar"
+                          >
+                            &times;
+                          </button>
+                        </span>
                       ))}
+                      {interestedShows.length === 0 && (
+                        <span style={{ fontStyle: 'italic', opacity: 0.5, fontSize: '0.78rem', paddingTop: '0.2rem' }}>Cap espectacle d'interès afegit</span>
+                      )}
+                    </div>
+
+                    {/* Dropdown select to add show */}
+                    <div style={{ maxWidth: '400px' }}>
+                      <select
+                        value=""
+                        onChange={e => {
+                          const val = e.target.value;
+                          if (val && !interestedShows.includes(val)) {
+                            setInterestedShows(prev => [...prev, val]);
+                          }
+                        }}
+                        className="input-field"
+                        style={{ padding: '0.45rem 0.75rem', fontSize: '0.8rem', width: '100%', display: 'block' }}
+                      >
+                        <option value="" disabled>➕ Afegeix un espectacle a la llista d'interès...</option>
+                        {allAvailableShows.filter(s => !interestedShows.includes(s)).map(s => (
+                          <option key={s} value={s}>{s}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 </div>
