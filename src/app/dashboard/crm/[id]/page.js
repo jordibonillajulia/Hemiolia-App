@@ -393,7 +393,7 @@ export default function ContactDetailPage() {
       .filter(g => (linkedGigIds || []).includes(g.id))
       .map(g => g.title)
       .filter(Boolean);
-    const updatedPerformedShows = Array.from(new Set([...performedShows, ...linkedTitles]));
+    const updatedPerformedShows = Array.from(new Set(linkedTitles));
 
     await updateContact(contactId, {
       linkedGigIds,
@@ -1164,10 +1164,7 @@ export default function ContactDetailPage() {
                   .trim();
                 return showMapping[clean] || clean;
               };
-              const linkedTitlesNormalized = linkedGigs.map(g => getNormalizedShowName(g.title));
-              const unlinkedPerformed = performedShows.filter(title => !linkedTitlesNormalized.includes(getNormalizedShowName(title)));
-
-              const getReturnUrl = () => {
+               const getReturnUrl = () => {
                 const params = new URLSearchParams();
                 if (searchQuery) params.set('search', searchQuery);
                 if (filterProvince !== 'Tots') params.set('province', filterProvince);
@@ -1184,7 +1181,7 @@ export default function ContactDetailPage() {
                     <strong style={{ display: 'block', marginBottom: '0.4rem', color: 'var(--color-text-primary)' }}>Espectacles realitzats:</strong>
                     
                     {/* Linked Gigs from Road-sheet */}
-                    {linkedGigs.length > 0 && (
+                    {linkedGigs.length > 0 ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '0.6rem' }}>
                         {linkedGigs.map(g => (
                           <div key={g.id} style={{ fontSize: '0.82rem', padding: '0.4rem', background: 'rgba(46, 196, 182, 0.05)', borderRadius: '4px', border: '1px solid rgba(46, 196, 182, 0.15)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -1193,20 +1190,7 @@ export default function ContactDetailPage() {
                           </div>
                         ))}
                       </div>
-                    )}
-                    
-                    {/* Unlinked Historical Performed Shows */}
-                    {unlinkedPerformed.length > 0 && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.4rem' }}>
-                        {unlinkedPerformed.map(s => (
-                          <span key={s} style={{ background: 'rgba(46, 196, 182, 0.06)', color: '#2ec4b6', opacity: 0.85, padding: '0.2rem 0.5rem', borderRadius: '3px', fontSize: '0.78rem', fontWeight: 'bold', border: '1px solid rgba(46, 196, 182, 0.12)' }} title="Històric (sense bolo enllaçat)">
-                            {s}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {linkedGigs.length === 0 && unlinkedPerformed.length === 0 && (
+                    ) : (
                       <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', fontStyle: 'italic' }}>Cap espectacle registrat</span>
                     )}
                   </div>
