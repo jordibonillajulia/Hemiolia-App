@@ -26,6 +26,8 @@ const getStatusBadgeStyle = (status) => {
       return { ...base, backgroundColor: 'rgba(13, 110, 253, 0.15)', color: '#3a86c8', border: '1px solid rgba(13, 110, 253, 0.3)' };
     case 'Error / No possible':
       return { ...base, backgroundColor: 'rgba(220, 53, 69, 0.15)', color: '#ff6b6b', border: '1px solid rgba(220, 53, 69, 0.3)' };
+    case 'Entrevista rebutjada':
+      return { ...base, backgroundColor: 'rgba(248, 113, 113, 0.15)', color: '#f87171', border: '1px solid rgba(248, 113, 113, 0.3)' }; // Soft red badge
     default:
       return { ...base, backgroundColor: 'rgba(108, 117, 125, 0.15)', color: '#adb5bd', border: '1px solid rgba(108, 117, 125, 0.3)' };
   }
@@ -362,6 +364,7 @@ export default function CRMPage() {
                   <option value="Instància feta">Instància feta</option>
                   <option value="Entrevista pendent">Entrevista pendent</option>
                   <option value="Entrevista feta">Entrevista feta</option>
+                  <option value="Entrevista rebutjada">Entrevista rebutjada</option>
                   <option value="Error / No possible">Error / No possible</option>
                 </select>
               </div>
@@ -522,6 +525,7 @@ export default function CRMPage() {
               <option value="Entrevista feta">Entrevista feta</option>
               <option value="Instància feta">Instància feta</option>
               <option value="Entrevista pendent">Entrevista pendent</option>
+              <option value="Entrevista rebutjada">Entrevista rebutjada</option>
               <option value="Error / No possible">Error / No possible</option>
             </select>
           </div>
