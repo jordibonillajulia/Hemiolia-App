@@ -29,3 +29,5 @@ env:
     secret: CERT_PASSWORD_PAULA
   - variable: GEMINI_API_KEY
     secret: GEMINI_API_KEY
+  - variable: GOOGLE_SERVICE_ACCOUNT_JSON
+    secret: GOOGLE_SERVICE_ACCOUNT_JSON
