@@ -64,18 +64,23 @@ export default function BudgetDetailPage() {
       element.style.padding = '2.5rem 2.5rem 0.6rem 2.5rem';
       element.style.minHeight = '29.7cm';
 
+      // Save scroll position and scroll to top-left to avoid html2canvas offset rendering issues
+      const originalScrollX = window.scrollX || window.pageXOffset;
+      const originalScrollY = window.scrollY || window.pageYOffset;
+      window.scrollTo(0, 0);
+
+      // Wait a short moment for the scroll/rendering recalculation to finish
+      await new Promise(resolve => setTimeout(resolve, 80));
+
       const canvas = await html2canvas(element, {
         scale: 2, // High resolution
         useCORS: true,
         backgroundColor: '#ffffff',
-        logging: false,
-        width: 794,
-        height: 1123,
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: 794,
-        windowHeight: 1123
+        logging: false
       });
+
+      // Restore scroll position
+      window.scrollTo(originalScrollX, originalScrollY);
 
       // Remove the layout override class immediately after snapshot is captured
       document.body.classList.remove('generating-pdf');
