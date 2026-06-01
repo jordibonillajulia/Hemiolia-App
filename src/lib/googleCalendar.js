@@ -8,18 +8,23 @@ const CALENDAR_ID = 'hemioliaproduccions@gmail.com';
 
 // Graceful check for service account credentials
 const hasCredentials = () => {
-  return fs.existsSync(certPath);
+  return fs.existsSync(certPath) || !!process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
 };
 
 // Initialize Google Calendar client using JWT authentication
 const getCalendarClient = () => {
   if (!hasCredentials()) {
-    console.warn("⚠️ Google Calendar Sync: Credentials file 'certs/google-service-account.json' not found. Sync is disabled.");
+    console.warn("⚠️ Google Calendar Sync: Credentials file 'certs/google-service-account.json' or GOOGLE_SERVICE_ACCOUNT_JSON environment variable not found. Sync is disabled.");
     return null;
   }
 
   try {
-    const creds = JSON.parse(fs.readFileSync(certPath, 'utf8'));
+    let creds;
+    if (fs.existsSync(certPath)) {
+      creds = JSON.parse(fs.readFileSync(certPath, 'utf8'));
+    } else {
+      creds = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+    }
     const auth = new google.auth.JWT({
       email: creds.client_email,
       key: creds.private_key,
@@ -36,8 +41,14 @@ const getCalendarClient = () => {
 const getFirestoreAdmin = () => {
   if (!admin.apps.length) {
     try {
-      if (hasCredentials()) {
+      if (fs.existsSync(certPath)) {
         const creds = JSON.parse(fs.readFileSync(certPath, 'utf8'));
+        admin.initializeApp({
+          credential: admin.credential.cert(creds),
+          projectId: creds.project_id
+        });
+      } else if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+        const creds = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
         admin.initializeApp({
           credential: admin.credential.cert(creds),
           projectId: creds.project_id
