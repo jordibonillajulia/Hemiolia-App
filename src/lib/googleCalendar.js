@@ -100,7 +100,7 @@ async function syncGig(gigId) {
   }
 
   // Construct Calendar Event fields
-  const title = `Bolo: ${gig.title || 'Bolo'} - ${gig.municipality || ''}`;
+  const title = `${gig.title || ''}${gig.municipality ? ' - ' + gig.municipality : ''}`;
   const location = `${gig.locationName || ''} (${gig.address || ''})`.trim();
   
   let description = `🚐 LOGÍSTICA DE BOLO\n`;
@@ -151,7 +151,7 @@ async function syncGig(gigId) {
     description,
     start,
     end,
-    colorId: '2', // Green/Blue for bolos
+    colorId: '5', // Yellow for bolos
     reminders: {
       useDefault: false,
       overrides: [
