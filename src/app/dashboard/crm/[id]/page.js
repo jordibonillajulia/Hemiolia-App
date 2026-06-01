@@ -5,7 +5,7 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../../../lib/AuthContext';
 import { getContactById, getInteractionsByContact, addInteraction, getShows, updateContact, getUpcomingGigs, getContacts } from '../../../../lib/firestoreUtils';
 import Link from 'next/link';
-import { normalizeText } from '../../../../lib/utils';
+import { normalizeText, formatNotesWithLineBreaks } from '../../../../lib/utils';
 
 // Helper to format date as DD/MM/YYYY with padding
 const formatDateDDMMYYYY = (dateStr) => {
@@ -224,7 +224,7 @@ export default function ContactDetailPage() {
     setProvince(c?.province || '');
     setStatus(c?.status || 'Pendent');
     setFeedbackSummary(c?.feedbackSummary || '');
-    setNotes(c?.notes || '');
+    setNotes(formatNotesWithLineBreaks(c?.notes || ''));
     setMood(c?.mood || '');
 
     const c1 = c?.contact1 || {};
@@ -904,7 +904,7 @@ export default function ContactDetailPage() {
                   overflowY: 'auto'
                 }}>
                   <strong style={{ color: 'var(--color-text-primary)' }}>Historial inicial:</strong>
-                  <p style={{ margin: '0.4rem 0 0 0', whiteSpace: 'pre-wrap', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>{contact.notes}</p>
+                  <p style={{ margin: '0.4rem 0 0 0', whiteSpace: 'pre-wrap', color: 'var(--color-text-secondary)', lineHeight: '1.4' }}>{formatNotesWithLineBreaks(contact.notes)}</p>
                 </div>
               )}
             </>
