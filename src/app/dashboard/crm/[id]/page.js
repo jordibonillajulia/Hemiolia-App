@@ -991,149 +991,148 @@ export default function ContactDetailPage() {
               });
 
               return (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem', marginBottom: '0.5rem' }}>
-                    <div>
-                      <h4 style={{ fontSize: '0.82rem', marginBottom: '0.4rem', color: 'var(--color-accent)', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.2rem' }}>Vincula bolos (Road-sheet)</h4>
-                      
-                      {/* Linked gigs as chips */}
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.8rem', minHeight: '30px' }}>
-                        {linkedGigs.map(g => (
-                          <span 
-                            key={g.id} 
-                            style={{ 
-                              display: 'inline-flex', 
-                              alignItems: 'center', 
-                              gap: '0.3rem', 
-                              padding: '0.25rem 0.55rem', 
-                              background: 'rgba(46, 196, 182, 0.12)', 
-                              border: '1px solid rgba(46, 196, 182, 0.25)', 
-                              borderRadius: '16px', 
-                              color: '#2ec4b6', 
-                              fontSize: '0.74rem',
-                              fontWeight: '600',
-                              whiteSpace: 'nowrap'
-                            }}
-                          >
-                            📅 {formatDateDDMMYYYY(g.date)} - {g.title} ({g.locationName && g.municipality && g.locationName !== g.municipality ? `${g.municipality} (${g.locationName})` : (g.municipality || g.locationName || '')})
-                            <button 
-                              type="button" 
-                              onClick={() => setLinkedGigIds(prev => prev.filter(id => id !== g.id))}
-                              style={{ 
-                                border: 'none', 
-                                background: 'transparent', 
-                                color: '#ff6b6b', 
-                                cursor: 'pointer', 
-                                padding: '0 0.1rem', 
-                                fontSize: '0.85rem',
-                                fontWeight: 'bold', 
-                                display: 'inline-flex', 
-                                alignItems: 'center'
-                              }}
-                              title="Desvincular"
-                            >
-                              &times;
-                            </button>
-                          </span>
-                        ))}
-                        {linkedGigs.length === 0 && (
-                          <span style={{ fontStyle: 'italic', opacity: 0.5, fontSize: '0.78rem', paddingTop: '0.2rem' }}>Cap bolo vinculat</span>
-                        )}
-                      </div>
-
-                      {/* Autocomplete search input & dropdown list */}
-                      <div style={{ position: 'relative' }}>
-                        <input 
-                          type="text" 
-                          placeholder="🔍 Cerca i afegeix bolos per data, municipi o títol..." 
-                          value={gigSearchQuery}
-                          onChange={e => setGigSearchQuery(e.target.value)}
-                          onFocus={() => setIsDropdownOpen(true)}
-                          onBlur={() => {
-                            // Delay slightly to allow click events on items to fire first
-                            setTimeout(() => setIsDropdownOpen(false), 200);
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  <div>
+                    <h4 style={{ fontSize: '0.82rem', marginBottom: '0.4rem', color: 'var(--color-accent)', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.2rem' }}>Vincula bolos (Road-sheet)</h4>
+                    
+                    {/* Linked gigs as chips */}
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.8rem', minHeight: '30px' }}>
+                      {linkedGigs.map(g => (
+                        <span 
+                          key={g.id} 
+                          style={{ 
+                            display: 'inline-flex', 
+                            alignItems: 'center', 
+                            gap: '0.3rem', 
+                            padding: '0.25rem 0.55rem', 
+                            background: 'rgba(46, 196, 182, 0.12)', 
+                            border: '1px solid rgba(46, 196, 182, 0.25)', 
+                            borderRadius: '16px', 
+                            color: '#2ec4b6', 
+                            fontSize: '0.74rem',
+                            fontWeight: '600',
+                            whiteSpace: 'nowrap'
                           }}
-                          className="input-field"
-                          style={{ padding: '0.45rem 0.75rem', fontSize: '0.8rem', width: '100%', display: 'block', marginBottom: '0.2rem' }}
-                        />
-                        {/* Dropdown panel, only show when active/focused */}
-                        {isDropdownOpen && (
-                          <div style={{ 
-                            position: 'absolute', 
-                            top: '100%', 
-                            left: 0, 
-                            width: 'max-content',
-                            minWidth: '100%',
-                            maxWidth: '650px',
-                            backgroundColor: 'var(--color-background-soft)', 
-                            border: '1px solid var(--color-border)', 
-                            borderRadius: 'var(--radius-md)', 
-                            zIndex: 100, 
-                            maxHeight: '350px', 
-                            overflowY: 'auto', 
-                            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-                            backdropFilter: 'blur(12px)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '1px',
-                            padding: '0.3rem'
-                          }}>
-                          {sortedGigsToLink.filter(g => !linkedGigIds.includes(g.id)).map(g => {
-                            const isSuggested = suggestedIds.has(g.id);
-                            return (
-                              <div 
-                                key={g.id} 
-                                style={{ 
-                                  padding: '0.45rem 0.55rem', 
-                                  cursor: 'pointer', 
-                                  borderRadius: '4px',
-                                  fontSize: '0.78rem',
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                  gap: '0.5rem',
-                                  background: isSuggested ? 'rgba(255, 183, 3, 0.03)' : 'transparent',
-                                  border: isSuggested ? '1px solid rgba(255, 183, 3, 0.1)' : '1px solid transparent',
-                                }}
-                                onClick={() => {
-                                  setLinkedGigIds(prev => [...prev, g.id]);
-                                  setGigSearchQuery('');
-                                }}
-                                onMouseEnter={e => {
-                                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)';
-                                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
-                                }}
-                                onMouseLeave={e => {
-                                  e.currentTarget.style.backgroundColor = isSuggested ? 'rgba(255, 183, 3, 0.03)' : 'transparent';
-                                  e.currentTarget.style.borderColor = isSuggested ? 'rgba(255, 183, 3, 0.1)' : 'transparent';
-                                }}
-                              >
-                                <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                                  📅 {formatDateDDMMYYYY(g.date)} - {g.title} ({g.locationName && g.municipality && g.locationName !== g.municipality ? `${g.municipality} (${g.locationName})` : (g.municipality || g.locationName || '')})
-                                </span>
-                                {isSuggested && <span style={{ fontSize: '0.65rem', color: '#ffb703', fontWeight: 'bold', background: 'rgba(255, 183, 3, 0.08)', padding: '0.05rem 0.25rem', borderRadius: '3px', whiteSpace: 'nowrap' }}>💡 Sugerit</span>}
-                              </div>
-                            );
-                          })}
-                          {sortedGigsToLink.filter(g => !linkedGigIds.includes(g.id)).length === 0 && (
-                            <div style={{ padding: '0.6rem', fontSize: '0.78rem', color: 'var(--color-text-secondary)', textAlign: 'center', fontStyle: 'italic' }}>
-                              Cap bolo disponible per vincular
+                        >
+                          📅 {formatDateDDMMYYYY(g.date)} - {g.title} ({g.locationName && g.municipality && g.locationName !== g.municipality ? `${g.municipality} (${g.locationName})` : (g.municipality || g.locationName || '')})
+                          <button 
+                            type="button" 
+                            onClick={() => setLinkedGigIds(prev => prev.filter(id => id !== g.id))}
+                            style={{ 
+                              border: 'none', 
+                              background: 'transparent', 
+                              color: '#ff6b6b', 
+                              cursor: 'pointer', 
+                              padding: '0 0.1rem', 
+                              fontSize: '0.85rem',
+                              fontWeight: 'bold', 
+                              display: 'inline-flex', 
+                              alignItems: 'center'
+                            }}
+                            title="Desvincular"
+                          >
+                            &times;
+                          </button>
+                        </span>
+                      ))}
+                      {linkedGigs.length === 0 && (
+                        <span style={{ fontStyle: 'italic', opacity: 0.5, fontSize: '0.78rem', paddingTop: '0.2rem' }}>Cap bolo vinculat</span>
+                      )}
+                    </div>
+
+                    {/* Autocomplete search input & dropdown list */}
+                    <div style={{ position: 'relative' }}>
+                      <input 
+                        type="text" 
+                        placeholder="🔍 Cerca i afegeix bolos per data, municipi o títol..." 
+                        value={gigSearchQuery}
+                        onChange={e => setGigSearchQuery(e.target.value)}
+                        onFocus={() => setIsDropdownOpen(true)}
+                        onBlur={() => {
+                          // Delay slightly to allow click events on items to fire first
+                          setTimeout(() => setIsDropdownOpen(false), 200);
+                        }}
+                        className="input-field"
+                        style={{ padding: '0.45rem 0.75rem', fontSize: '0.8rem', width: '100%', display: 'block', marginBottom: '0.2rem' }}
+                      />
+                      {/* Dropdown panel, only show when active/focused */}
+                      {isDropdownOpen && (
+                        <div style={{ 
+                          position: 'absolute', 
+                          top: '100%', 
+                          left: 0, 
+                          width: 'max-content',
+                          minWidth: '100%',
+                          maxWidth: '650px',
+                          backgroundColor: 'var(--color-background-soft)', 
+                          border: '1px solid var(--color-border)', 
+                          borderRadius: 'var(--radius-md)', 
+                          zIndex: 100, 
+                          maxHeight: '350px', 
+                          overflowY: 'auto', 
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+                          backdropFilter: 'blur(12px)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '1px',
+                          padding: '0.3rem'
+                        }}>
+                        {sortedGigsToLink.filter(g => !linkedGigIds.includes(g.id)).map(g => {
+                          const isSuggested = suggestedIds.has(g.id);
+                          return (
+                            <div 
+                              key={g.id} 
+                              style={{ 
+                                padding: '0.45rem 0.55rem', 
+                                cursor: 'pointer', 
+                                borderRadius: '4px',
+                                fontSize: '0.78rem',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                gap: '0.5rem',
+                                background: isSuggested ? 'rgba(255, 183, 3, 0.03)' : 'transparent',
+                                border: isSuggested ? '1px solid rgba(255, 183, 3, 0.1)' : '1px solid transparent',
+                              }}
+                              onClick={() => {
+                                setLinkedGigIds(prev => [...prev, g.id]);
+                                setGigSearchQuery('');
+                              }}
+                              onMouseEnter={e => {
+                                e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.06)';
+                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                              }}
+                              onMouseLeave={e => {
+                                e.currentTarget.style.backgroundColor = isSuggested ? 'rgba(255, 183, 3, 0.03)' : 'transparent';
+                                e.currentTarget.style.borderColor = isSuggested ? 'rgba(255, 183, 3, 0.1)' : 'transparent';
+                              }}
+                            >
+                              <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                                📅 {formatDateDDMMYYYY(g.date)} - {g.title} ({g.locationName && g.municipality && g.locationName !== g.municipality ? `${g.municipality} (${g.locationName})` : (g.municipality || g.locationName || '')})
+                              </span>
+                              {isSuggested && <span style={{ fontSize: '0.65rem', color: '#ffb703', fontWeight: 'bold', background: 'rgba(255, 183, 3, 0.08)', padding: '0.05rem 0.25rem', borderRadius: '3px', whiteSpace: 'nowrap' }}>💡 Sugerit</span>}
                             </div>
-                          )}
-                        </div>
+                          );
+                        })}
+                        {sortedGigsToLink.filter(g => !linkedGigIds.includes(g.id)).length === 0 && (
+                          <div style={{ padding: '0.6rem', fontSize: '0.78rem', color: 'var(--color-text-secondary)', textAlign: 'center', fontStyle: 'italic' }}>
+                            Cap bolo disponible per vincular
+                          </div>
                         )}
                       </div>
+                      )}
                     </div>
-                    <div>
-                      <h4 style={{ fontSize: '0.82rem', marginBottom: '0.5rem', color: 'var(--color-accent)', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.2rem' }}>Interessats / Oferts</h4>
-                      <div style={{ maxHeight: '250px', overflowY: 'auto', paddingRight: '0.5rem' }}>
-                        {standardShows.map(title => (
-                          <label key={title} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', marginBottom: '0.4rem', cursor: 'pointer', userSelect: 'none' }}>
-                            <input type="checkbox" checked={interestedShows.includes(title)} onChange={() => handleToggleShow(title, 'interested')} />
-                            {title}
-                          </label>
-                        ))}
-                      </div>
+                  </div>
+                  
+                  <div>
+                    <h4 style={{ fontSize: '0.82rem', marginBottom: '0.5rem', color: 'var(--color-accent)', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.2rem' }}>Interessats / Oferts</h4>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginTop: '0.5rem' }}>
+                      {standardShows.map(title => (
+                        <label key={title} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', cursor: 'pointer', userSelect: 'none' }}>
+                          <input type="checkbox" checked={interestedShows.includes(title)} onChange={() => handleToggleShow(title, 'interested')} />
+                          {title}
+                        </label>
+                      ))}
                     </div>
                   </div>
                 </div>
@@ -1197,8 +1196,52 @@ export default function ContactDetailPage() {
                   <div>
                     <strong style={{ display: 'block', marginBottom: '0.3rem', color: 'var(--color-text-primary)' }}>Espectacles d'interès:</strong>
                     {interestedShows.length > 0 ? (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
-                        {interestedShows.map(s => <span key={s} style={{ background: 'rgba(255, 183, 3, 0.12)', color: '#ffb703', padding: '0.2rem 0.5rem', borderRadius: '3px', fontSize: '0.78rem', fontWeight: 'bold', border: '1px solid rgba(255, 183, 3, 0.2)' }}>{s}</span>)}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+                        {interestedShows.map(s => (
+                          <span 
+                            key={s} 
+                            style={{ 
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.3rem',
+                              background: 'rgba(255, 183, 3, 0.12)', 
+                              color: '#ffb703', 
+                              padding: '0.2rem 0.55rem', 
+                              borderRadius: '3px', 
+                              fontSize: '0.78rem', 
+                              fontWeight: 'bold', 
+                              border: '1px solid rgba(255, 183, 3, 0.2)' 
+                            }}
+                          >
+                            {s}
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                const newInterested = interestedShows.filter(item => item !== s);
+                                await updateContact(contactId, { interestedShows: newInterested });
+                                loadData();
+                              }}
+                              style={{
+                                border: 'none',
+                                background: 'transparent',
+                                color: '#ffb703',
+                                cursor: 'pointer',
+                                padding: '0 0.1rem',
+                                fontSize: '0.9rem',
+                                fontWeight: 'bold',
+                                opacity: 0.6,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                transition: 'opacity 0.2s'
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                              onMouseLeave={e => e.currentTarget.style.opacity = 0.6}
+                              title="Eliminar"
+                            >
+                              &times;
+                            </button>
+                          </span>
+                        ))}
                       </div>
                     ) : (
                       <span style={{ color: 'var(--color-text-secondary)', fontSize: '0.85rem', fontStyle: 'italic' }}>Cap interès o proposta pendent</span>
