@@ -366,21 +366,26 @@ export default function CRMPage() {
             CRM i Contactes <span style={{ fontSize: '1.2rem', color: 'var(--color-text-secondary)', marginLeft: '0.5rem', fontWeight: 'normal' }}>({filteredContacts.length})</span>
           </h1>
         </div>
-        {(isAdmin || isCrm) && (
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <Link href="/dashboard/crm/import" className="btn btn-glass">
-              Importar CSV
-            </Link>
-            <button className="btn btn-primary" onClick={() => {
-              const nextVal = !isAdding;
-              setIsAdding(nextVal);
-              if (!nextVal) resetForm();
-              else window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}>
-              {isAdding ? 'Cancel·lar' : '+ Nou Contacte'}
-            </button>
-          </div>
-        )}
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <button className="btn btn-glass no-print" onClick={() => window.print()} title="Imprimir llista filtrada">
+            🖨️ Imprimir
+          </button>
+          {(isAdmin || isCrm) && (
+            <>
+              <Link href="/dashboard/crm/import" className="btn btn-glass no-print">
+                Importar CSV
+              </Link>
+              <button className="btn btn-primary no-print" onClick={() => {
+                const nextVal = !isAdding;
+                setIsAdding(nextVal);
+                if (!nextVal) resetForm();
+                else window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}>
+                {isAdding ? 'Cancel·lar' : '+ Nou Contacte'}
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {isAdding && (
@@ -532,7 +537,7 @@ export default function CRMPage() {
       )}
 
       {/* Filtres */}
-      <div className="glass-panel" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
+      <div className="glass-panel no-print" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h4 style={{ margin: 0, color: 'var(--color-accent)' }}>🔍 Filtres i Cerca</h4>
           {(searchQuery || filterProvince !== 'Tots' || filterStatus !== 'Tots' || filterShow !== 'Tots' || filterReminder || filterPerformed) && (
@@ -699,7 +704,7 @@ export default function CRMPage() {
                 <th style={{ padding: '1rem' }}>Província</th>
                 <th style={{ padding: '1rem' }}>Contacte Principal</th>
                 <th style={{ padding: '1rem' }}>Estat</th>
-                <th style={{ padding: '1rem' }}>Accions</th>
+                <th style={{ padding: '1rem' }} className="no-print">Accions</th>
               </tr>
             </thead>
             <tbody>
@@ -778,7 +783,7 @@ export default function CRMPage() {
                         )}
                       </span>
                     </td>
-                    <td data-label="Accions" style={{ padding: '1rem', display: 'flex', gap: '0.5rem' }}>
+                    <td data-label="Accions" style={{ padding: '1rem', display: 'flex', gap: '0.5rem' }} className="no-print">
                       <Link 
                         href={`/dashboard/crm/${contact.id}${
                           (() => {
