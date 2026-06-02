@@ -142,15 +142,18 @@ export default function CRMPage() {
     return ai ? ai.split(',') : null;
   });
 
-  // Mass email states
-  const [isMassEmailOpen, setIsMassEmailOpen] = useState(false);
-  const [massEmailSubject, setMassEmailSubject] = useState("Agraïment per la contractació d'espectacles - Hemiòlia Produccions");
-  const [massEmailBody, setMassEmailBody] = useState(
-    `Hola {nom},\n\nDes d'Hemiòlia Produccions ens posem en contacte amb vosaltres per agrair-vos de tot cor la contractació dels nostres espectacles per al vostre municipi/entitat ({entitat}).\n\nHa estat un veritable plaer col·laborar amb vosaltres i esperem que el públic hagi gaudit tant com nosaltres dalt de l'escenari.\n\nRestem a la vostra sencera disposició per a qualsevol futura programació o consulta.\n\nAtentament,\nL'equip d'Hemiòlia Produccions.`
-  );
-  const [massEmailRecipients, setMassEmailRecipients] = useState([]);
-  const [isSendingMassEmail, setIsSendingMassEmail] = useState(false);
-  const [massEmailProgress, setMassEmailProgress] = useState(0);
+  // AI Campaign states
+  const [isAiCampaignOpen, setIsAiCampaignOpen] = useState(false);
+  const [aiCampaignPrompt, setAiCampaignPrompt] = useState('');
+  const [isGeneratingAiCampaign, setIsGeneratingAiCampaign] = useState(false);
+  const [aiCampaignSubject, setAiCampaignSubject] = useState('');
+  const [aiCampaignBody, setAiCampaignBody] = useState('');
+  const [aiCampaignRecipients, setAiCampaignRecipients] = useState([]);
+  const [aiCampaignStep, setAiCampaignStep] = useState('prompt'); // 'prompt' | 'review'
+  const [isSendingAiCampaign, setIsSendingAiCampaign] = useState(false);
+  const [aiCampaignProgress, setAiCampaignProgress] = useState(0);
+  const [addRecipientSearch, setAddRecipientSearch] = useState('');
+  const [isAddRecipientDropdownOpen, setIsAddRecipientDropdownOpen] = useState(false);
 
   // Sincronitza els filtres amb la URL (silent replace, sense recàrrega)
   const updateUrl = useCallback((sq, fp, fs, fsh, fr, fprm, aiQ, aiIds) => {
@@ -217,41 +220,94 @@ export default function CRMPage() {
     setC4Name(''); setC4Role(''); setC4Email(''); setC4Phone('');
   };
 
-  const handleOpenMassEmail = () => {
-    // Filter contacts where they have performed shows and have a valid email
-    const list = contacts.filter(contact => {
-      const actualPerformedShows = (contact.performedShows || []).filter(s => 
-        s && 
-        s.trim() !== '' && 
-        !['cap', 'cap espectacle', 'ningú', 'ningu', 'none', 'sense especificar', 'sense'].includes(s.trim().toLowerCase())
-      );
-      const email = contact.contact1?.email || contact.email;
-      return actualPerformedShows.length > 0 && email && email.trim() !== '';
-    });
-
-    if (list.length === 0) {
-      alert("No s'ha trobat cap contacte amb espectacles realitzats i adreça de correu vàlida.");
-      return;
-    }
-
-    setMassEmailRecipients(list);
-    setIsMassEmailOpen(true);
+  const handleOpenAiCampaignModal = () => {
+    setIsAiCampaignOpen(true);
+    setAiCampaignStep('prompt');
+    setAiCampaignPrompt('');
+    setAiCampaignSubject('');
+    setAiCampaignBody('');
+    setAiCampaignRecipients([]);
+    setIsGeneratingAiCampaign(false);
+    setIsSendingAiCampaign(false);
+    setAiCampaignProgress(0);
+    setAddRecipientSearch('');
   };
 
-  const handleSendMassEmail = async () => {
-    if (!confirm(`Es procedirà a enviar ${massEmailRecipients.length} correus electrònics individuals. Vols continuar?`)) return;
-    
-    setIsSendingMassEmail(true);
-    setMassEmailProgress(0);
+  const handleGenerateAiCampaign = async (e) => {
+    e.preventDefault();
+    if (!aiCampaignPrompt.trim()) return alert("Si us plau, indica a la IA el contingut o instruccions del correu.");
+
+    setIsGeneratingAiCampaign(true);
+    try {
+      const res = await fetch('/api/crm/ai-campaign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userPrompt: aiCampaignPrompt,
+          contacts
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || "Error de la IA");
+      }
+
+      const data = await res.json();
+      
+      // Filter list of contacts using matchedContactIds
+      const matchedContacts = contacts.filter(c => 
+        data.matchedContactIds.includes(c.id) && (c.contact1?.email || c.email)
+      );
+
+      setAiCampaignSubject(data.subject);
+      setAiCampaignBody(data.body);
+      setAiCampaignRecipients(matchedContacts);
+      setAiCampaignStep('review');
+    } catch (err) {
+      console.error(err);
+      alert("Error al generar la campanya: " + err.message);
+    } finally {
+      setIsGeneratingAiCampaign(false);
+    }
+  };
+
+  const handleRemoveRecipient = (id) => {
+    setAiCampaignRecipients(prev => prev.filter(c => c.id !== id));
+  };
+
+  const handleAddRecipient = (contactToAdd) => {
+    if (aiCampaignRecipients.some(c => c.id === contactToAdd.id)) {
+      alert("Aquest contacte ja està afegit a la llista.");
+      return;
+    }
+    const email = contactToAdd.contact1?.email || contactToAdd.email;
+    if (!email) {
+      alert("Aquest contacte no té cap correu vàlid.");
+      return;
+    }
+    setAiCampaignRecipients(prev => [...prev, contactToAdd]);
+    setIsAddRecipientDropdownOpen(false);
+    setAddRecipientSearch('');
+  };
+
+  const handleSendAiCampaign = async () => {
+    if (aiCampaignRecipients.length === 0) {
+      return alert("No hi ha cap destinatari a la llista.");
+    }
+    if (!confirm(`Es procedirà a enviar ${aiCampaignRecipients.length} correus electrònics individuals. Vols continuar?`)) return;
+
+    setIsSendingAiCampaign(true);
+    setAiCampaignProgress(0);
 
     let sentCount = 0;
-    for (let i = 0; i < massEmailRecipients.length; i++) {
-      const c = massEmailRecipients[i];
+    for (let i = 0; i < aiCampaignRecipients.length; i++) {
+      const c = aiCampaignRecipients[i];
       const email = c.contact1?.email || c.email;
       const contactName = c.contact1?.name || c.name || c.entity;
-      
-      // Personalize the body
-      const personalizedBody = massEmailBody
+
+      // Replace variables
+      const personalizedBody = aiCampaignBody
         .replace(/{nom}/g, contactName)
         .replace(/{entitat}/g, c.entity || c.municipality || 'municipi');
 
@@ -261,7 +317,7 @@ export default function CRMPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             to: email,
-            subject: massEmailSubject,
+            subject: aiCampaignSubject,
             text: personalizedBody
           })
         });
@@ -270,15 +326,15 @@ export default function CRMPage() {
           sentCount++;
         }
       } catch (err) {
-        console.error(`Error enviant a ${email}:`, err);
+        console.error(`Error enviant campanya IA a ${email}:`, err);
       }
-      
-      setMassEmailProgress(Math.round(((i + 1) / massEmailRecipients.length) * 100));
+
+      setAiCampaignProgress(Math.round(((i + 1) / aiCampaignRecipients.length) * 100));
     }
 
-    setIsSendingMassEmail(false);
-    setIsMassEmailOpen(false);
-    alert(`Procés finalitzat. S'han enviat correctament ${sentCount} de ${massEmailRecipients.length} correus.`);
+    setIsSendingAiCampaign(false);
+    setIsAiCampaignOpen(false);
+    alert(`Campanya finalitzada. S'han enviat correctament ${sentCount} de ${aiCampaignRecipients.length} correus.`);
   };
 
   const handleEditClick = (contact) => {
@@ -445,24 +501,19 @@ export default function CRMPage() {
             🖨️ Imprimir
           </button>
           {(isAdmin || isCrm) && (
-            <button className="btn btn-glass no-print" onClick={handleOpenMassEmail} title="Enviar correu massiu d'agraïment per contractacions fetes">
-              ✉️ Agraïment Massiu
+            <button className="btn btn-glass no-print" onClick={handleOpenAiCampaignModal} title="Redactar i filtrar una campanya de correus fent servir la IA">
+              ✨ Campanya IA
             </button>
           )}
           {(isAdmin || isCrm) && (
-            <>
-              <Link href="/dashboard/crm/import" className="btn btn-glass no-print">
-                Importar CSV
-              </Link>
-              <button className="btn btn-primary no-print" onClick={() => {
-                const nextVal = !isAdding;
-                setIsAdding(nextVal);
-                if (!nextVal) resetForm();
-                else window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}>
-                {isAdding ? 'Cancel·lar' : '+ Nou Contacte'}
-              </button>
-            </>
+            <button className="btn btn-primary no-print" onClick={() => {
+              const nextVal = !isAdding;
+              setIsAdding(nextVal);
+              if (!nextVal) resetForm();
+              else window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}>
+              {isAdding ? 'Cancel·lar' : '+ Nou Contacte'}
+            </button>
           )}
         </div>
       </div>
@@ -950,8 +1001,8 @@ export default function CRMPage() {
         )}
       </div>
 
-      {/* Modal de Correu Massiu d'Agraïment */}
-      {isMassEmailOpen && (
+      {/* Modal de Campanya de Correus amb IA */}
+      {isAiCampaignOpen && (
         <div style={{
           position: 'fixed',
           top: 0,
@@ -974,99 +1025,254 @@ export default function CRMPage() {
             maxHeight: '90vh',
             overflowY: 'auto'
           }}>
-            <h3 style={{ color: 'var(--color-accent)', marginBottom: '1rem' }}>✉️ Correu Massiu d'Agraïment</h3>
-            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', marginBottom: '1.2rem' }}>
-              S'enviarà un correu individualitzat a tots els municipis on s'han dut a terme actuacions i que tenen email.
-            </p>
+            <h3 style={{ color: 'var(--color-accent)', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              ✨ Campanya de Correus amb IA
+            </h3>
 
-            {/* Recipient summary */}
-            <div style={{ 
-              background: 'rgba(0,0,0,0.3)', 
-              padding: '0.8rem', 
-              borderRadius: '8px', 
-              border: '1px solid var(--color-border)',
-              marginBottom: '1.5rem',
-              maxHeight: '110px',
-              overflowY: 'auto'
-            }}>
-              <strong style={{ fontSize: '0.82rem', display: 'block', marginBottom: '0.4rem', color: 'var(--color-text-primary)' }}>
-                Destinataris seleccionats ({massEmailRecipients.length}):
-              </strong>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
-                {massEmailRecipients.map(r => (
-                  <span key={r.id} style={{ 
-                    fontSize: '0.72rem', 
-                    padding: '0.15rem 0.4rem', 
-                    background: 'rgba(212, 175, 55, 0.1)', 
-                    border: '1px solid rgba(212, 175, 55, 0.2)', 
-                    borderRadius: '4px',
-                    color: 'var(--color-accent)'
-                  }}>
-                    {r.entity} ({r.contact1?.email || r.email})
-                  </span>
-                ))}
-              </div>
-            </div>
+            {aiCampaignStep === 'prompt' ? (
+              <form onSubmit={handleGenerateAiCampaign}>
+                <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', marginBottom: '1.5rem' }}>
+                  Descriu què vols enviar i a qui. La IA redactarà el correu i seleccionarà els contactes de la base de dades automàticament.
+                </p>
 
-            <div className="input-group" style={{ marginBottom: '1.2rem' }}>
-              <label>Assumpte del Correu</label>
-              <input 
-                className="input-field" 
-                type="text" 
-                value={massEmailSubject} 
-                onChange={e => setMassEmailSubject(e.target.value)} 
-                disabled={isSendingMassEmail}
-                required
-              />
-            </div>
-
-            <div className="input-group" style={{ marginBottom: '0.5rem' }}>
-              <label>Plantilla del Missatge</label>
-              <textarea 
-                className="input-field" 
-                rows="8" 
-                value={massEmailBody} 
-                onChange={e => setMassEmailBody(e.target.value)} 
-                disabled={isSendingMassEmail}
-                required
-                style={{ fontFamily: 'inherit', resize: 'vertical' }}
-              />
-            </div>
-            
-            <p style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', marginBottom: '1.5rem', fontStyle: 'italic' }}>
-              Pots utilitzar les etiquetes <strong>{"{nom}"}</strong> per al nom del contacte, i <strong>{"{entitat}"}</strong> per al nom de l'Ajuntament/Teatre. Es reemplaçaran dinàmicament per a cada correu.
-            </p>
-
-            {isSendingMassEmail && (
-              <div style={{ marginBottom: '1.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.4rem' }}>
-                  <span>S'estan enviant els correus...</span>
-                  <strong>{massEmailProgress}%</strong>
+                <div className="input-group" style={{ marginBottom: '1.5rem' }}>
+                  <label>Instruccions per a la IA</label>
+                  <textarea 
+                    className="input-field" 
+                    rows="5" 
+                    placeholder="Exemple: Vull enviar una felicitació de Nadal a tots els contactes de Girona que estiguin en estat 'Entrevista feta' i hagin contractat 'Cavernus'. Agraeix la seva col·laboració i ofereix-los un descompte." 
+                    value={aiCampaignPrompt} 
+                    onChange={e => setAiCampaignPrompt(e.target.value)}
+                    disabled={isGeneratingAiCampaign}
+                    required
+                    style={{ fontFamily: 'inherit', resize: 'vertical' }}
+                  />
                 </div>
-                <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
-                  <div style={{ width: `${massEmailProgress}%`, height: '100%', background: 'var(--color-accent)', transition: 'width 0.2s ease' }} />
+
+                {isGeneratingAiCampaign && (
+                  <p style={{ fontSize: '0.85rem', color: 'var(--color-accent)', marginBottom: '1.5rem', fontWeight: 'bold' }}>
+                    🔄 La IA està analitzant els contactes i escrivint el correu, espera un moment...
+                  </p>
+                )}
+
+                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                  <button 
+                    type="button" 
+                    className="btn btn-glass" 
+                    onClick={() => setIsAiCampaignOpen(false)}
+                    disabled={isGeneratingAiCampaign}
+                  >
+                    Cancel·lar
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary"
+                    disabled={isGeneratingAiCampaign}
+                  >
+                    {isGeneratingAiCampaign ? 'Generant...' : 'Generar Campanya'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', marginBottom: '1.2rem' }}>
+                  Revisa el contingut del correu i gestiona els destinataris abans d'iniciar l'enviament massiu.
+                </p>
+
+                <div className="input-group" style={{ marginBottom: '1.2rem' }}>
+                  <label>Assumpte del Correu</label>
+                  <input 
+                    className="input-field" 
+                    type="text" 
+                    value={aiCampaignSubject} 
+                    onChange={e => setAiCampaignSubject(e.target.value)} 
+                    disabled={isSendingAiCampaign}
+                    required
+                  />
+                </div>
+
+                <div className="input-group" style={{ marginBottom: '0.5rem' }}>
+                  <label>Plantilla del Missatge</label>
+                  <textarea 
+                    className="input-field" 
+                    rows="8" 
+                    value={aiCampaignBody} 
+                    onChange={e => setAiCampaignBody(e.target.value)} 
+                    disabled={isSendingAiCampaign}
+                    required
+                    style={{ fontFamily: 'inherit', resize: 'vertical' }}
+                  />
+                </div>
+                
+                <p style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', marginBottom: '1.5rem', fontStyle: 'italic' }}>
+                  Pots utilitzar les etiquetes <strong>{"{nom}"}</strong> per al nom del contacte, i <strong>{"{entitat}"}</strong> per al nom de l'entitat. Es reemplaçaran dinàmicament per a cada destinatari.
+                </p>
+
+                {/* Recipient manager */}
+                <div style={{ 
+                  background: 'rgba(0,0,0,0.3)', 
+                  padding: '1rem', 
+                  borderRadius: '8px', 
+                  border: '1px solid var(--color-border)',
+                  marginBottom: '1.5rem'
+                }}>
+                  <strong style={{ fontSize: '0.82rem', display: 'block', marginBottom: '0.6rem', color: 'var(--color-text-primary)' }}>
+                    Destinataris seleccionats ({aiCampaignRecipients.length}):
+                  </strong>
+                  
+                  {aiCampaignRecipients.length === 0 ? (
+                    <p style={{ fontSize: '0.8rem', color: 'var(--color-error)', margin: '0.5rem 0' }}>
+                      No hi ha cap destinatari seleccionat per enviar.
+                    </p>
+                  ) : (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', maxHeight: '130px', overflowY: 'auto', marginBottom: '1rem', paddingRight: '0.2rem' }}>
+                      {aiCampaignRecipients.map(r => (
+                        <span key={r.id} style={{ 
+                          fontSize: '0.72rem', 
+                          padding: '0.15rem 0.4rem', 
+                          background: 'rgba(212, 175, 55, 0.1)', 
+                          border: '1px solid rgba(212, 175, 55, 0.25)', 
+                          borderRadius: '4px',
+                          color: 'var(--color-accent)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem'
+                        }}>
+                          {r.entity} ({r.contact1?.email || r.email})
+                          <button 
+                            type="button" 
+                            onClick={() => handleRemoveRecipient(r.id)}
+                            disabled={isSendingAiCampaign}
+                            style={{ 
+                              background: 'transparent', 
+                              border: 'none', 
+                              color: '#ff6b6b', 
+                              cursor: 'pointer',
+                              fontWeight: 'bold',
+                              fontSize: '0.75rem',
+                              padding: '0 2px'
+                            }}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Add manual recipient dropdown */}
+                  <div style={{ position: 'relative' }}>
+                    <input 
+                      type="text" 
+                      className="input-field" 
+                      placeholder="🔍 Cerca i afegeix un altre contacte..." 
+                      value={addRecipientSearch}
+                      onChange={e => {
+                        setAddRecipientSearch(e.target.value);
+                        setIsAddRecipientDropdownOpen(e.target.value.trim().length > 0);
+                      }}
+                      disabled={isSendingAiCampaign}
+                      style={{ fontSize: '0.8rem', padding: '0.5rem 0.8rem' }}
+                    />
+                    
+                    {isAddRecipientDropdownOpen && (
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '100%',
+                        left: 0,
+                        width: '100%',
+                        background: '#121216',
+                        border: '1px solid var(--color-accent)',
+                        borderRadius: '8px',
+                        zIndex: 1100,
+                        maxHeight: '150px',
+                        overflowY: 'auto',
+                        boxShadow: '0 -4px 20px rgba(0,0,0,0.5)',
+                        marginBottom: '4px'
+                      }}>
+                        {contacts
+                          .filter(c => {
+                            const name = (c.entity || '') + ' ' + (c.municipality || '') + ' ' + (c.contact1?.name || c.name || '');
+                            return name.toLowerCase().includes(addRecipientSearch.toLowerCase()) && 
+                                   !aiCampaignRecipients.some(existing => existing.id === c.id);
+                          })
+                          .slice(0, 10)
+                          .map(c => (
+                            <div 
+                              key={c.id} 
+                              onClick={() => handleAddRecipient(c)}
+                              style={{
+                                padding: '0.5rem 0.8rem',
+                                cursor: 'pointer',
+                                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                                fontSize: '0.8rem',
+                                color: '#ffffff',
+                                textAlign: 'left'
+                              }}
+                              onMouseEnter={e => e.target.style.background = 'rgba(212, 175, 55, 0.15)'}
+                              onMouseLeave={e => e.target.style.background = 'transparent'}
+                            >
+                              <strong>{c.entity}</strong> - {c.municipality} ({c.contact1?.email || c.email || 'sense email'})
+                            </div>
+                          ))
+                        }
+                        {contacts.filter(c => {
+                          const name = (c.entity || '') + ' ' + (c.municipality || '') + ' ' + (c.contact1?.name || c.name || '');
+                          return name.toLowerCase().includes(addRecipientSearch.toLowerCase()) && 
+                                 !aiCampaignRecipients.some(existing => existing.id === c.id);
+                        }).length === 0 && (
+                          <div style={{ padding: '0.5rem 0.8rem', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+                            Cap contacte trobat
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {isSendingAiCampaign && (
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.4rem' }}>
+                      <span>S'estan enviant els correus de la campanya...</span>
+                      <strong>{aiCampaignProgress}%</strong>
+                    </div>
+                    <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{ width: `${aiCampaignProgress}%`, height: '100%', background: 'var(--color-accent)', transition: 'width 0.2s ease' }} />
+                    </div>
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'space-between' }}>
+                  <button 
+                    type="button" 
+                    className="btn btn-glass" 
+                    onClick={() => setAiCampaignStep('prompt')}
+                    disabled={isSendingAiCampaign}
+                  >
+                    ⬅️ Tornar
+                  </button>
+                  
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button 
+                      type="button" 
+                      className="btn btn-glass" 
+                      onClick={() => setIsAiCampaignOpen(false)}
+                      disabled={isSendingAiCampaign}
+                    >
+                      Tancar
+                    </button>
+                    <button 
+                      type="button" 
+                      className="btn btn-primary" 
+                      onClick={handleSendAiCampaign}
+                      disabled={isSendingAiCampaign || aiCampaignRecipients.length === 0}
+                    >
+                      {isSendingAiCampaign ? 'Enviant...' : `Enviar a ${aiCampaignRecipients.length} destinataris`}
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
-
-            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
-              <button 
-                type="button" 
-                className="btn btn-glass" 
-                onClick={() => setIsMassEmailOpen(false)}
-                disabled={isSendingMassEmail}
-              >
-                Cancel·lar
-              </button>
-              <button 
-                type="button" 
-                className="btn btn-primary" 
-                onClick={handleSendMassEmail}
-                disabled={isSendingMassEmail}
-              >
-                {isSendingMassEmail ? 'Enviant...' : 'Enviar a Tots'}
-              </button>
-            </div>
           </div>
         </div>
       )}
