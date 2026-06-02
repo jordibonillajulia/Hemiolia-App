@@ -283,56 +283,7 @@ a:hover {
     padding-left: 0.6rem !important;
   }
 
-  /* Force CRM contact table to render as a simple table on print */
-  .table-container-responsive {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-  }
-  .table-container-responsive table {
-    display: table !important;
-    width: 100% !important;
-    border-collapse: collapse !important;
-    color: #000000 !important;
-    background: #ffffff !important;
-  }
-  .table-container-responsive thead {
-    display: table-header-group !important;
-    background: #f1f5f9 !important;
-  }
-  .table-container-responsive thead th {
-    color: #000000 !important;
-    font-weight: bold !important;
-    border-bottom: 2px solid #000000 !important;
-    padding: 0.8rem 1rem !important;
-  }
-  .table-container-responsive tbody {
-    display: table-row-group !important;
-  }
-  .table-container-responsive tr {
-    display: table-row !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    background: transparent !important;
-  }
-  .table-container-responsive th,
-  .table-container-responsive td {
-    display: table-cell !important;
-    padding: 0.8rem 1rem !important;
-    font-size: 0.85rem !important;
-    text-align: left !important;
-    color: #000000 !important;
-    border: none !important;
-    border-bottom: 1px solid #e2e8f0 !important;
-    white-space: nowrap !important;
-  }
-  .table-container-responsive td span,
-  .table-container-responsive td div,
-  .table-container-responsive td strong {
-    color: #000000 !important;
-  }
-  .table-container-responsive td::before {
-    display: none !important;
-  }
+
 
   .emissor-box div,
   .destinatari-box div {
@@ -740,7 +691,7 @@ a:hover {
   border-radius: var(--radius-md);
 }
 
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
   .table-container-responsive {
     overflow-x: visible !important;
     background: transparent !important;
@@ -1451,3 +1402,80 @@ body.generating-pdf .invoice-paper .legal-note-vat10 .legal-line-2 {
 body.generating-pdf .invoice-paper .legal-note-vat10 .legal-sep {
   display: inline !important;
 }
+
+/* ====== CRM TABLE PRINT OVERRIDES ====== */
+@media print {
+  /* Hide page title / filter panel and actions during printing */
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Reset table container styles for clean table rendering */
+  .table-container-responsive {
+    overflow: visible !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+  
+  /* Force CRM table layout to behave like a normal desktop table when printing */
+  .table-container-responsive table {
+    display: table !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+    color: #000000 !important;
+    background: #ffffff !important;
+  }
+  
+  .table-container-responsive thead {
+    display: table-header-group !important;
+    background: #f1f5f9 !important;
+  }
+  
+  .table-container-responsive thead th {
+    color: #000000 !important;
+    font-weight: bold !important;
+    border-bottom: 2px solid #000000 !important;
+    padding: 0.8rem 1rem !important;
+    font-size: 0.85rem !important;
+    text-align: left !important;
+  }
+  
+  .table-container-responsive tbody {
+    display: table-row-group !important;
+  }
+  
+  .table-container-responsive tr {
+    display: table-row !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+    margin-bottom: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .table-container-responsive td {
+    display: table-cell !important;
+    padding: 0.8rem 1rem !important;
+    font-size: 0.85rem !important;
+    text-align: left !important;
+    color: #000000 !important;
+    border: none !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    white-space: nowrap !important;
+    width: auto !important;
+  }
+  
+  .table-container-responsive td span,
+  .table-container-responsive td div,
+  .table-container-responsive td strong {
+    color: #000000 !important;
+  }
+  
+  .table-container-responsive td::before {
+    display: none !important;
+  }
+}
+
