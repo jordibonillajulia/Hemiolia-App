@@ -76,7 +76,15 @@ export default function BudgetDetailPage() {
         scale: 2, // High resolution
         useCORS: true,
         backgroundColor: '#ffffff',
-        logging: false
+        logging: false,
+        width: 794,
+        height: 1123,
+        windowWidth: 1024,
+        windowHeight: 1400,
+        x: 0,
+        y: 0,
+        scrollX: 0,
+        scrollY: 0
       });
 
       // Restore scroll position
