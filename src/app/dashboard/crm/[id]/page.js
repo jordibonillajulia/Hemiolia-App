@@ -206,6 +206,11 @@ export default function ContactDetailPage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [allContacts, setAllContacts] = useState([]);
 
+  // States for email follow-up editing
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailText, setEmailText] = useState('');
+
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -449,11 +454,20 @@ export default function ContactDetailPage() {
     }
   };
 
-  const handleSendEmail = async () => {
+  const handleSendEmail = () => {
     const contact1 = contact.contact1 || { name: contact.name, email: contact.email };
     if (!contact1.email) return alert("Aquest contacte no té correu electrònic.");
     
-    if (!confirm(`Vols enviar un correu automàtic de seguiment a ${contact1.email}?`)) return;
+    // Set default values in local editor states
+    setEmailSubject("Salutacions des d'Hemiòlia Produccions");
+    setEmailText(`Hola ${contact1.name || contact.entity},\n\nEns posem en contacte amb tu per fer el seguiment de les nostres propostes per al vostre municipi (${contact.municipality || 'el vostre municipi'}).\n\nQualsevol cosa estem a la teva disposició.\n\nAtentament,\nL'equip d'Hemiòlia Produccions.`);
+    
+    setIsEditingEmail(true);
+  };
+
+  const handleSendEditedEmail = async () => {
+    const contact1 = contact.contact1 || { name: contact.name, email: contact.email };
+    if (!contact1.email) return alert("Aquest contacte no té correu electrònic.");
 
     try {
       const res = await fetch('/api/emails/send', {
@@ -461,13 +475,14 @@ export default function ContactDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: contact1.email,
-          subject: 'Salutacions des d\'Hemiòlia Produccions',
-          text: `Hola ${contact1.name || contact.entity},\n\nEns posem en contacte amb tu per fer el seguiment de les nostres propostes per al vostre municipi (${contact.municipality}).\n\nQualsevol cosa estem a la teva disposició.\n\nAtentament,\nL'equip d'Hemiòlia Produccions.`
+          subject: emailSubject,
+          text: emailText
         })
       });
 
       if (res.ok) {
-        alert("Correu enviat (o simulat correctament si no has configurat l'SMTP)!");
+        alert("Correu enviat correctament!");
+        setIsEditingEmail(false);
       } else {
         alert("Error a l'enviar el correu.");
       }
@@ -1454,6 +1469,84 @@ export default function ContactDetailPage() {
           ))
         )}
       </div>
+
+      {/* Modal d'edició i enviament de correu de seguiment */}
+      {isEditingEmail && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          backdropFilter: 'blur(5px)'
+        }}>
+          <div className="glass-panel" style={{
+            width: '90%',
+            maxWidth: '600px',
+            padding: '2rem',
+            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
+            border: '1px solid var(--color-accent)'
+          }}>
+            <h3 style={{ color: 'var(--color-accent)', marginBottom: '1.5rem' }}>✉️ Redactar Correu de Seguiment</h3>
+            
+            <div className="input-group" style={{ marginBottom: '1rem' }}>
+              <label>Destinatari</label>
+              <input 
+                className="input-field" 
+                type="text" 
+                value={contact.contact1?.email || contact.email || ''} 
+                disabled 
+                style={{ opacity: 0.7 }}
+              />
+            </div>
+            
+            <div className="input-group" style={{ marginBottom: '1.5rem' }}>
+              <label>Assumpte</label>
+              <input 
+                className="input-field" 
+                type="text" 
+                value={emailSubject} 
+                onChange={e => setEmailSubject(e.target.value)} 
+                required
+              />
+            </div>
+            
+            <div className="input-group" style={{ marginBottom: '1.5rem' }}>
+              <label>Missatge</label>
+              <textarea 
+                className="input-field" 
+                rows="8" 
+                value={emailText} 
+                onChange={e => setEmailText(e.target.value)} 
+                required
+                style={{ fontFamily: 'inherit', resize: 'vertical' }}
+              />
+            </div>
+            
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+              <button 
+                type="button" 
+                className="btn btn-glass" 
+                onClick={() => setIsEditingEmail(false)}
+              >
+                Cancel·lar
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-primary" 
+                onClick={handleSendEditedEmail}
+              >
+                Enviar Correu
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
