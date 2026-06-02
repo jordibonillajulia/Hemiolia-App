@@ -493,7 +493,7 @@ export default function CRMPage() {
             </svg>
           </Link>
           <h1 style={{ marginTop: '0.5rem', marginBottom: 0, display: 'inline-block', verticalAlign: 'middle' }}>
-            CRM i Contactes <span style={{ fontSize: '1.2rem', color: 'var(--color-text-secondary)', marginLeft: '0.5rem', fontWeight: 'normal' }}>({filteredContacts.length})</span>
+            Contactes <span style={{ fontSize: '1.2rem', color: 'var(--color-text-secondary)', marginLeft: '0.5rem', fontWeight: 'normal' }}>({filteredContacts.length})</span>
           </h1>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>

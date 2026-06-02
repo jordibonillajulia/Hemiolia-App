@@ -87,7 +87,7 @@ export default function DashboardLayout({ children }) {
         }}>
           <span>
             {isCrm 
-              ? '📝 Tens accés per editar el CRM i Contactes. La resta de seccions són de només lectura.' 
+              ? '📝 Tens accés per editar els Contactes. La resta de seccions són de només lectura.' 
               : '👁️ Mode de visualització (Només lectura). No pots modificar camps ni dades.'}
           </span>
         </div>

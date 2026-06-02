@@ -45,7 +45,7 @@ export default function DashboardPage() {
             border: '1px solid rgba(255,255,255,0.08)'
           }}>
             <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', fontSize: '1.8rem', opacity: 0.65 }}>👥</div>
-            <h3 style={{ color: 'var(--color-accent)', marginBottom: '0.5rem', fontFamily: 'var(--font-heading)', fontSize: '1.5rem', letterSpacing: '0.5px' }}>CRM i Contactes</h3>
+            <h3 style={{ color: 'var(--color-accent)', marginBottom: '0.5rem', fontFamily: 'var(--font-heading)', fontSize: '1.5rem', letterSpacing: '0.5px' }}>Contactes</h3>
             <p style={{ color: 'var(--color-text-primary)', fontSize: '0.95rem', margin: 0, lineHeight: '1.5' }}>
               Gestió d'organitzadors, programadors de cultura, teatres històrics i base de dades de contactes de la companyia.
             </p>
