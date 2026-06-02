@@ -536,6 +536,50 @@ export default function CRMPage() {
         </div>
       )}
 
+      {/* Resum de filtratge per a la impressió */}
+      <div className="print-only" style={{ 
+        marginBottom: '1.2rem', 
+        padding: '0.8rem 1rem', 
+        border: '1px solid #000000', 
+        borderRadius: '6px', 
+        backgroundColor: '#f8fafc',
+        fontSize: '0.75rem',
+        color: '#000000'
+      }}>
+        <h3 style={{ margin: '0 0 0.5rem 0', fontSize: '0.85rem', color: '#000000', borderBottom: '1px solid #000000', paddingBottom: '0.2rem', fontWeight: 'bold' }}>
+          Llista de Contactes (CRM) - Filtres Aplicats
+        </h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.3rem 1rem' }}>
+          {searchQuery && (
+            <div><strong>Cerca de text:</strong> "{searchQuery}"</div>
+          )}
+          {filterProvince !== 'Tots' && (
+            <div><strong>Província:</strong> {filterProvince}</div>
+          )}
+          {filterStatus !== 'Tots' && (
+            <div><strong>Estat:</strong> {filterStatus}</div>
+          )}
+          {filterShow !== 'Tots' && (
+            <div><strong>Espectacle vinculat:</strong> {filterShow}</div>
+          )}
+          {filterReminder && (
+            <div><strong>Recordatoris:</strong> Només pendents</div>
+          )}
+          {filterPerformed && (
+            <div><strong>Espectacles:</strong> Només amb espectacles representats</div>
+          )}
+          {aiQuery && (
+            <div><strong>Cerca IA:</strong> "{aiQuery}"</div>
+          )}
+          {!searchQuery && filterProvince === 'Tots' && filterStatus === 'Tots' && filterShow === 'Tots' && !filterReminder && !filterPerformed && !aiQuery && (
+            <div>Sense filtres actius (es mostra la llista completa).</div>
+          )}
+        </div>
+        <div style={{ marginTop: '0.6rem', fontSize: '0.68rem', color: '#555555', textAlign: 'right', borderTop: '1px dotted #cccccc', paddingTop: '0.3rem' }}>
+          Generat el: {new Date().toLocaleDateString('ca-ES')} a les {new Date().toLocaleTimeString('ca-ES', { hour: '2-digit', minute: '2-digit' })} | Total registres filtrats: <strong>{filteredContacts.length}</strong>
+        </div>
+      </div>
+
       {/* Filtres */}
       <div className="glass-panel no-print" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
