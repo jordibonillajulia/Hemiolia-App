@@ -72,8 +72,9 @@ export default function BudgetDetailPage() {
       // Wait a short moment for the scroll/rendering recalculation to finish
       await new Promise(resolve => setTimeout(resolve, 80));
 
+      const isMobile = typeof window !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       const canvas = await html2canvas(element, {
-        scale: 2, // High resolution
+        scale: isMobile ? 1.5 : 2, // Slightly lower scale on mobile to prevent WebKit canvas memory crashes
         useCORS: true,
         backgroundColor: '#ffffff',
         logging: false,
