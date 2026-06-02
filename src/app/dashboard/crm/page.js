@@ -1248,14 +1248,38 @@ export default function CRMPage() {
                         style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', width: 'auto', flex: 1, minWidth: '150px' }}
                       >
                         <option value="">📂 Adjuntar Dossier Oficial...</option>
-                        <option value={JSON.stringify({ name: 'Dossier Silencis Trencats', url: 'https://hemiolia.cat/wp-content/uploads/dossiers/dossier-silencis-trencats.pdf' })}>Silencis Trencats</option>
-                        <option value={JSON.stringify({ name: 'Dossier Cavernus', url: 'https://hemiolia.cat/wp-content/uploads/dossiers/dossier-cavernus.pdf' })}>Cavernus</option>
-                        <option value={JSON.stringify({ name: 'Dossier Un Nadal Màgic', url: 'https://hemiolia.cat/wp-content/uploads/dossiers/dossier-un-nadal-magic.pdf' })}>Un Nadal Màgic</option>
-                        <option value={JSON.stringify({ name: 'Dossier Marcel', url: 'https://hemiolia.cat/wp-content/uploads/dossiers/dossier-marcel.pdf' })}>Marcel</option>
-                        <option value={JSON.stringify({ name: 'Dossier El petit Leonardo', url: 'https://hemiolia.cat/wp-content/uploads/dossiers/dossier-petit-leonardo.pdf' })}>El petit Leonardo</option>
-                        <option value={JSON.stringify({ name: 'Dossier Simfonia Corporativa', url: 'https://hemiolia.cat/wp-content/uploads/dossiers/dossier-simfonia-corporativa.pdf' })}>Simfonia Corporativa</option>
-                        <option value={JSON.stringify({ name: 'Dossier Duo Hemiòlia', url: 'https://hemiolia.cat/wp-content/uploads/dossiers/dossier-duo-hemiolia.pdf' })}>Duo Hemiòlia</option>
-                        <option value={JSON.stringify({ name: 'Dossier Trio Hemiòlia', url: 'https://hemiolia.cat/wp-content/uploads/dossiers/dossier-trio-hemiolia.pdf' })}>Trio Hemiòlia</option>
+                        {/* Layla, un viatge d'esperança */}
+                        <optgroup label="Layla, un viatge d'esperança">
+                          <option value={JSON.stringify({ name: 'Layla - +Info (CAT)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/LAYLA_+INFO_CAT.pdf' })}>Layla - +Info (CAT)</option>
+                          <option value={JSON.stringify({ name: 'Layla - +Info (ES)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/LAYLA_+INFO_CAS.pdf' })}>Layla - +Info (ES)</option>
+                          <option value={JSON.stringify({ name: 'Layla - +Info (EN)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/LAYLA_+INFO_EN.pdf' })}>Layla - +Info (EN)</option>
+                        </optgroup>
+                        
+                        {/* Layla, el contacontes */}
+                        <optgroup label="Layla, el contacontes">
+                          <option value={JSON.stringify({ name: 'Layla Contacontes - +Info (CAT)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/LAYLA_CONTACONTES_+INFO_CAT.pdf' })}>Contacontes - +Info (CAT)</option>
+                          <option value={JSON.stringify({ name: 'Layla Contacontes - Dossier Pedagògic', url: 'https://hemiolia.cat/DOSSIER%20PEDAGO%CC%80GIC/LAYLA_CONTACONTES%20-%20Dossier%20Pedago%CC%80gic.pdf' })}>Contacontes - Dossier Pedagògic</option>
+                          <option value={JSON.stringify({ name: 'Layla Contacontes - Guia Docent', url: 'https://hemiolia.cat/GUIA%20DOCENT/LAYLA_CONTACONTES%20-%20Guia%20docent.pdf' })}>Contacontes - Guia Docent</option>
+                        </optgroup>
+
+                        {/* Cavernus */}
+                        <optgroup label="Cavernus, una evolució musical">
+                          <option value={JSON.stringify({ name: 'Cavernus - +Info (CAT)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/CAVERNUS_+INFO_CAT.pdf' })}>Cavernus - +Info (CAT)</option>
+                          <option value={JSON.stringify({ name: 'Cavernus - Dossier Pedagògic', url: 'https://hemiolia.cat/DOSSIER%20PEDAGO%CC%80GIC/CAVERNUS%20-%20Dossier%20Pedago%CC%80gic.pdf' })}>Cavernus - Dossier Pedagògic</option>
+                          <option value={JSON.stringify({ name: 'Cavernus - Guia Docent', url: 'https://hemiolia.cat/GUIA%20DOCENT/CAVERNUS%20-%20Guia%20docent.pdf' })}>Cavernus - Guia Docent</option>
+                        </optgroup>
+
+                        {/* Un Nadal Màgic */}
+                        <optgroup label="Un Nadal Màgic">
+                          <option value={JSON.stringify({ name: 'Un Nadal Màgic - +Info (CAT)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/UN_NADAL_MAGIC_+INFO_CAT.pdf' })}>Nadal Màgic - +Info (CAT)</option>
+                          <option value={JSON.stringify({ name: 'Un Nadal Màgic - Dossier Pedagògic', url: 'https://hemiolia.cat/DOSSIER%20PEDAGO%CC%80GIC/UN_NADAL_MA%CC%80GIC%20-%20Dossier%20Pedago%CC%80gic.pdf' })}>Nadal Màgic - Dossier Pedagògic</option>
+                          <option value={JSON.stringify({ name: 'Un Nadal Màgic - Guia Docent', url: 'https://hemiolia.cat/GUIA%20DOCENT/UN_NADAL_MA%CC%80GIC%20-%20Guia%20docent.pdf' })}>Nadal Màgic - Guia Docent</option>
+                        </optgroup>
+
+                        {/* Silencis Trencats */}
+                        <optgroup label="Silencis Trencats">
+                          <option value={JSON.stringify({ name: 'Silencis Trencats - +Info (CAT)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/SILENCIS%20TRENCATS%20-%20+INFO_CAT-1.pdf' })}>Silencis Trencats - +Info (CAT)</option>
+                        </optgroup>
                       </select>
                     </div>
                   )}
