@@ -126,17 +126,22 @@ export default function BudgetDetailPage() {
       const byteArray = new Uint8Array(byteNumbers);
       const blob = new Blob([byteArray], { type: 'application/pdf' });
 
-      // Trigger browser download
-      const link = document.createElement('a');
+      // Trigger browser download or open in new tab for mobile
       const url = URL.createObjectURL(blob);
       const fileName = `pressupost_${budget.budgetNumber || 'pressupost'}_signat.pdf`;
 
-      link.setAttribute('href', url);
-      link.setAttribute('download', fileName);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      if (isMobile) {
+        // On mobile (especially iOS Safari), opening in a new tab is the most reliable way to display/save Blobs
+        window.open(url, '_blank');
+      } else {
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', fileName);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
 
       alert('Pressupost signat digitalment i descarregat correctament!');
     } catch (err) {
