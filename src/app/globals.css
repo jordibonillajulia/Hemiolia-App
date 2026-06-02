@@ -1437,8 +1437,8 @@ body.generating-pdf .invoice-paper .legal-note-vat10 .legal-sep {
     color: #000000 !important;
     font-weight: bold !important;
     border-bottom: 2px solid #000000 !important;
-    padding: 0.8rem 1rem !important;
-    font-size: 0.85rem !important;
+    padding: 0.4rem 0.5rem !important;
+    font-size: 0.7rem !important;
     text-align: left !important;
   }
   
@@ -1458,8 +1458,8 @@ body.generating-pdf .invoice-paper .legal-note-vat10 .legal-sep {
   
   .table-container-responsive td {
     display: table-cell !important;
-    padding: 0.8rem 1rem !important;
-    font-size: 0.85rem !important;
+    padding: 0.4rem 0.5rem !important;
+    font-size: 0.7rem !important;
     text-align: left !important;
     color: #000000 !important;
     border: none !important;
