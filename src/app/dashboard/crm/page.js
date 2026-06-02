@@ -154,6 +154,12 @@ export default function CRMPage() {
   const [aiCampaignProgress, setAiCampaignProgress] = useState(0);
   const [addRecipientSearch, setAddRecipientSearch] = useState('');
   const [isAddRecipientDropdownOpen, setIsAddRecipientDropdownOpen] = useState(false);
+  
+  // AI Campaign Attachments
+  const [aiCampaignAttachments, setAiCampaignAttachments] = useState([]);
+  const [newAttachmentName, setNewAttachmentName] = useState('');
+  const [newAttachmentUrl, setNewAttachmentUrl] = useState('');
+  const [isAddingAttachmentManual, setIsAddingAttachmentManual] = useState(false);
 
   // Sincronitza els filtres amb la URL (silent replace, sense recàrrega)
   const updateUrl = useCallback((sq, fp, fs, fsh, fr, fprm, aiQ, aiIds) => {
@@ -227,6 +233,10 @@ export default function CRMPage() {
     setAiCampaignSubject('');
     setAiCampaignBody('');
     setAiCampaignRecipients([]);
+    setAiCampaignAttachments([]);
+    setNewAttachmentName('');
+    setNewAttachmentUrl('');
+    setIsAddingAttachmentManual(false);
     setIsGeneratingAiCampaign(false);
     setIsSendingAiCampaign(false);
     setAiCampaignProgress(0);
@@ -263,6 +273,7 @@ export default function CRMPage() {
       setAiCampaignSubject(data.subject);
       setAiCampaignBody(data.body);
       setAiCampaignRecipients(matchedContacts);
+      setAiCampaignAttachments(data.suggestedAttachments || []);
       setAiCampaignStep('review');
     } catch (err) {
       console.error(err);
@@ -291,6 +302,21 @@ export default function CRMPage() {
     setAddRecipientSearch('');
   };
 
+  const handleAddAttachment = () => {
+    if (!newAttachmentName.trim() || !newAttachmentUrl.trim()) {
+      alert("Si us plau, omple el nom i l'enllaç del fitxer adjunt.");
+      return;
+    }
+    setAiCampaignAttachments(prev => [...prev, { name: newAttachmentName, url: newAttachmentUrl }]);
+    setNewAttachmentName('');
+    setNewAttachmentUrl('');
+    setIsAddingAttachmentManual(false);
+  };
+
+  const handleRemoveAttachment = (idxToRemove) => {
+    setAiCampaignAttachments(prev => prev.filter((_, idx) => idx !== idxToRemove));
+  };
+
   const handleSendAiCampaign = async () => {
     if (aiCampaignRecipients.length === 0) {
       return alert("No hi ha cap destinatari a la llista.");
@@ -299,6 +325,12 @@ export default function CRMPage() {
 
     setIsSendingAiCampaign(true);
     setAiCampaignProgress(0);
+
+    // Prepare attachments payload for Nodemailer
+    const attachmentsPayload = aiCampaignAttachments.map(a => ({
+      filename: a.name.endsWith('.pdf') ? a.name : `${a.name}.pdf`,
+      path: a.url
+    }));
 
     let sentCount = 0;
     for (let i = 0; i < aiCampaignRecipients.length; i++) {
@@ -318,7 +350,8 @@ export default function CRMPage() {
           body: JSON.stringify({
             to: email,
             subject: aiCampaignSubject,
-            text: personalizedBody
+            text: personalizedBody,
+            attachments: attachmentsPayload
           })
         });
 
@@ -1107,6 +1140,126 @@ export default function CRMPage() {
                 <p style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', marginBottom: '1.5rem', fontStyle: 'italic' }}>
                   Pots utilitzar les etiquetes <strong>{"{nom}"}</strong> per al nom del contacte, i <strong>{"{entitat}"}</strong> per al nom de l'entitat. Es reemplaçaran dinàmicament per a cada destinatari.
                 </p>
+
+                {/* Attachment manager */}
+                <div style={{ 
+                  background: 'rgba(0,0,0,0.3)', 
+                  padding: '1rem', 
+                  borderRadius: '8px', 
+                  border: '1px solid var(--color-border)',
+                  marginBottom: '1.5rem'
+                }}>
+                  <strong style={{ fontSize: '0.82rem', display: 'block', marginBottom: '0.6rem', color: 'var(--color-text-primary)' }}>
+                    📎 Fitxers adjunts ({aiCampaignAttachments.length}):
+                  </strong>
+                  
+                  {aiCampaignAttachments.length === 0 ? (
+                    <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', margin: '0.5rem 0' }}>
+                      Cap fitxer adjunt.
+                    </p>
+                  ) : (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1rem' }}>
+                      {aiCampaignAttachments.map((att, idx) => (
+                        <span key={idx} style={{ 
+                          fontSize: '0.72rem', 
+                          padding: '0.2rem 0.5rem', 
+                          background: 'rgba(58, 134, 200, 0.1)', 
+                          border: '1px solid rgba(58, 134, 200, 0.25)', 
+                          borderRadius: '4px',
+                          color: '#60a5fa',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.3rem'
+                        }}>
+                          📄 {att.name}
+                          <button 
+                            type="button" 
+                            onClick={() => handleRemoveAttachment(idx)}
+                            disabled={isSendingAiCampaign}
+                            style={{ 
+                              background: 'transparent', 
+                              border: 'none', 
+                              color: '#ff6b6b', 
+                              cursor: 'pointer',
+                              fontWeight: 'bold',
+                              fontSize: '0.75rem',
+                              padding: '0 2px'
+                            }}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Add manual attachment dropdown/form */}
+                  {isAddingAttachmentManual ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(255,255,255,0.02)', padding: '0.8rem', borderRadius: '6px', border: '1px dashed rgba(255,255,255,0.1)' }}>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <input 
+                          type="text" 
+                          className="input-field" 
+                          placeholder="Nom del fitxer (ex: Dossier Silencis)" 
+                          value={newAttachmentName}
+                          onChange={e => setNewAttachmentName(e.target.value)}
+                          style={{ fontSize: '0.8rem', padding: '0.4rem 0.6rem' }}
+                        />
+                        <input 
+                          type="text" 
+                          className="input-field" 
+                          placeholder="Enllaç al fitxer (URL)" 
+                          value={newAttachmentUrl}
+                          onChange={e => setNewAttachmentUrl(e.target.value)}
+                          style={{ fontSize: '0.8rem', padding: '0.4rem 0.6rem' }}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' }}>
+                        <button type="button" className="btn btn-glass" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }} onClick={() => setIsAddingAttachmentManual(false)}>Cancel·lar</button>
+                        <button type="button" className="btn btn-primary" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }} onClick={handleAddAttachment}>Afegir</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <button 
+                        type="button" 
+                        className="btn btn-glass" 
+                        onClick={() => setIsAddingAttachmentManual(true)}
+                        disabled={isSendingAiCampaign}
+                        style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+                      >
+                        ➕ Adjuntar Enllaç Manual
+                      </button>
+                      
+                      {/* Predefined show list attachments shortcuts */}
+                      <select 
+                        onChange={e => {
+                          if (e.target.value) {
+                            const selected = JSON.parse(e.target.value);
+                            setAiCampaignAttachments(prev => {
+                              if (prev.some(a => a.url === selected.url)) return prev;
+                              return [...prev, selected];
+                            });
+                            e.target.value = "";
+                          }
+                        }}
+                        disabled={isSendingAiCampaign}
+                        className="input-field"
+                        style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', width: 'auto', flex: 1, minWidth: '150px' }}
+                      >
+                        <option value="">📂 Adjuntar Dossier Oficial...</option>
+                        <option value={JSON.stringify({ name: 'Dossier Silencis Trencats', url: 'https://hemiolia.cat/wp-content/uploads/dossiers/dossier-silencis-trencats.pdf' })}>Silencis Trencats</option>
+                        <option value={JSON.stringify({ name: 'Dossier Cavernus', url: 'https://hemiolia.cat/wp-content/uploads/dossiers/dossier-cavernus.pdf' })}>Cavernus</option>
+                        <option value={JSON.stringify({ name: 'Dossier Un Nadal Màgic', url: 'https://hemiolia.cat/wp-content/uploads/dossiers/dossier-un-nadal-magic.pdf' })}>Un Nadal Màgic</option>
+                        <option value={JSON.stringify({ name: 'Dossier Marcel', url: 'https://hemiolia.cat/wp-content/uploads/dossiers/dossier-marcel.pdf' })}>Marcel</option>
+                        <option value={JSON.stringify({ name: 'Dossier El petit Leonardo', url: 'https://hemiolia.cat/wp-content/uploads/dossiers/dossier-petit-leonardo.pdf' })}>El petit Leonardo</option>
+                        <option value={JSON.stringify({ name: 'Dossier Simfonia Corporativa', url: 'https://hemiolia.cat/wp-content/uploads/dossiers/dossier-simfonia-corporativa.pdf' })}>Simfonia Corporativa</option>
+                        <option value={JSON.stringify({ name: 'Dossier Duo Hemiòlia', url: 'https://hemiolia.cat/wp-content/uploads/dossiers/dossier-duo-hemiolia.pdf' })}>Duo Hemiòlia</option>
+                        <option value={JSON.stringify({ name: 'Dossier Trio Hemiòlia', url: 'https://hemiolia.cat/wp-content/uploads/dossiers/dossier-trio-hemiolia.pdf' })}>Trio Hemiòlia</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
 
                 {/* Recipient manager */}
                 <div style={{ 

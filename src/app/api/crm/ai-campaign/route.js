@@ -32,18 +32,32 @@ You must analyze the user's natural language request (usually in Catalan) which 
 1. Who should receive the email (e.g. "contactes de Girona", "els que hagin contractat Cavernus", "aquells amb estat 'Entrevista pendent'").
 2. What the email is about (e.g. "felicitar el Nadal i oferir un descompte", "demanar si estan interessats en Marcel").
 
+We have the following official dossiers available in our system:
+- Dossier Silencis Trencats (url: https://hemiolia.cat/wp-content/uploads/dossiers/dossier-silencis-trencats.pdf)
+- Dossier Cavernus (url: https://hemiolia.cat/wp-content/uploads/dossiers/dossier-cavernus.pdf)
+- Dossier Un Nadal Màgic (url: https://hemiolia.cat/wp-content/uploads/dossiers/dossier-un-nadal-magic.pdf)
+- Dossier Marcel (url: https://hemiolia.cat/wp-content/uploads/dossiers/dossier-marcel.pdf)
+- Dossier El petit Leonardo (url: https://hemiolia.cat/wp-content/uploads/dossiers/dossier-petit-leonardo.pdf)
+- Dossier Simfonia Corporativa (url: https://hemiolia.cat/wp-content/uploads/dossiers/dossier-simfonia-corporativa.pdf)
+- Dossier Duo Hemiòlia (url: https://hemiolia.cat/wp-content/uploads/dossiers/dossier-duo-hemiolia.pdf)
+- Dossier Trio Hemiòlia (url: https://hemiolia.cat/wp-content/uploads/dossiers/dossier-trio-hemiolia.pdf)
+
+If the user's prompt mentions or implies sending or attaching one or more of these dossiers (e.g. "envia el dossier de Silencis Trencats" or "passa el dossier de Cavernus"), select them and include them in the "suggestedAttachments" array.
+
 You must return a valid JSON object containing:
 - "matchedContactIds": an array of contact ID strings that match the query filters.
 - "subject": a suggested, compelling email subject line.
 - "body": a suggested email body written in a professional, warm, and appropriate tone (usually in Catalan). 
   Important: the body MUST contain the placeholders "{nom}" (for the contact's name) and "{entitat}" (for the entity name) to allow automatic personalization.
   Do not mention specific dates or events unless requested. Keep it elegant.
+- "suggestedAttachments": an array of objects representing the matched dossiers, e.g. [{"name": "Dossier Silencis Trencats", "url": "https://hemiolia.cat/wp-content/uploads/dossiers/dossier-silencis-trencats.pdf"}]. If no dossiers are requested, return an empty array.
 
 Return ONLY a valid JSON object of the form:
 {
   "matchedContactIds": ["id1", "id2", ...],
   "subject": "Suggested Subject Line",
-  "body": "Hola {nom},\\n\\nEns posem en contacte amb {entitat}...\\n\\nAtentament,\\nL'equip d'Hemiòlia."
+  "body": "Hola {nom},\\n\\nEns posem en contacte amb {entitat}...\\n\\nAtentament,\\nL'equip d'Hemiòlia.",
+  "suggestedAttachments": []
 }
 Do not include markdown wrappers (like \`\`\`json) outside the JSON. Return only the raw JSON string.`;
 
@@ -80,7 +94,7 @@ ${JSON.stringify(simplifiedContacts)}`;
     const resData = await response.json();
     const textResponse = resData.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
     
-    let result = { matchedContactIds: [], subject: '', body: '' };
+    let result = { matchedContactIds: [], subject: '', body: '', suggestedAttachments: [] };
     try {
       const cleanText = textResponse.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
       result = JSON.parse(cleanText);
@@ -92,7 +106,8 @@ ${JSON.stringify(simplifiedContacts)}`;
     return NextResponse.json({
       matchedContactIds: result.matchedContactIds || result.matched_ids || [],
       subject: result.subject || "Salutacions des d'Hemiòlia Produccions",
-      body: result.body || "Hola {nom},\n\n..."
+      body: result.body || "Hola {nom},\n\n...",
+      suggestedAttachments: result.suggestedAttachments || []
     });
   } catch (error) {
     console.error("AI campaign route error:", error);

@@ -3,7 +3,7 @@ import nodemailer from 'nodemailer';
 
 export async function POST(request) {
   try {
-    const { to, subject, text } = await request.json();
+    const { to, subject, text, attachments } = await request.json();
 
     // Configurem nodemailer amb les dades del servidor SMTP (ex: Gmail, hostalia, etc.)
     // Les credencials s'han de posar a l'arxiu .env.local
@@ -22,6 +22,7 @@ export async function POST(request) {
       to,
       subject,
       text,
+      ...(attachments && attachments.length > 0 ? { attachments } : {})
     };
 
     // Si no tenim configurat l'SMTP al .env.local, simplement fem un simulacre (mock) pel log
