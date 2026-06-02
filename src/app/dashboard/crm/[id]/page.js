@@ -812,7 +812,20 @@ export default function ContactDetailPage() {
             <>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
                 <div>
-                  <h1 style={{ marginBottom: '0.5rem', color: 'var(--color-accent)', marginTop: 0 }}>{activeContact1.name}</h1>
+                  <h1 style={{ marginBottom: '0.5rem', color: 'var(--color-accent)', marginTop: 0 }}>
+                    {(() => {
+                      if (!activeContact1.name) return '';
+                      const parts = activeContact1.name.trim().split(/\s+/);
+                      if (parts.length >= 3) {
+                        const composites = ['maria', 'm.', 'mª', 'angels', 'àngels', 'lluisa', 'lluïsa', 'ramon', 'joan', 'josep', 'josefina', 'antoni', 'francisco'];
+                        if (composites.includes(parts[1].toLowerCase()) && parts.length >= 4) {
+                          return parts.slice(0, 3).join(' ');
+                        }
+                        return parts.slice(0, 2).join(' ');
+                      }
+                      return activeContact1.name;
+                    })()}
+                  </h1>
                   <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                     <strong>{contact.entity}</strong> | {contact.municipality}
                     {contact.province && <span>({contact.province})</span>}
