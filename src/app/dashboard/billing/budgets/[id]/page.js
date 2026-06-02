@@ -70,7 +70,11 @@ export default function BudgetDetailPage() {
       window.scrollTo(0, 0);
 
       // Wait a short moment for the scroll/rendering recalculation to finish
-      await new Promise(resolve => setTimeout(resolve, 80));
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      const rect = element.getBoundingClientRect();
+      const x = rect.left + window.scrollX;
+      const y = rect.top + window.scrollY;
 
       const isMobile = typeof window !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       const canvas = await html2canvas(element, {
@@ -78,8 +82,14 @@ export default function BudgetDetailPage() {
         useCORS: true,
         backgroundColor: '#ffffff',
         logging: false,
+        width: element.offsetWidth || rect.width,
+        height: element.offsetHeight || rect.height,
+        x: x,
+        y: y,
+        scrollX: 0,
+        scrollY: 0,
         windowWidth: 1024,
-        windowHeight: element.offsetHeight + 500
+        windowHeight: (element.offsetHeight || rect.height) + 500
       });
 
       // Restore scroll position
