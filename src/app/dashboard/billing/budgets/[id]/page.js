@@ -77,14 +77,8 @@ export default function BudgetDetailPage() {
         useCORS: true,
         backgroundColor: '#ffffff',
         logging: false,
-        width: 794,
-        height: 1123,
         windowWidth: 1024,
-        windowHeight: 1400,
-        x: 0,
-        y: 0,
-        scrollX: 0,
-        scrollY: 0
+        windowHeight: element.offsetHeight + 500
       });
 
       // Restore scroll position
