@@ -132,15 +132,27 @@ export default function CRMPage() {
   const [filterStatus, setFilterStatus] = useState(() => searchParams.get('status') || 'Tots');
   const [filterShow, setFilterShow] = useState(() => searchParams.get('show') || 'Tots');
   const [filterReminder, setFilterReminder] = useState(() => searchParams.get('reminder') === '1');
+  const [filterPerformed, setFilterPerformed] = useState(() => searchParams.get('performed') === '1');
+
+  // AI Filter states
+  const [aiQuery, setAiQuery] = useState(() => searchParams.get('aiQuery') || '');
+  const [isAiFiltering, setIsAiFiltering] = useState(false);
+  const [aiFilteredIds, setAiFilteredIds] = useState(() => {
+    const ai = searchParams.get('ai');
+    return ai ? ai.split(',') : null;
+  });
 
   // Sincronitza els filtres amb la URL (silent replace, sense recàrrega)
-  const updateUrl = useCallback((sq, fp, fs, fsh, fr) => {
+  const updateUrl = useCallback((sq, fp, fs, fsh, fr, fprm, aiQ, aiIds) => {
     const params = new URLSearchParams();
     if (sq) params.set('search', sq);
     if (fp && fp !== 'Tots') params.set('province', fp);
     if (fs && fs !== 'Tots') params.set('status', fs);
     if (fsh && fsh !== 'Tots') params.set('show', fsh);
     if (fr) params.set('reminder', '1');
+    if (fprm) params.set('performed', '1');
+    if (aiQ) params.set('aiQuery', aiQ);
+    if (aiIds) params.set('ai', aiIds);
     const qs = params.toString();
     router.replace(`/dashboard/crm${qs ? '?' + qs : ''}`, { scroll: false });
   }, [router]);
@@ -228,6 +240,7 @@ export default function CRMPage() {
     setC4Phone(c4.phone || '');
 
     setIsAdding(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleRemoveContact = async (id, contactName) => {
@@ -243,7 +256,42 @@ export default function CRMPage() {
     setFilterStatus('Tots');
     setFilterShow('Tots');
     setFilterReminder(false);
+    setFilterPerformed(false);
+    setAiQuery('');
+    setAiFilteredIds(null);
     router.replace('/dashboard/crm', { scroll: false });
+  };
+
+  const handleAiFilter = async () => {
+    if (!aiQuery.trim()) return;
+    setIsAiFiltering(true);
+    try {
+      const res = await fetch('/api/crm/ai-filter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: aiQuery, contacts })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const matched = data.matchedIds || [];
+        setAiFilteredIds(matched);
+        updateUrl(searchQuery, filterProvince, filterStatus, filterShow, filterReminder, filterPerformed, aiQuery, matched.join(','));
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        alert(errData.error || "Error en la cerca intel·ligent.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error de connexió en fer la cerca.");
+    } finally {
+      setIsAiFiltering(false);
+    }
+  };
+
+  const handleClearAiFilter = () => {
+    setAiQuery('');
+    setAiFilteredIds(null);
+    updateUrl(searchQuery, filterProvince, filterStatus, filterShow, filterReminder, filterPerformed, '', '');
   };
 
   // Filter logic
@@ -285,7 +333,21 @@ export default function CRMPage() {
       matchesReminder = contact.nextActionDate && contact.nextActionDate <= today;
     }
     
-    return matchesSearch && matchesProvince && matchesStatus && matchesShow && matchesReminder;
+    let matchesPerformed = true;
+    if (filterPerformed) {
+      const actualPerformedShows = (contact.performedShows || []).filter(s => 
+        s && 
+        s.trim() !== '' && 
+        !['cap', 'cap espectacle', 'ningú', 'ningu', 'none', 'sense especificar', 'sense'].includes(s.trim().toLowerCase())
+      );
+      matchesPerformed = actualPerformedShows.length > 0;
+    }
+    let matchesAi = true;
+    if (aiFilteredIds !== null) {
+      matchesAi = aiFilteredIds.includes(contact.id);
+    }
+    
+    return matchesSearch && matchesProvince && matchesStatus && matchesShow && matchesReminder && matchesPerformed && matchesAi;
   });
 
   if (loading || !user) return <div className="container mt-xl">Carregant CRM...</div>;
@@ -310,8 +372,10 @@ export default function CRMPage() {
               Importar CSV
             </Link>
             <button className="btn btn-primary" onClick={() => {
-              setIsAdding(!isAdding);
-              if (isAdding) resetForm();
+              const nextVal = !isAdding;
+              setIsAdding(nextVal);
+              if (!nextVal) resetForm();
+              else window.scrollTo({ top: 0, behavior: 'smooth' });
             }}>
               {isAdding ? 'Cancel·lar' : '+ Nou Contacte'}
             </button>
@@ -471,7 +535,7 @@ export default function CRMPage() {
       <div className="glass-panel" style={{ marginBottom: '1.5rem', padding: '1.5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h4 style={{ margin: 0, color: 'var(--color-accent)' }}>🔍 Filtres i Cerca</h4>
-          {(searchQuery || filterProvince !== 'Tots' || filterStatus !== 'Tots' || filterShow !== 'Tots' || filterReminder) && (
+          {(searchQuery || filterProvince !== 'Tots' || filterStatus !== 'Tots' || filterShow !== 'Tots' || filterReminder || filterPerformed) && (
             <button 
               type="button" 
               onClick={handleClearFilters} 
@@ -489,7 +553,7 @@ export default function CRMPage() {
               className="input-field" 
               placeholder="Entitat, municipi, contacte..." 
               value={searchQuery} 
-              onChange={e => { setSearchQuery(e.target.value); updateUrl(e.target.value, filterProvince, filterStatus, filterShow, filterReminder); }} 
+              onChange={e => { setSearchQuery(e.target.value); updateUrl(e.target.value, filterProvince, filterStatus, filterShow, filterReminder, filterPerformed, aiQuery, aiFilteredIds ? aiFilteredIds.join(',') : ''); }} 
             />
           </div>
           
@@ -498,7 +562,7 @@ export default function CRMPage() {
             <select 
               className="input-field" 
               value={filterProvince} 
-              onChange={e => { setFilterProvince(e.target.value); updateUrl(searchQuery, e.target.value, filterStatus, filterShow, filterReminder); }}
+              onChange={e => { setFilterProvince(e.target.value); updateUrl(searchQuery, e.target.value, filterStatus, filterShow, filterReminder, filterPerformed, aiQuery, aiFilteredIds ? aiFilteredIds.join(',') : ''); }}
               style={{ background: 'var(--color-background-input)', color: 'var(--color-text-primary)' }}
             >
               <option value="Tots">Totes les províncies</option>
@@ -517,7 +581,7 @@ export default function CRMPage() {
             <select 
               className="input-field" 
               value={filterStatus} 
-              onChange={e => { setFilterStatus(e.target.value); updateUrl(searchQuery, filterProvince, e.target.value, filterShow, filterReminder); }}
+              onChange={e => { setFilterStatus(e.target.value); updateUrl(searchQuery, filterProvince, e.target.value, filterShow, filterReminder, filterPerformed, aiQuery, aiFilteredIds ? aiFilteredIds.join(',') : ''); }}
               style={{ background: 'var(--color-background-input)', color: 'var(--color-text-primary)' }}
             >
               <option value="Tots">Tots els estats</option>
@@ -535,7 +599,7 @@ export default function CRMPage() {
             <select 
               className="input-field" 
               value={filterShow} 
-              onChange={e => { setFilterShow(e.target.value); updateUrl(searchQuery, filterProvince, filterStatus, e.target.value, filterReminder); }}
+              onChange={e => { setFilterShow(e.target.value); updateUrl(searchQuery, filterProvince, filterStatus, e.target.value, filterReminder, filterPerformed, aiQuery, aiFilteredIds ? aiFilteredIds.join(',') : ''); }}
               style={{ background: 'var(--color-background-input)', color: 'var(--color-text-primary)' }}
             >
               <option value="Tots">Tots els espectacles</option>
@@ -552,18 +616,71 @@ export default function CRMPage() {
             </select>
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', marginTop: '1.2rem' }}>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginTop: '1.2rem', flexWrap: 'wrap' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', userSelect: 'none' }}>
               <input 
                 type="checkbox" 
                 checked={filterReminder} 
-                onChange={e => { setFilterReminder(e.target.checked); updateUrl(searchQuery, filterProvince, filterStatus, filterShow, e.target.checked); }} 
+                onChange={e => { setFilterReminder(e.target.checked); updateUrl(searchQuery, filterProvince, filterStatus, filterShow, e.target.checked, filterPerformed, aiQuery, aiFilteredIds ? aiFilteredIds.join(',') : ''); }} 
                 style={{ width: '18px', height: '18px', cursor: 'pointer' }}
               />
               <span style={{ color: filterReminder ? 'var(--color-accent)' : 'var(--color-text-primary)', fontWeight: filterReminder ? 'bold' : 'normal' }}>
                 🔔 Recordatoris actius
               </span>
             </label>
+
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', userSelect: 'none' }}>
+              <input 
+                type="checkbox" 
+                checked={filterPerformed} 
+                onChange={e => { setFilterPerformed(e.target.checked); updateUrl(searchQuery, filterProvince, filterStatus, filterShow, filterReminder, e.target.checked, aiQuery, aiFilteredIds ? aiFilteredIds.join(',') : ''); }} 
+                style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+              />
+              <span style={{ color: filterPerformed ? 'var(--color-accent)' : 'var(--color-text-primary)', fontWeight: filterPerformed ? 'bold' : 'normal' }}>
+                🎭 Espectacles fets
+              </span>
+            </label>
+          </div>
+
+          {/* AI Filter section */}
+          <div className="input-group" style={{ margin: 0, gridColumn: '1 / -1', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1rem', marginTop: '0.5rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--color-accent)', fontWeight: 'bold' }}>
+              <span>🤖 Cerca Intel·ligent amb IA</span>
+            </label>
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <input 
+                className="input-field" 
+                placeholder="Ex: llistam aquelles entrevistes fetes on hagi agradat l'espectacle cavernus..." 
+                value={aiQuery} 
+                onChange={e => setAiQuery(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleAiFilter(); }}
+                style={{ flex: 1, minWidth: '280px' }}
+              />
+              <button 
+                type="button" 
+                className="btn btn-primary" 
+                onClick={handleAiFilter}
+                disabled={isAiFiltering}
+                style={{ whiteSpace: 'nowrap', padding: '0.5rem 1.2rem' }}
+              >
+                {isAiFiltering ? '🤖 Cercant...' : 'Cercar'}
+              </button>
+              {aiFilteredIds !== null && (
+                <button 
+                  type="button" 
+                  className="btn btn-glass" 
+                  onClick={handleClearAiFilter}
+                  style={{ color: '#ff6b6b', borderColor: 'rgba(255,107,107,0.3)', whiteSpace: 'nowrap' }}
+                >
+                  Netejar Cerca IA
+                </button>
+              )}
+            </div>
+            {aiFilteredIds !== null && (
+              <div style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginTop: '0.4rem' }}>
+                ✨ S'han trobat {filteredContacts.length} entitats coincidents amb la cerca intel·ligent.
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -590,10 +707,41 @@ export default function CRMPage() {
                 const today = new Date().toISOString().split('T')[0];
                 const hasOverdueReminder = contact.nextActionDate && contact.nextActionDate <= today;
                 const contact1 = contact.contact1 || { name: contact.name || 'Sense especificar', role: '' };
+                const actualPerformedShows = (contact.performedShows || []).filter(s => 
+                  s && 
+                  s.trim() !== '' && 
+                  !['cap', 'cap espectacle', 'ningú', 'ningu', 'none', 'sense especificar', 'sense'].includes(s.trim().toLowerCase())
+                );
                 
                 return (
                   <tr key={contact.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <td data-label="Entitat" style={{ padding: '1rem', fontWeight: 'bold' }}>{contact.entity}</td>
+                    <td data-label="Entitat" style={{ padding: '1rem', fontWeight: 'bold' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <span>{contact.entity}</span>
+                        {actualPerformedShows.length > 0 && (() => {
+                          const numGigs = contact.linkedGigIds && contact.linkedGigIds.length > 0 
+                            ? contact.linkedGigIds.length 
+                            : actualPerformedShows.length;
+                          return (
+                            <span 
+                              title={`Espectacles realitzats (${numGigs}): ${actualPerformedShows.join(', ')}`}
+                              style={{ 
+                                cursor: 'pointer', 
+                                fontSize: '1rem', 
+                                display: 'inline-flex', 
+                                alignItems: 'center', 
+                                gap: '0.2rem' 
+                              }}
+                            >
+                              <span>🎭</span>
+                              <span style={{ fontSize: '0.72rem', opacity: 0.8, color: 'var(--color-accent)', fontWeight: 'bold' }}>
+                                {numGigs}
+                              </span>
+                            </span>
+                          );
+                        })()}
+                      </div>
+                    </td>
                     <td data-label="Municipi" style={{ padding: '1rem' }}>{contact.municipality}</td>
                     <td data-label="Província" style={{ padding: '1rem' }}>{contact.province || '-'}</td>
                     <td data-label="Contacte Principal" style={{ padding: '1rem' }}>
@@ -640,6 +788,8 @@ export default function CRMPage() {
                             if (filterStatus !== 'Tots') params.set('status', filterStatus);
                             if (filterShow !== 'Tots') params.set('show', filterShow);
                             if (filterReminder) params.set('reminder', '1');
+                            if (filterPerformed) params.set('performed', '1');
+                            if (aiFilteredIds !== null) params.set('ai', aiFilteredIds.join(','));
                             const qs = params.toString();
                             return qs ? '?' + qs : '';
                           })()

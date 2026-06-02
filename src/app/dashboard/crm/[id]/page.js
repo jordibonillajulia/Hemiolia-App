@@ -491,6 +491,9 @@ export default function ContactDetailPage() {
   const filterStatus = searchParams.get('status') || 'Tots';
   const filterShow = searchParams.get('show') || 'Tots';
   const filterReminder = searchParams.get('reminder') === '1';
+  const filterPerformed = searchParams.get('performed') === '1';
+  const aiParam = searchParams.get('ai');
+  const aiFilteredIds = aiParam ? aiParam.split(',') : null;
 
   const filteredContacts = allContacts.filter(c => {
     const c1 = c.contact1 || { name: c.name, email: c.email, phone: c.phone, role: '' };
@@ -529,8 +532,23 @@ export default function ContactDetailPage() {
       const today = new Date().toISOString().split('T')[0];
       matchesReminder = c.nextActionDate && c.nextActionDate <= today;
     }
+
+    let matchesPerformed = true;
+    if (filterPerformed) {
+      const actualPerformedShows = (c.performedShows || []).filter(s => 
+        s && 
+        s.trim() !== '' && 
+        !['cap', 'cap espectacle', 'ningú', 'ningu', 'none', 'sense especificar', 'sense'].includes(s.trim().toLowerCase())
+      );
+      matchesPerformed = actualPerformedShows.length > 0;
+    }
+
+    let matchesAi = true;
+    if (aiFilteredIds !== null) {
+      matchesAi = aiFilteredIds.includes(c.id);
+    }
     
-    return matchesSearch && matchesProvince && matchesStatus && matchesShow && matchesReminder;
+    return matchesSearch && matchesProvince && matchesStatus && matchesShow && matchesReminder && matchesPerformed && matchesAi;
   });
 
   const currentIndex = filteredContacts.findIndex(c => c.id === contactId);
@@ -544,6 +562,8 @@ export default function ContactDetailPage() {
     if (filterStatus !== 'Tots') params.set('status', filterStatus);
     if (filterShow !== 'Tots') params.set('show', filterShow);
     if (filterReminder) params.set('reminder', '1');
+    if (filterPerformed) params.set('performed', '1');
+    if (aiParam) params.set('ai', aiParam);
     const qs = params.toString();
     return `/dashboard/crm/${targetId}${qs ? '?' + qs : ''}`;
   };
@@ -555,6 +575,8 @@ export default function ContactDetailPage() {
     if (filterStatus !== 'Tots') params.set('status', filterStatus);
     if (filterShow !== 'Tots') params.set('show', filterShow);
     if (filterReminder) params.set('reminder', '1');
+    if (filterPerformed) params.set('performed', '1');
+    if (aiParam) params.set('ai', aiParam);
     const qs = params.toString();
     return `/dashboard/crm${qs ? '?' + qs : ''}`;
   };
@@ -1098,6 +1120,16 @@ export default function ContactDetailPage() {
                                 border: isSuggested ? '1px solid rgba(255, 183, 3, 0.1)' : '1px solid transparent',
                               }}
                               onClick={() => {
+                                const duplicateShowGig = allGigs.find(linked => 
+                                  linkedGigIds.includes(linked.id) && 
+                                  linked.title === g.title
+                                );
+                                if (duplicateShowGig) {
+                                  const confirmAdd = window.confirm(
+                                    `Avís (Vincula bolos): Ja hi ha un bolo vinculat de l'espectacle "${g.title}" (del dia ${formatDateDDMMYYYY(duplicateShowGig.date)}). Vols vincular aquest nou bolo del mateix espectacle de totes maneres?`
+                                  );
+                                  if (!confirmAdd) return;
+                                }
                                 setLinkedGigIds(prev => [...prev, g.id]);
                                 setGigSearchQuery('');
                               }}
@@ -1245,7 +1277,7 @@ export default function ContactDetailPage() {
                         {linkedGigs.map(g => (
                           <div key={g.id} style={{ fontSize: '0.82rem', padding: '0.4rem', background: 'rgba(46, 196, 182, 0.05)', borderRadius: '4px', border: '1px solid rgba(46, 196, 182, 0.15)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span>📅 {formatDateDDMMYYYY(g.date)} - <strong>{g.title}</strong></span>
-                            <Link href={`/dashboard/road-sheet?q=${encodeURIComponent(g.municipality || g.locationName || '')}&highlight=${g.id}&returnTo=${encodeURIComponent(getReturnUrl())}`} style={{ color: '#2ec4b6', textDecoration: 'none', fontWeight: 'bold' }}>Obrir 🚐</Link>
+                            <Link href={`/dashboard/road-sheet?q=${encodeURIComponent(g.municipality || g.locationName || '')}&highlight=${g.id}&returnTo=${encodeURIComponent(getReturnUrl())}`} style={{ color: '#2ec4b6', textDecoration: 'none', fontWeight: 'bold', fontSize: '1.1rem' }} title="Obrir bolo al road-sheet">🚐</Link>
                           </div>
                         ))}
                       </div>

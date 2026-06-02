@@ -189,6 +189,7 @@ export default function RoadSheetPage() {
     setScheduleDetails(gig.scheduleDetails || '');
     setStatus(gig.status || 'Pendent');
     setIsAdding(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const resetForm = () => {
@@ -267,8 +268,10 @@ export default function RoadSheetPage() {
           })()}
           {isAdmin && (
             <button className="btn btn-primary" onClick={() => {
-              setIsAdding(!isAdding);
-              if (isAdding) resetForm();
+              const nextVal = !isAdding;
+              setIsAdding(nextVal);
+              if (!nextVal) resetForm();
+              else window.scrollTo({ top: 0, behavior: 'smooth' });
             }}>
               {isAdding ? 'Cancel·lar' : '+ Afegir Bolo'}
             </button>
