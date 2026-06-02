@@ -142,6 +142,16 @@ export default function CRMPage() {
     return ai ? ai.split(',') : null;
   });
 
+  // Mass email states
+  const [isMassEmailOpen, setIsMassEmailOpen] = useState(false);
+  const [massEmailSubject, setMassEmailSubject] = useState("Agraïment per la contractació d'espectacles - Hemiòlia Produccions");
+  const [massEmailBody, setMassEmailBody] = useState(
+    `Hola {nom},\n\nDes d'Hemiòlia Produccions ens posem en contacte amb vosaltres per agrair-vos de tot cor la contractació dels nostres espectacles per al vostre municipi/entitat ({entitat}).\n\nHa estat un veritable plaer col·laborar amb vosaltres i esperem que el públic hagi gaudit tant com nosaltres dalt de l'escenari.\n\nRestem a la vostra sencera disposició per a qualsevol futura programació o consulta.\n\nAtentament,\nL'equip d'Hemiòlia Produccions.`
+  );
+  const [massEmailRecipients, setMassEmailRecipients] = useState([]);
+  const [isSendingMassEmail, setIsSendingMassEmail] = useState(false);
+  const [massEmailProgress, setMassEmailProgress] = useState(0);
+
   // Sincronitza els filtres amb la URL (silent replace, sense recàrrega)
   const updateUrl = useCallback((sq, fp, fs, fsh, fr, fprm, aiQ, aiIds) => {
     const params = new URLSearchParams();
@@ -205,6 +215,70 @@ export default function CRMPage() {
     setC2Name(''); setC2Role(''); setC2Email(''); setC2Phone('');
     setC3Name(''); setC3Role(''); setC3Email(''); setC3Phone('');
     setC4Name(''); setC4Role(''); setC4Email(''); setC4Phone('');
+  };
+
+  const handleOpenMassEmail = () => {
+    // Filter contacts where they have performed shows and have a valid email
+    const list = contacts.filter(contact => {
+      const actualPerformedShows = (contact.performedShows || []).filter(s => 
+        s && 
+        s.trim() !== '' && 
+        !['cap', 'cap espectacle', 'ningú', 'ningu', 'none', 'sense especificar', 'sense'].includes(s.trim().toLowerCase())
+      );
+      const email = contact.contact1?.email || contact.email;
+      return actualPerformedShows.length > 0 && email && email.trim() !== '';
+    });
+
+    if (list.length === 0) {
+      alert("No s'ha trobat cap contacte amb espectacles realitzats i adreça de correu vàlida.");
+      return;
+    }
+
+    setMassEmailRecipients(list);
+    setIsMassEmailOpen(true);
+  };
+
+  const handleSendMassEmail = async () => {
+    if (!confirm(`Es procedirà a enviar ${massEmailRecipients.length} correus electrònics individuals. Vols continuar?`)) return;
+    
+    setIsSendingMassEmail(true);
+    setMassEmailProgress(0);
+
+    let sentCount = 0;
+    for (let i = 0; i < massEmailRecipients.length; i++) {
+      const c = massEmailRecipients[i];
+      const email = c.contact1?.email || c.email;
+      const contactName = c.contact1?.name || c.name || c.entity;
+      
+      // Personalize the body
+      const personalizedBody = massEmailBody
+        .replace(/{nom}/g, contactName)
+        .replace(/{entitat}/g, c.entity || c.municipality || 'municipi');
+
+      try {
+        const res = await fetch('/api/emails/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: email,
+            subject: massEmailSubject,
+            text: personalizedBody
+          })
+        });
+
+        if (res.ok) {
+          sentCount++;
+        }
+      } catch (err) {
+        console.error(`Error enviant a ${email}:`, err);
+      }
+      
+      setMassEmailProgress(Math.round(((i + 1) / massEmailRecipients.length) * 100));
+    }
+
+    setIsSendingMassEmail(false);
+    setIsMassEmailOpen(false);
+    alert(`Procés finalitzat. S'han enviat correctament ${sentCount} de ${massEmailRecipients.length} correus.`);
   };
 
   const handleEditClick = (contact) => {
@@ -370,6 +444,11 @@ export default function CRMPage() {
           <button className="btn btn-glass no-print" onClick={() => window.print()} title="Imprimir llista filtrada">
             🖨️ Imprimir
           </button>
+          {(isAdmin || isCrm) && (
+            <button className="btn btn-glass no-print" onClick={handleOpenMassEmail} title="Enviar correu massiu d'agraïment per contractacions fetes">
+              ✉️ Agraïment Massiu
+            </button>
+          )}
           {(isAdmin || isCrm) && (
             <>
               <Link href="/dashboard/crm/import" className="btn btn-glass no-print">
@@ -870,6 +949,127 @@ export default function CRMPage() {
           </table>
         )}
       </div>
+
+      {/* Modal de Correu Massiu d'Agraïment */}
+      {isMassEmailOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          backdropFilter: 'blur(5px)'
+        }}>
+          <div className="glass-panel animate-fade-in-up" style={{
+            width: '90%',
+            maxWidth: '650px',
+            padding: '2rem',
+            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
+            border: '1px solid var(--color-accent)',
+            maxHeight: '90vh',
+            overflowY: 'auto'
+          }}>
+            <h3 style={{ color: 'var(--color-accent)', marginBottom: '1rem' }}>✉️ Correu Massiu d'Agraïment</h3>
+            <p style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', marginBottom: '1.2rem' }}>
+              S'enviarà un correu individualitzat a tots els municipis on s'han dut a terme actuacions i que tenen email.
+            </p>
+
+            {/* Recipient summary */}
+            <div style={{ 
+              background: 'rgba(0,0,0,0.3)', 
+              padding: '0.8rem', 
+              borderRadius: '8px', 
+              border: '1px solid var(--color-border)',
+              marginBottom: '1.5rem',
+              maxHeight: '110px',
+              overflowY: 'auto'
+            }}>
+              <strong style={{ fontSize: '0.82rem', display: 'block', marginBottom: '0.4rem', color: 'var(--color-text-primary)' }}>
+                Destinataris seleccionats ({massEmailRecipients.length}):
+              </strong>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                {massEmailRecipients.map(r => (
+                  <span key={r.id} style={{ 
+                    fontSize: '0.72rem', 
+                    padding: '0.15rem 0.4rem', 
+                    background: 'rgba(212, 175, 55, 0.1)', 
+                    border: '1px solid rgba(212, 175, 55, 0.2)', 
+                    borderRadius: '4px',
+                    color: 'var(--color-accent)'
+                  }}>
+                    {r.entity} ({r.contact1?.email || r.email})
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="input-group" style={{ marginBottom: '1.2rem' }}>
+              <label>Assumpte del Correu</label>
+              <input 
+                className="input-field" 
+                type="text" 
+                value={massEmailSubject} 
+                onChange={e => setMassEmailSubject(e.target.value)} 
+                disabled={isSendingMassEmail}
+                required
+              />
+            </div>
+
+            <div className="input-group" style={{ marginBottom: '0.5rem' }}>
+              <label>Plantilla del Missatge</label>
+              <textarea 
+                className="input-field" 
+                rows="8" 
+                value={massEmailBody} 
+                onChange={e => setMassEmailBody(e.target.value)} 
+                disabled={isSendingMassEmail}
+                required
+                style={{ fontFamily: 'inherit', resize: 'vertical' }}
+              />
+            </div>
+            
+            <p style={{ fontSize: '0.7rem', color: 'var(--color-text-secondary)', marginBottom: '1.5rem', fontStyle: 'italic' }}>
+              Pots utilitzar les etiquetes <strong>{"{nom}"}</strong> per al nom del contacte, i <strong>{"{entitat}"}</strong> per al nom de l'Ajuntament/Teatre. Es reemplaçaran dinàmicament per a cada correu.
+            </p>
+
+            {isSendingMassEmail && (
+              <div style={{ marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.4rem' }}>
+                  <span>S'estan enviant els correus...</span>
+                  <strong>{massEmailProgress}%</strong>
+                </div>
+                <div style={{ width: '100%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
+                  <div style={{ width: `${massEmailProgress}%`, height: '100%', background: 'var(--color-accent)', transition: 'width 0.2s ease' }} />
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+              <button 
+                type="button" 
+                className="btn btn-glass" 
+                onClick={() => setIsMassEmailOpen(false)}
+                disabled={isSendingMassEmail}
+              >
+                Cancel·lar
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-primary" 
+                onClick={handleSendMassEmail}
+                disabled={isSendingMassEmail}
+              >
+                {isSendingMassEmail ? 'Enviant...' : 'Enviar a Tots'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
