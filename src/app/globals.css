@@ -283,6 +283,35 @@ a:hover {
     padding-left: 0.6rem !important;
   }
 
+  /* Force CRM contact table to render as a single row per contact in print view */
+  .table-container-responsive table {
+    display: table !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+  .table-container-responsive thead {
+    display: table-header-group !important;
+  }
+  .table-container-responsive tbody {
+    display: table-row-group !important;
+  }
+  .table-container-responsive tr {
+    display: table-row !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+  .table-container-responsive th,
+  .table-container-responsive td {
+    display: table-cell !important;
+    padding: 0.6rem 0.8rem !important;
+    font-size: 0.8rem !important;
+    text-align: left !important;
+    border: none !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+  .table-container-responsive td::before {
+    display: none !important;
+  }
+
   .emissor-box div,
   .destinatari-box div {
     font-size: 0.85rem !important;
