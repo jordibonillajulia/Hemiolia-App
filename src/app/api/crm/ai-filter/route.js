@@ -20,12 +20,12 @@ export async function POST(request) {
       municipality: c.municipality || '',
       province: c.province || '',
       status: c.status || '',
-      notes: c.notes || '',
-      feedbackSummary: c.feedbackSummary || '',
+      notes: c.notes ? (c.notes.length > 300 ? c.notes.substring(0, 300) + '...' : c.notes) : '',
+      feedbackSummary: c.feedbackSummary ? (c.feedbackSummary.length > 200 ? c.feedbackSummary.substring(0, 200) + '...' : c.feedbackSummary) : '',
       mood: c.mood || '',
       interestedShows: c.interestedShows || [],
       performedShows: c.performedShows || [],
-      nextActionNotes: c.nextActionNotes || '',
+      nextActionNotes: c.nextActionNotes ? (c.nextActionNotes.length > 150 ? c.nextActionNotes.substring(0, 150) + '...' : c.nextActionNotes) : '',
       nextActionDate: c.nextActionDate || ''
     }));
 
