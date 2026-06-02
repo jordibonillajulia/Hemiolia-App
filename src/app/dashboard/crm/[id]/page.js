@@ -815,6 +815,9 @@ export default function ContactDetailPage() {
                   <h1 style={{ marginBottom: '0.5rem', color: 'var(--color-accent)', marginTop: 0 }}>
                     {(() => {
                       if (!activeContact1.name) return '';
+                      if (activeContact1.name.toLowerCase().includes('ajuntament')) {
+                        return activeContact1.name;
+                      }
                       const parts = activeContact1.name.trim().split(/\s+/);
                       if (parts.length >= 3) {
                         const composites = ['maria', 'm.', 'mª', 'angels', 'àngels', 'lluisa', 'lluïsa', 'ramon', 'joan', 'josep', 'josefina', 'antoni', 'francisco'];
