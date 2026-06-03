@@ -112,15 +112,15 @@ async function saveToSentFolder(mailOptions) {
 
 export async function POST(request) {
   try {
-    const { to, bcc, subject, text, attachments } = await request.json();
+    const { to, cc, bcc, subject, text, attachments } = await request.json();
 
     const senderEmail = process.env.SMTP_USER || 'info@hemiolia.cat';
     let finalTo = to;
     if (!finalTo || finalTo.trim() === '') {
-      if (bcc && bcc.trim() !== '') {
+      if ((bcc && bcc.trim() !== '') || (cc && cc.trim() !== '')) {
         finalTo = `"Destinataris ocults" <${senderEmail}>`;
       } else {
-        return NextResponse.json({ error: 'Falta el destinatari (to o bcc)' }, { status: 400 });
+        return NextResponse.json({ error: 'Falta el destinatari (to, cc o bcc)' }, { status: 400 });
       }
     }
 
@@ -151,6 +151,7 @@ export async function POST(request) {
     const mailOptions = {
       from: `"Hemiòlia Produccions" <${senderEmail}>`,
       to: finalTo,
+      ...(cc ? { cc } : {}),
       ...(bcc ? { bcc } : {}),
       subject,
       text,

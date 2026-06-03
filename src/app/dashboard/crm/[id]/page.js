@@ -210,6 +210,8 @@ export default function ContactDetailPage() {
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [emailSubject, setEmailSubject] = useState('');
   const [emailText, setEmailText] = useState('');
+  const [emailCcRecipients, setEmailCcRecipients] = useState([]);
+  const [emailCcInput, setEmailCcInput] = useState('');
   const [emailBccRecipients, setEmailBccRecipients] = useState([]);
   const [emailBccInput, setEmailBccInput] = useState('');
   const [emailRecipients, setEmailRecipients] = useState([]);
@@ -537,6 +539,8 @@ export default function ContactDetailPage() {
     // Set default values in local editor states
     setEmailSubject("Salutacions des d'Hemiòlia Produccions");
     setEmailText(`Hola ${contactName},\n\nEns posem en contacte amb tu per fer el seguiment de les nostres propostes per al vostre municipi (${contact.municipality || 'el vostre municipi'}).\n\nQualsevol cosa estem a la teva disposició.\n\nAtentament,\n\nPaula Martí i Jordi Bonilla\nHEMIÒLIA\n619579935 - 639966697`);
+    setEmailCcRecipients([]);
+    setEmailCcInput('');
     setEmailBccRecipients([]);
     setEmailBccInput('');
     setEmailRecipients(uniqueEmails);
@@ -549,6 +553,13 @@ export default function ContactDetailPage() {
   };
 
   const handleSendEditedEmail = async () => {
+    const finalCcList = [...emailCcRecipients];
+    const pendingCc = emailCcInput.trim();
+    if (pendingCc && pendingCc.includes('@') && !finalCcList.includes(pendingCc)) {
+      finalCcList.push(pendingCc);
+    }
+    const ccString = finalCcList.join(', ');
+
     const finalBccList = [...emailBccRecipients];
     const pendingBcc = emailBccInput.trim();
     if (pendingBcc && pendingBcc.includes('@') && !finalBccList.includes(pendingBcc)) {
@@ -557,9 +568,10 @@ export default function ContactDetailPage() {
     const bccString = finalBccList.join(', ');
 
     const hasTo = emailRecipients.length > 0;
+    const hasCc = ccString.length > 0;
     const hasBcc = bccString.length > 0;
-    if (!hasTo && !hasBcc) {
-      return alert("Si us plau, afegeix almenys un destinatari (a Destinataris o a Còpia oculta) per poder enviar el correu.");
+    if (!hasTo && !hasCc && !hasBcc) {
+      return alert("Si us plau, afegeix almenys un destinatari (a Destinataris, Còpia o Còpia oculta) per poder enviar el correu.");
     }
 
     // Prepare attachments payload for Nodemailer
@@ -583,6 +595,7 @@ export default function ContactDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: emailRecipients.join(', '),
+          cc: ccString,
           bcc: bccString,
           subject: emailSubject,
           text: emailText,
@@ -1610,21 +1623,21 @@ export default function ContactDetailPage() {
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => {
                   e.preventDefault();
+                  const emailFromCc = e.dataTransfer.getData("email_from_cc");
                   const emailFromBcc = e.dataTransfer.getData("email_from_bcc");
                   const emailFromTo = e.dataTransfer.getData("email");
                   const textPlain = e.dataTransfer.getData("text/plain");
                   
-                  const email = emailFromBcc || emailFromTo || textPlain;
+                  const email = emailFromCc || emailFromBcc || emailFromTo || textPlain;
                   const cleanEmail = email ? email.trim() : '';
                   if (cleanEmail && cleanEmail.includes('@')) {
-                    // Add to recipients if not present
                     setEmailRecipients(prev => {
-                      if (!prev.includes(cleanEmail)) {
-                        return [...prev, cleanEmail];
-                      }
+                      if (!prev.includes(cleanEmail)) return [...prev, cleanEmail];
                       return prev;
                     });
-                    // If it was from BCC, remove it from the BCC array!
+                    if (emailFromCc) {
+                      setEmailCcRecipients(prev => prev.filter(x => x.toLowerCase() !== cleanEmail.toLowerCase()));
+                    }
                     if (emailFromBcc) {
                       setEmailBccRecipients(prev => prev.filter(x => x.toLowerCase() !== cleanEmail.toLowerCase()));
                     }
@@ -1652,7 +1665,7 @@ export default function ContactDetailPage() {
                       gap: '0.3rem',
                       cursor: 'grab'
                     }}
-                    title="Arrossega cap a Còpia Oculta per moure aquest destinatari"
+                    title="Arrossega cap a Còpia o Còpia Oculta per moure aquest destinatari"
                   >
                     📧 {email}
                     <button 
@@ -1678,23 +1691,170 @@ export default function ContactDetailPage() {
             </div>
             
             <div className="input-group" style={{ marginBottom: '1rem' }}>
+              <label>Còpia (CC) ({emailCcRecipients.length})</label>
+              <div 
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const emailFromCc = e.dataTransfer.getData("email_from_cc");
+                  const emailFromBcc = e.dataTransfer.getData("email_from_bcc");
+                  const emailFromTo = e.dataTransfer.getData("email");
+                  const textPlain = e.dataTransfer.getData("text/plain");
+                  
+                  const email = emailFromCc || emailFromBcc || emailFromTo || textPlain;
+                  const cleanEmail = email ? email.trim() : '';
+                  if (cleanEmail && cleanEmail.includes('@')) {
+                    setEmailCcRecipients(prev => {
+                      if (!prev.includes(cleanEmail)) return [...prev, cleanEmail];
+                      return prev;
+                    });
+                    if (emailFromTo) {
+                      setEmailRecipients(prev => prev.filter(x => x.toLowerCase() !== cleanEmail.toLowerCase()));
+                    }
+                    if (emailFromBcc) {
+                      setEmailBccRecipients(prev => prev.filter(x => x.toLowerCase() !== cleanEmail.toLowerCase()));
+                    }
+                  }
+                }}
+                style={{ 
+                  display: 'flex', 
+                  flexWrap: 'wrap', 
+                  gap: '0.4rem', 
+                  background: 'rgba(0,0,0,0.2)', 
+                  padding: '0.5rem', 
+                  borderRadius: '6px', 
+                  border: '1px solid var(--color-border)', 
+                  minHeight: '38px', 
+                  alignItems: 'center' 
+                }}
+              >
+                {emailCcRecipients.map((email, idx) => (
+                  <span 
+                    key={idx} 
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData("email_from_cc", email);
+                    }}
+                    style={{ 
+                      fontSize: '0.75rem', 
+                      padding: '0.2rem 0.5rem', 
+                      background: 'rgba(255, 255, 255, 0.05)', 
+                      border: '1px solid rgba(255, 255, 255, 0.1)', 
+                      borderRadius: '4px',
+                      color: 'var(--color-accent)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.3rem',
+                      cursor: 'grab'
+                    }}
+                    title="Arrossega cap a Destinataris o Còpia Oculta per moure"
+                  >
+                    📧 {email}
+                    <button 
+                      type="button" 
+                      onClick={() => setEmailCcRecipients(prev => prev.filter(r => r !== email))}
+                      style={{ 
+                        background: 'transparent', 
+                        border: 'none', 
+                        color: '#ff6b6b', 
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        fontSize: '0.8rem',
+                        padding: '0 2px',
+                        lineHeight: '1'
+                      }}
+                      title="Eliminar"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+                <input 
+                  type="text"
+                  placeholder={emailCcRecipients.length === 0 ? "Exemple: info@hemiolia.cat, prem Enter per afegir" : "Afegeix correu..."}
+                  value={emailCcInput}
+                  onChange={e => {
+                    const val = e.target.value;
+                    if (val.endsWith(',') || val.endsWith(';') || val.endsWith(' ')) {
+                      const clean = val.slice(0, -1).trim();
+                      if (clean && clean.includes('@')) {
+                        setEmailCcRecipients(prev => {
+                          if (!prev.includes(clean)) return [...prev, clean];
+                          return prev;
+                        });
+                        setEmailCcInput('');
+                      } else {
+                        setEmailCcInput(val);
+                      }
+                    } else {
+                      setEmailCcInput(val);
+                    }
+                  }}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const clean = emailCcInput.trim();
+                      if (clean && clean.includes('@')) {
+                        setEmailCcRecipients(prev => {
+                          if (!prev.includes(clean)) return [...prev, clean];
+                          return prev;
+                        });
+                        setEmailCcInput('');
+                      }
+                    } else if (e.key === 'Backspace' && emailCcInput === '' && emailCcRecipients.length > 0) {
+                      const last = emailCcRecipients[emailCcRecipients.length - 1];
+                      setEmailCcRecipients(prev => prev.slice(0, -1));
+                      setEmailCcInput(last);
+                    }
+                  }}
+                  onBlur={() => {
+                    const clean = emailCcInput.trim();
+                    if (clean && clean.includes('@')) {
+                      setEmailCcRecipients(prev => {
+                        if (!prev.includes(clean)) return [...prev, clean];
+                        return prev;
+                      });
+                      setEmailCcInput('');
+                    }
+                  }}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    outline: 'none',
+                    color: 'white',
+                    fontSize: '0.82rem',
+                    flexGrow: 1,
+                    minWidth: '120px',
+                    padding: '2px 0'
+                  }}
+                />
+              </div>
+            </div>
+
+            <div className="input-group" style={{ marginBottom: '1rem' }}>
               <label>Còpia oculta (CCO / BCC) ({emailBccRecipients.length})</label>
               <div 
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => {
                   e.preventDefault();
-                  const email = e.dataTransfer.getData("email") || e.dataTransfer.getData("text/plain");
+                  const emailFromCc = e.dataTransfer.getData("email_from_cc");
+                  const emailFromBcc = e.dataTransfer.getData("email_from_bcc");
+                  const emailFromTo = e.dataTransfer.getData("email");
+                  const textPlain = e.dataTransfer.getData("text/plain");
+                  
+                  const email = emailFromCc || emailFromBcc || emailFromTo || textPlain;
                   const cleanEmail = email ? email.trim() : '';
                   if (cleanEmail && cleanEmail.includes('@')) {
-                    // Remove from recipients
-                    setEmailRecipients(prev => prev.filter(r => r !== cleanEmail));
-                    // Add to BCC list
                     setEmailBccRecipients(prev => {
-                      if (!prev.includes(cleanEmail)) {
-                        return [...prev, cleanEmail];
-                      }
+                      if (!prev.includes(cleanEmail)) return [...prev, cleanEmail];
                       return prev;
                     });
+                    if (emailFromTo) {
+                      setEmailRecipients(prev => prev.filter(x => x.toLowerCase() !== cleanEmail.toLowerCase()));
+                    }
+                    if (emailFromCc) {
+                      setEmailCcRecipients(prev => prev.filter(x => x.toLowerCase() !== cleanEmail.toLowerCase()));
+                    }
                   }
                 }}
                 style={{ 
@@ -1728,7 +1888,7 @@ export default function ContactDetailPage() {
                       gap: '0.3rem',
                       cursor: 'grab'
                     }}
-                    title="Arrossega cap a Destinataris per moure aquest correu"
+                    title="Arrossega cap a Destinataris o Còpia per moure aquest correu"
                   >
                     📧 {email}
                     <button 
