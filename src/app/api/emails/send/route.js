@@ -1,5 +1,70 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import MailComposer from 'nodemailer/lib/mail-composer';
+import { ImapFlow } from 'imapflow';
+
+async function compileRawEmail(mailOptions) {
+  return new Promise((resolve, reject) => {
+    const composer = new MailComposer(mailOptions);
+    composer.compile().build((err, message) => {
+      if (err) reject(err);
+      else resolve(message);
+    });
+  });
+}
+
+async function saveToSentFolder(mailOptions) {
+  const imapHost = process.env.IMAP_HOST || 'imap.strato.de';
+  const imapPort = parseInt(process.env.IMAP_PORT || '993', 10);
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+
+  if (!user || !pass) {
+    console.log('IMAP: Credentials not set, skipping saving to Sent folder.');
+    return;
+  }
+
+  const client = new ImapFlow({
+    host: imapHost,
+    port: imapPort,
+    secure: true,
+    auth: { user, pass },
+    logger: false
+  });
+
+  try {
+    const rawMessage = await compileRawEmail(mailOptions);
+    await client.connect();
+
+    // Find the Sent mailbox path
+    const mailboxes = await client.list();
+    let sentMailboxPath = 'Sent Items'; // Default fallback based on Strato analysis
+    const foundBox = mailboxes.find(box => 
+      box.specialUse === '\\Sent' || 
+      (box.flags && (box.flags.has('\\Sent') || box.flags.has('Sent')))
+    );
+    if (foundBox) {
+      sentMailboxPath = foundBox.path;
+    } else {
+      const fallback = mailboxes.find(box => box.path.toLowerCase().includes('sent'));
+      if (fallback) {
+        sentMailboxPath = fallback.path;
+      }
+    }
+
+    console.log(`IMAP: Appending sent message to folder: "${sentMailboxPath}"`);
+    await client.append(sentMailboxPath, rawMessage, ['\\Seen']);
+    console.log('IMAP: Successfully saved copy to Sent folder.');
+  } catch (error) {
+    console.error('IMAP: Failed to save sent email copy:', error);
+  } finally {
+    try {
+      await client.logout();
+    } catch (e) {
+      // ignore
+    }
+  }
+}
 
 export async function POST(request) {
   try {
@@ -17,62 +82,11 @@ export async function POST(request) {
       },
     });
 
-    // Format text to HTML paragraphs safely
-    const htmlBody = text
-      .split('\n')
-      .map(paragraph => {
-        const trimmed = paragraph.trim();
-        if (!trimmed) return '<div style="height: 12px;"></div>';
-        return `<p style="margin-top: 0; margin-bottom: 12px; line-height: 1.6; color: #2d3748; font-size: 15px;">${trimmed}</p>`;
-      })
-      .join('');
-
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${subject}</title>
-        </head>
-        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f7fafc; margin: 0; padding: 30px 15px;">
-          <div style="max-width: 600px; background-color: #ffffff; margin: 0 auto; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-            <!-- Header Logo -->
-            <div style="padding: 25px; text-align: center; border-bottom: 1px solid #edf2f7; background-color: #ffffff;">
-              <img src="https://hemiolia.cat/LOGOS%20HEMIOLIA/LOGO_RECT.png" alt="Hemiòlia Produccions" style="height: 55px; width: auto; max-width: 100%;" />
-            </div>
-            
-            <!-- Email Body Content -->
-            <div style="padding: 35px 30px;">
-              ${htmlBody}
-              
-              <!-- Professional Signature -->
-              <div style="margin-top: 35px; padding-top: 20px; border-top: 1px solid #edf2f7;">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                  <img src="https://hemiolia.cat/LOGOS%20HEMIOLIA/LOGO.jpg" alt="Logo Hemiòlia" style="width: 45px; height: 45px; border-radius: 6px; border: 1px solid #edf2f7; object-fit: cover;" />
-                  <div>
-                    <p style="margin: 0; font-weight: 700; color: #1a202c; font-size: 14px; font-family: inherit;">Paula Martí i Jordi Bonilla</p>
-                    <p style="margin: 2px 0 0 0; color: #718096; font-size: 12px; font-family: inherit; font-weight: 500;">Hemiòlia Produccions</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <!-- Footer -->
-            <div style="padding: 15px; text-align: center; font-size: 11px; color: #a0aec0; background-color: #f7fafc; border-top: 1px solid #edf2f7;">
-              Aquest correu s'ha enviat des d'Hemiòlia CRM.
-            </div>
-          </div>
-        </body>
-      </html>
-    `;
-
     const mailOptions = {
       from: `"Hemiòlia Produccions" <${process.env.SMTP_USER || 'info@hemiolia.cat'}>`,
       to,
       subject,
-      text, // Fallback plain text version
-      html: htmlContent,
+      text,
       ...(attachments && attachments.length > 0 ? { attachments } : {})
     };
 
@@ -85,6 +99,12 @@ export async function POST(request) {
     }
 
     const info = await transporter.sendMail(mailOptions);
+
+    // Save copy to Strato Sent folder in the background (non-blocking)
+    saveToSentFolder(mailOptions).catch(err => {
+      console.error('Background IMAP save copy failed:', err);
+    });
+
     return NextResponse.json({ message: 'Correu enviat correctament', infoId: info.messageId }, { status: 200 });
     
   } catch (error) {
