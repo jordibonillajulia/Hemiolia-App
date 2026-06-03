@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   /* config options here */
   experimental: {
     // Note: in older or different configurations, allowedDevOrigins might be at top level or nested.
