@@ -308,11 +308,51 @@ export default function CRMPage() {
         bodyText = bodyText.trim() + "\n\n" + signatureText;
       }
 
+      const finalIncludeOtherContacts = aiCampaignIncludeOtherContacts || !!data.includeOtherContacts;
+      if (data.includeOtherContacts) {
+        setAiCampaignIncludeOtherContacts(true);
+      }
+
+      const recipientsList = [];
+      matchedContacts.forEach(c => {
+        const emails = [];
+        const primaryEmail = c.contact1?.email || c.email;
+        if (primaryEmail) {
+          emails.push({
+            email: primaryEmail,
+            name: c.contact1?.name || c.name || c.entity
+          });
+        }
+
+        if (finalIncludeOtherContacts) {
+          if (c.contact2?.email) emails.push({ email: c.contact2.email, name: c.contact2.name || c.entity });
+          if (c.contact3?.email) emails.push({ email: c.contact3.email, name: c.contact3.name || c.entity });
+          if (c.contact4?.email) emails.push({ email: c.contact4.email, name: c.contact4.name || c.entity });
+        }
+
+        // Deduplicate unique emails for this contact
+        const uniqueEmailsForContact = [];
+        emails.forEach(item => {
+          if (!uniqueEmailsForContact.some(x => x.email.trim().toLowerCase() === item.email.trim().toLowerCase())) {
+            uniqueEmailsForContact.push(item);
+          }
+        });
+
+        uniqueEmailsForContact.forEach((item, idx) => {
+          recipientsList.push({
+            id: `${c.id}-${idx}-${item.email}`,
+            contactId: c.id,
+            entity: c.entity || c.municipality || 'municipi',
+            contactName: item.name,
+            email: item.email.trim()
+          });
+        });
+      });
+
       setAiCampaignSubject(data.subject);
       setAiCampaignBody(bodyText);
-      setAiCampaignRecipients(matchedContacts);
+      setAiCampaignRecipients(recipientsList);
       setAiCampaignAttachments(data.suggestedAttachments || []);
-      setAiCampaignIncludeOtherContacts(!!data.includeOtherContacts);
       setAiCampaignStep('review');
     } catch (err) {
       console.error(err);
@@ -327,16 +367,41 @@ export default function CRMPage() {
   };
 
   const handleAddRecipient = (contactToAdd) => {
-    if (aiCampaignRecipients.some(c => c.id === contactToAdd.id)) {
-      alert("Aquest contacte ja està afegit a la llista.");
+    const emails = [];
+    const primaryEmail = contactToAdd.contact1?.email || contactToAdd.email;
+    if (primaryEmail) {
+      emails.push({
+        email: primaryEmail,
+        name: contactToAdd.contact1?.name || contactToAdd.name || contactToAdd.entity
+      });
+    }
+    
+    if (aiCampaignIncludeOtherContacts) {
+      if (contactToAdd.contact2?.email) emails.push({ email: contactToAdd.contact2.email, name: contactToAdd.contact2.name || contactToAdd.entity });
+      if (contactToAdd.contact3?.email) emails.push({ email: contactToAdd.contact3.email, name: contactToAdd.contact3.name || contactToAdd.entity });
+      if (contactToAdd.contact4?.email) emails.push({ email: contactToAdd.contact4.email, name: contactToAdd.contact4.name || contactToAdd.entity });
+    }
+    
+    const newRecipients = [];
+    emails.forEach((item, idx) => {
+      const recId = `${contactToAdd.id}-${idx}-${item.email}`;
+      if (!aiCampaignRecipients.some(r => r.email.toLowerCase() === item.email.toLowerCase())) {
+        newRecipients.push({
+          id: recId,
+          contactId: contactToAdd.id,
+          entity: contactToAdd.entity || contactToAdd.municipality || 'municipi',
+          contactName: item.name,
+          email: item.email.trim()
+        });
+      }
+    });
+    
+    if (newRecipients.length === 0) {
+      alert("Aquest correu o contactes ja estan afegits.");
       return;
     }
-    const email = contactToAdd.contact1?.email || contactToAdd.email;
-    if (!email) {
-      alert("Aquest contacte no té cap correu vàlid.");
-      return;
-    }
-    setAiCampaignRecipients(prev => [...prev, contactToAdd]);
+    
+    setAiCampaignRecipients(prev => [...prev, ...newRecipients]);
     setIsAddRecipientDropdownOpen(false);
     setAddRecipientSearch('');
   };
@@ -382,39 +447,21 @@ export default function CRMPage() {
 
     let sentCount = 0;
     for (let i = 0; i < aiCampaignRecipients.length; i++) {
-      const c = aiCampaignRecipients[i];
-      
-      // Determine recipient email(s)
-      let toEmails = [];
-      const primaryEmail = c.contact1?.email || c.email;
-      if (primaryEmail) toEmails.push(primaryEmail);
-
-      if (aiCampaignIncludeOtherContacts) {
-        if (c.contact2?.email) toEmails.push(c.contact2.email);
-        if (c.contact3?.email) toEmails.push(c.contact3.email);
-        if (c.contact4?.email) toEmails.push(c.contact4.email);
-      }
-
-      toEmails = Array.from(new Set(toEmails.map(e => e.trim()).filter(Boolean)));
-      if (toEmails.length === 0) {
-        console.warn(`No valid emails found for contact ${c.id}`);
-        continue;
-      }
-      const toStr = toEmails.join(', ');
-
-      const contactName = c.contact1?.name || c.name || c.entity;
+      const r = aiCampaignRecipients[i];
+      const email = r.email;
+      const contactName = r.contactName || r.entity;
 
       // Replace variables
       const personalizedBody = aiCampaignBody
         .replace(/{nom}/g, contactName)
-        .replace(/{entitat}/g, c.entity || c.municipality || 'municipi');
+        .replace(/{entitat}/g, r.entity || 'municipi');
 
       try {
         const res = await fetch('/api/emails/send', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            to: toStr,
+            to: email,
             subject: aiCampaignSubject,
             text: personalizedBody,
             attachments: attachmentsPayload
@@ -424,16 +471,16 @@ export default function CRMPage() {
         if (res.ok) {
           sentCount++;
           await addInteraction({
-            contactId: c.id,
+            contactId: r.contactId,
             date: new Date().toISOString().split('T')[0],
             showId: 'Campanya IA',
             interestLevel: 3,
             technicalFeedback: `Assumpte: ${aiCampaignSubject}`,
-            otherInterests: `Correu de campanya enviat per IA a: ${toStr}.\n\nFitxers adjunts: ${aiCampaignAttachments.length > 0 ? aiCampaignAttachments.map(a => a.name).join(', ') : 'cap'}`
+            otherInterests: `Correu de campanya enviat per IA a: ${email}.\n\nFitxers adjunts: ${aiCampaignAttachments.length > 0 ? aiCampaignAttachments.map(a => a.name).join(', ') : 'cap'}`
           });
         }
       } catch (err) {
-        console.error(`Error enviant campanya IA a ${toStr}:`, err);
+        console.error(`Error enviant campanya IA a ${email}:`, err);
       }
 
       setAiCampaignProgress(Math.round(((i + 1) / aiCampaignRecipients.length) * 100));
@@ -1156,6 +1203,20 @@ export default function CRMPage() {
                   />
                 </div>
 
+                <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input
+                    type="checkbox"
+                    id="ai-campaign-prompt-include-other-contacts"
+                    checked={aiCampaignIncludeOtherContacts}
+                    onChange={e => setAiCampaignIncludeOtherContacts(e.target.checked)}
+                    disabled={isGeneratingAiCampaign}
+                    style={{ width: 'auto', margin: 0, cursor: 'pointer' }}
+                  />
+                  <label htmlFor="ai-campaign-prompt-include-other-contacts" style={{ fontSize: '0.82rem', cursor: 'pointer', userSelect: 'none', color: 'var(--color-text-primary)', margin: 0 }}>
+                    Incloure els correus secundaris (Contacte 2, 3 i 4) de cada fitxa a la llista de destinataris
+                  </label>
+                </div>
+
                 {isGeneratingAiCampaign && (
                   <p style={{ fontSize: '0.85rem', color: 'var(--color-accent)', marginBottom: '1.5rem', fontWeight: 'bold' }}>
                     🔄 La IA està analitzant els contactes i escrivint el correu, espera un moment...
@@ -1405,7 +1466,7 @@ export default function CRMPage() {
                           alignItems: 'center',
                           gap: '0.3rem'
                         }}>
-                          {r.entity} ({r.contact1?.email || r.email})
+                          {r.entity} {r.contactName ? `- ${r.contactName} ` : ''}({r.email})
                           <button 
                             type="button" 
                             onClick={() => handleRemoveRecipient(r.id)}
@@ -1495,21 +1556,6 @@ export default function CRMPage() {
                       </div>
                     )}
                   </div>
-                </div>
-
-                {/* Checkbox to include other contacts */}
-                <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <input
-                    type="checkbox"
-                    id="ai-campaign-include-other-contacts"
-                    checked={aiCampaignIncludeOtherContacts}
-                    onChange={e => setAiCampaignIncludeOtherContacts(e.target.checked)}
-                    disabled={isSendingAiCampaign}
-                    style={{ width: 'auto', margin: 0, cursor: 'pointer' }}
-                  />
-                  <label htmlFor="ai-campaign-include-other-contacts" style={{ fontSize: '0.8rem', cursor: 'pointer', userSelect: 'none', color: 'var(--color-text-primary)', margin: 0 }}>
-                    Incloure també els altres correus de la fitxa (Contacte 2, 3 i 4) si estan informats
-                  </label>
                 </div>
 
                 {isSendingAiCampaign && (
