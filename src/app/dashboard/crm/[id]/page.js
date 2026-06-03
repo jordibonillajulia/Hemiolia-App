@@ -474,6 +474,45 @@ export default function ContactDetailPage() {
     setEmailAttachments(prev => prev.filter((_, idx) => idx !== idxToRemove));
   };
 
+  const processFiles = (files) => {
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64Content = event.target.result.split(',')[1];
+        setEmailAttachments(prev => {
+          if (prev.some(a => a.name === file.name)) return prev;
+          return [
+            ...prev, 
+            { 
+              name: file.name, 
+              content: base64Content, 
+              encoding: 'base64', 
+              isLocalFile: true 
+            }
+          ];
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileSelect = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      processFiles(e.target.files);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(e.dataTransfer.files);
+    }
+  };
+
   const handleRemoveRecipient = (emailToRemove) => {
     setEmailRecipients(prev => prev.filter(e => e !== emailToRemove));
   };
@@ -511,10 +550,19 @@ export default function ContactDetailPage() {
     }
 
     // Prepare attachments payload for Nodemailer
-    const attachmentsPayload = emailAttachments.map(a => ({
-      filename: a.name.endsWith('.pdf') ? a.name : `${a.name}.pdf`,
-      path: a.url
-    }));
+    const attachmentsPayload = emailAttachments.map(a => {
+      if (a.isLocalFile) {
+        return {
+          filename: a.name,
+          content: a.content,
+          encoding: 'base64'
+        };
+      }
+      return {
+        filename: a.name.endsWith('.pdf') ? a.name : `${a.name}.pdf`,
+        path: a.url
+      };
+    });
 
     try {
       const res = await fetch('/api/emails/send', {
@@ -1604,20 +1652,25 @@ export default function ContactDetailPage() {
             </div>
 
             {/* Attachment manager */}
-            <div style={{ 
-              background: 'rgba(0,0,0,0.3)', 
-              padding: '1rem', 
-              borderRadius: '8px', 
-              border: '1px solid var(--color-border)',
-              marginBottom: '1.5rem'
-            }}>
+            <div 
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              style={{ 
+                background: 'rgba(0,0,0,0.3)', 
+                padding: '1rem', 
+                borderRadius: '8px', 
+                border: '1px dashed var(--color-accent)',
+                marginBottom: '1.5rem'
+              }}
+              title="Arrossega i deixa anar fitxers aquí per adjuntar-los"
+            >
               <strong style={{ fontSize: '0.82rem', display: 'block', marginBottom: '0.6rem', color: 'var(--color-text-primary)' }}>
                 📎 Fitxers adjunts ({emailAttachments.length}):
               </strong>
               
               {emailAttachments.length === 0 ? (
                 <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', margin: '0.5rem 0' }}>
-                  Cap fitxer adjunt.
+                  Cap fitxer adjunt. Arrossega fitxers aquí o penja'ls.
                 </p>
               ) : (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '1rem' }}>
@@ -1682,6 +1735,21 @@ export default function ContactDetailPage() {
                 </div>
               ) : (
                 <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <button 
+                    type="button" 
+                    className="btn btn-glass" 
+                    onClick={() => document.getElementById('local-file-uploader').click()}
+                    style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+                  >
+                    📁 Pujar Fitxer Local
+                  </button>
+                  <input 
+                    type="file" 
+                    id="local-file-uploader" 
+                    style={{ display: 'none' }} 
+                    onChange={handleFileSelect} 
+                    multiple
+                  />
                   <button 
                     type="button" 
                     className="btn btn-glass" 
