@@ -160,6 +160,7 @@ export default function CRMPage() {
   const [newAttachmentName, setNewAttachmentName] = useState('');
   const [newAttachmentUrl, setNewAttachmentUrl] = useState('');
   const [isAddingAttachmentManual, setIsAddingAttachmentManual] = useState(false);
+  const [aiCampaignIncludeOtherContacts, setAiCampaignIncludeOtherContacts] = useState(false);
 
   // Sincronitza els filtres amb la URL (silent replace, sense recàrrega)
   const updateUrl = useCallback((sq, fp, fs, fsh, fr, fprm, aiQ, aiIds) => {
@@ -241,6 +242,35 @@ export default function CRMPage() {
     setIsSendingAiCampaign(false);
     setAiCampaignProgress(0);
     setAddRecipientSearch('');
+    setAiCampaignIncludeOtherContacts(false);
+  };
+
+  const processAiCampaignFiles = (files) => {
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64Content = event.target.result.split(',')[1];
+        setAiCampaignAttachments(prev => {
+          if (prev.some(a => a.name === file.name)) return prev;
+          return [
+            ...prev,
+            {
+              name: file.name,
+              content: base64Content,
+              encoding: 'base64',
+              isLocalFile: true
+            }
+          ];
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleAiCampaignFileSelect = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      processAiCampaignFiles(e.target.files);
+    }
   };
 
   const handleGenerateAiCampaign = async (e) => {
@@ -270,10 +300,19 @@ export default function CRMPage() {
         data.matchedContactIds.includes(c.id) && (c.contact1?.email || c.email)
       );
 
+      // Format and append default signature if missing
+      let bodyText = data.body || '';
+      const signatureText = "Atentament,\n\nHEMIÒLIA\nPaula Martí i Jordi Bonilla\n619579935 - 639966697";
+      const hasSignature = /HEMIÒ?LIA\s*\n\s*Paula\s+Martí?\s+i\s+Jordi\s+Bonilla/i.test(bodyText);
+      if (!hasSignature) {
+        bodyText = bodyText.trim() + "\n\n" + signatureText;
+      }
+
       setAiCampaignSubject(data.subject);
-      setAiCampaignBody(data.body);
+      setAiCampaignBody(bodyText);
       setAiCampaignRecipients(matchedContacts);
       setAiCampaignAttachments(data.suggestedAttachments || []);
+      setAiCampaignIncludeOtherContacts(!!data.includeOtherContacts);
       setAiCampaignStep('review');
     } catch (err) {
       console.error(err);
@@ -327,15 +366,42 @@ export default function CRMPage() {
     setAiCampaignProgress(0);
 
     // Prepare attachments payload for Nodemailer
-    const attachmentsPayload = aiCampaignAttachments.map(a => ({
-      filename: a.name.endsWith('.pdf') ? a.name : `${a.name}.pdf`,
-      path: a.url
-    }));
+    const attachmentsPayload = aiCampaignAttachments.map(a => {
+      if (a.isLocalFile) {
+        return {
+          filename: a.name,
+          content: a.content,
+          encoding: 'base64'
+        };
+      }
+      return {
+        filename: a.name.endsWith('.pdf') ? a.name : `${a.name}.pdf`,
+        path: a.url
+      };
+    });
 
     let sentCount = 0;
     for (let i = 0; i < aiCampaignRecipients.length; i++) {
       const c = aiCampaignRecipients[i];
-      const email = c.contact1?.email || c.email;
+      
+      // Determine recipient email(s)
+      let toEmails = [];
+      const primaryEmail = c.contact1?.email || c.email;
+      if (primaryEmail) toEmails.push(primaryEmail);
+
+      if (aiCampaignIncludeOtherContacts) {
+        if (c.contact2?.email) toEmails.push(c.contact2.email);
+        if (c.contact3?.email) toEmails.push(c.contact3.email);
+        if (c.contact4?.email) toEmails.push(c.contact4.email);
+      }
+
+      toEmails = Array.from(new Set(toEmails.map(e => e.trim()).filter(Boolean)));
+      if (toEmails.length === 0) {
+        console.warn(`No valid emails found for contact ${c.id}`);
+        continue;
+      }
+      const toStr = toEmails.join(', ');
+
       const contactName = c.contact1?.name || c.name || c.entity;
 
       // Replace variables
@@ -348,7 +414,7 @@ export default function CRMPage() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            to: email,
+            to: toStr,
             subject: aiCampaignSubject,
             text: personalizedBody,
             attachments: attachmentsPayload
@@ -363,11 +429,11 @@ export default function CRMPage() {
             showId: 'Campanya IA',
             interestLevel: 3,
             technicalFeedback: `Assumpte: ${aiCampaignSubject}`,
-            otherInterests: `Correu de campanya enviat per IA a: ${email}.\n\nFitxers adjunts: ${aiCampaignAttachments.length > 0 ? aiCampaignAttachments.map(a => a.name).join(', ') : 'cap'}`
+            otherInterests: `Correu de campanya enviat per IA a: ${toStr}.\n\nFitxers adjunts: ${aiCampaignAttachments.length > 0 ? aiCampaignAttachments.map(a => a.name).join(', ') : 'cap'}`
           });
         }
       } catch (err) {
-        console.error(`Error enviant campanya IA a ${email}:`, err);
+        console.error(`Error enviant campanya IA a ${toStr}:`, err);
       }
 
       setAiCampaignProgress(Math.round(((i + 1) / aiCampaignRecipients.length) * 100));
@@ -1229,6 +1295,22 @@ export default function CRMPage() {
                     </div>
                   ) : (
                     <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        className="btn btn-glass"
+                        onClick={() => document.getElementById('ai-campaign-file-uploader').click()}
+                        disabled={isSendingAiCampaign}
+                        style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+                      >
+                        📁 Pujar Fitxer Local
+                      </button>
+                      <input
+                        type="file"
+                        id="ai-campaign-file-uploader"
+                        style={{ display: 'none' }}
+                        onChange={handleAiCampaignFileSelect}
+                        multiple
+                      />
                       <button 
                         type="button" 
                         className="btn btn-glass" 
@@ -1413,6 +1495,21 @@ export default function CRMPage() {
                       </div>
                     )}
                   </div>
+                </div>
+
+                {/* Checkbox to include other contacts */}
+                <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <input
+                    type="checkbox"
+                    id="ai-campaign-include-other-contacts"
+                    checked={aiCampaignIncludeOtherContacts}
+                    onChange={e => setAiCampaignIncludeOtherContacts(e.target.checked)}
+                    disabled={isSendingAiCampaign}
+                    style={{ width: 'auto', margin: 0, cursor: 'pointer' }}
+                  />
+                  <label htmlFor="ai-campaign-include-other-contacts" style={{ fontSize: '0.8rem', cursor: 'pointer', userSelect: 'none', color: 'var(--color-text-primary)', margin: 0 }}>
+                    Incloure també els altres correus de la fitxa (Contacte 2, 3 i 4) si estan informats
+                  </label>
                 </div>
 
                 {isSendingAiCampaign && (

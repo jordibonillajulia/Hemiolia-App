@@ -83,13 +83,15 @@ You must return a valid JSON object containing:
   You must always end the body with this exact signature block: "Atentament,\n\nHEMIÒLIA\nPaula Martí i Jordi Bonilla\n619579935 - 639966697".
   Do not mention specific dates or events unless requested. Keep it elegant.
 - "suggestedAttachments": an array of objects representing the matched dossiers, e.g. [{"name": "Cavernus +Info (CAT)", "url": "https://hemiolia.cat/+%20INFO%20ESPECTACLE/CAVERNUS_+INFO_CAT.pdf"}]. If no dossiers are requested, return an empty array.
+- "includeOtherContacts": a boolean indicating if the user's prompt requests to send to, copy, or include other contacts, secondary contacts, or all contacts of the contact record/sheet (e.g. "tots els contactes", "altres contactes", "contacte 2, 3 i 4").
 
 Return ONLY a valid JSON object of the form:
 {
   "matchedContactIds": ["id1", "id2", ...],
   "subject": "Suggested Subject Line",
   "body": "Hola {nom},\\n\\nEns posem en contacte amb {entitat}...\\n\\nAtentament,\\n\\nHEMIÒLIA\\nPaula Martí i Jordi Bonilla\\n619579935 - 639966697",
-  "suggestedAttachments": []
+  "suggestedAttachments": [],
+  "includeOtherContacts": false
 }
 Do not include markdown wrappers (like \`\`\`json) outside the JSON. Return only the raw JSON string.`;
 
@@ -126,7 +128,7 @@ ${JSON.stringify(simplifiedContacts)}`;
     const resData = await response.json();
     const textResponse = resData.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
     
-    let result = { matchedContactIds: [], subject: '', body: '', suggestedAttachments: [] };
+    let result = { matchedContactIds: [], subject: '', body: '', suggestedAttachments: [], includeOtherContacts: false };
     try {
       const cleanText = textResponse.replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
       result = JSON.parse(cleanText);
@@ -139,7 +141,8 @@ ${JSON.stringify(simplifiedContacts)}`;
       matchedContactIds: result.matchedContactIds || result.matched_ids || [],
       subject: result.subject || "Salutacions des d'Hemiòlia Produccions",
       body: result.body || "Hola {nom},\n\n...",
-      suggestedAttachments: result.suggestedAttachments || []
+      suggestedAttachments: result.suggestedAttachments || [],
+      includeOtherContacts: !!(result.includeOtherContacts || result.include_other_contacts)
     });
   } catch (error) {
     console.error("AI campaign route error:", error);
