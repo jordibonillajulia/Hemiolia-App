@@ -132,8 +132,8 @@ export async function POST(request) {
     const inlineAttachments = [];
     if (hasSignature) {
       inlineAttachments.push({
-        filename: 'logo-hemiolia-signature.png',
-        path: path.join(process.cwd(), 'public', 'logo-hemiolia-signature.png'),
+        filename: 'logo-hemiolia-signature.jpg',
+        path: path.join(process.cwd(), 'public', 'logo-hemiolia-signature.jpg'),
         cid: 'logo-hemiolia'
       });
     }

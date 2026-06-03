@@ -1595,19 +1595,51 @@ export default function ContactDetailPage() {
             
             <div className="input-group" style={{ marginBottom: '1rem' }}>
               <label>Destinataris ({emailRecipients.length})</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', background: 'rgba(0,0,0,0.2)', padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--color-border)', minHeight: '38px', alignItems: 'center' }}>
+              <div 
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const email = e.dataTransfer.getData("email") || e.dataTransfer.getData("text/plain");
+                  const cleanEmail = email ? email.trim() : '';
+                  if (cleanEmail && cleanEmail.includes('@')) {
+                    // Add to recipients if not present
+                    setEmailRecipients(prev => {
+                      if (!prev.includes(cleanEmail)) {
+                        return [...prev, cleanEmail];
+                      }
+                      return prev;
+                    });
+                    // Remove from CCO if present there
+                    setEmailBcc(prev => {
+                      const list = prev.split(',').map(x => x.trim()).filter(Boolean);
+                      const newList = list.filter(x => x.toLowerCase() !== cleanEmail.toLowerCase());
+                      return newList.join(', ');
+                    });
+                  }
+                }}
+                style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', background: 'rgba(0,0,0,0.2)', padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--color-border)', minHeight: '38px', alignItems: 'center' }}
+              >
                 {emailRecipients.map((email, idx) => (
-                  <span key={idx} style={{ 
-                    fontSize: '0.75rem', 
-                    padding: '0.2rem 0.5rem', 
-                    background: 'rgba(255, 255, 255, 0.05)', 
-                    border: '1px solid rgba(255, 255, 255, 0.1)', 
-                    borderRadius: '4px',
-                    color: 'var(--color-accent)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.3rem'
-                  }}>
+                  <span 
+                    key={idx} 
+                    draggable
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData("email", email);
+                    }}
+                    style={{ 
+                      fontSize: '0.75rem', 
+                      padding: '0.2rem 0.5rem', 
+                      background: 'rgba(255, 255, 255, 0.05)', 
+                      border: '1px solid rgba(255, 255, 255, 0.1)', 
+                      borderRadius: '4px',
+                      color: 'var(--color-accent)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.3rem',
+                      cursor: 'grab'
+                    }}
+                    title="Arrossega cap a Còpia Oculta per moure aquest destinatari"
+                  >
                     📧 {email}
                     <button 
                       type="button" 
@@ -1639,6 +1671,24 @@ export default function ContactDetailPage() {
                 placeholder="Exemple: info@hemiolia.cat, jordi@example.com"
                 value={emailBcc} 
                 onChange={e => setEmailBcc(e.target.value)} 
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const email = e.dataTransfer.getData("email") || e.dataTransfer.getData("text/plain");
+                  const cleanEmail = email ? email.trim() : '';
+                  if (cleanEmail && cleanEmail.includes('@')) {
+                    // Remove from recipients
+                    setEmailRecipients(prev => prev.filter(r => r !== cleanEmail));
+                    // Add to CCO
+                    setEmailBcc(prev => {
+                      const list = prev.split(',').map(x => x.trim()).filter(Boolean);
+                      if (!list.includes(cleanEmail)) {
+                        list.push(cleanEmail);
+                      }
+                      return list.join(', ');
+                    });
+                  }
+                }}
               />
             </div>
             
