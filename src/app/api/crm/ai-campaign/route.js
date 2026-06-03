@@ -80,7 +80,7 @@ You must return a valid JSON object containing:
 - "subject": a suggested, compelling email subject line.
 - "body": a suggested email body written in a professional, warm, and appropriate tone (usually in Catalan). 
   Important: the body MUST contain the placeholders "{nom}" (for the contact's name) and "{entitat}" (for the entity name) to allow automatic personalization.
-  You must always end the body with this exact signature block: "Atentament,\n\nPaula Martí i Jordi Bonilla\nHEMIÒLIA\n619579935 - 639966697".
+  You must always end the body with this exact signature block: "Atentament,\n\nHEMIÒLIA\nPaula Martí i Jordi Bonilla\n619579935 - 639966697".
   Do not mention specific dates or events unless requested. Keep it elegant.
 - "suggestedAttachments": an array of objects representing the matched dossiers, e.g. [{"name": "Cavernus +Info (CAT)", "url": "https://hemiolia.cat/+%20INFO%20ESPECTACLE/CAVERNUS_+INFO_CAT.pdf"}]. If no dossiers are requested, return an empty array.
 
@@ -88,7 +88,7 @@ Return ONLY a valid JSON object of the form:
 {
   "matchedContactIds": ["id1", "id2", ...],
   "subject": "Suggested Subject Line",
-  "body": "Hola {nom},\\n\\nEns posem en contacte amb {entitat}...\\n\\nAtentament,\\n\\nPaula Martí i Jordi Bonilla\\nHEMIÒLIA\\n619579935 - 639966697",
+  "body": "Hola {nom},\\n\\nEns posem en contacte amb {entitat}...\\n\\nAtentament,\\n\\nHEMIÒLIA\\nPaula Martí i Jordi Bonilla\\n619579935 - 639966697",
   "suggestedAttachments": []
 }
 Do not include markdown wrappers (like \`\`\`json) outside the JSON. Return only the raw JSON string.`;

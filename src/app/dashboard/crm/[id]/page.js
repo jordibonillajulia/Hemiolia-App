@@ -538,7 +538,7 @@ export default function ContactDetailPage() {
     
     // Set default values in local editor states
     setEmailSubject("Salutacions des d'Hemiòlia Produccions");
-    setEmailText(`Hola ${contactName},\n\nEns posem en contacte amb tu per fer el seguiment de les nostres propostes per al vostre municipi (${contact.municipality || 'el vostre municipi'}).\n\nQualsevol cosa estem a la teva disposició.\n\nAtentament,\n\nPaula Martí i Jordi Bonilla\nHEMIÒLIA\n619579935 - 639966697`);
+    setEmailText(`Hola ${contactName},\n\nEns posem en contacte amb tu per fer el seguiment de les nostres propostes per al vostre municipi (${contact.municipality || 'el vostre municipi'}).\n\nQualsevol cosa estem a la teva disposició.\n\nAtentament,\n\nHEMIÒLIA\nPaula Martí i Jordi Bonilla\n619579935 - 639966697`);
     setEmailCcRecipients([]);
     setEmailCcInput('');
     setEmailBccRecipients([]);

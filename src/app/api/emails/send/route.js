@@ -19,10 +19,9 @@ function textToHtml(text) {
   html = html.replace(/\r\n/g, '\n');
 
   // 3. Define the signature pattern matching:
-  // Paula Martí i Jordi Bonilla
-  // HEMIÒLIA
+  // HEMIÒLIA / Paula Martí i Jordi Bonilla
   // 619579935 - 639966697
-  const signaturePattern = /Paula\s+Martí\s+i\s+Jordi\s+Bonilla\s*\n\s*HEMIÒLIA\s*\n\s*619579935\s*-\s*639966697/i;
+  const signaturePattern = /(?:HEMIÒ?LIA\s*\n\s*Paula\s+Martí?\s+i\s+Jordi\s+Bonilla|Paula\s+Martí?\s+i\s+Jordi\s+Bonilla\s*\n\s*HEMIÒ?LIA)\s*\n\s*619579935\s*-\s*639966697/i;
   
   const htmlSignature = `<div style="margin-top: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.5; color: #000000;">
   <img src="cid:logo-hemiolia" alt="HEMIÒLIA" style="display: block; width: 140px; height: auto; margin-bottom: 8px;" />
