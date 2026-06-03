@@ -210,6 +210,7 @@ export default function ContactDetailPage() {
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [emailSubject, setEmailSubject] = useState('');
   const [emailText, setEmailText] = useState('');
+  const [emailBcc, setEmailBcc] = useState('');
   const [emailRecipients, setEmailRecipients] = useState([]);
   const [emailAttachments, setEmailAttachments] = useState([]);
   const [newAttachmentName, setNewAttachmentName] = useState('');
@@ -535,6 +536,7 @@ export default function ContactDetailPage() {
     // Set default values in local editor states
     setEmailSubject("Salutacions des d'Hemiòlia Produccions");
     setEmailText(`Hola ${contactName},\n\nEns posem en contacte amb tu per fer el seguiment de les nostres propostes per al vostre municipi (${contact.municipality || 'el vostre municipi'}).\n\nQualsevol cosa estem a la teva disposició.\n\nAtentament,\n\nPaula Martí i Jordi Bonilla\nHEMIÒLIA\n619579935 - 639966697`);
+    setEmailBcc('');
     setEmailRecipients(uniqueEmails);
     setEmailAttachments([]);
     setNewAttachmentName('');
@@ -570,6 +572,7 @@ export default function ContactDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           to: emailRecipients.join(', '),
+          bcc: emailBcc,
           subject: emailSubject,
           text: emailText,
           attachments: attachmentsPayload
@@ -1626,6 +1629,17 @@ export default function ContactDetailPage() {
                   </span>
                 ))}
               </div>
+            </div>
+            
+            <div className="input-group" style={{ marginBottom: '1rem' }}>
+              <label>Còpia oculta (CCO / BCC)</label>
+              <input 
+                className="input-field" 
+                type="text" 
+                placeholder="Exemple: info@hemiolia.cat, jordi@example.com"
+                value={emailBcc} 
+                onChange={e => setEmailBcc(e.target.value)} 
+              />
             </div>
             
             <div className="input-group" style={{ marginBottom: '1.5rem' }}>

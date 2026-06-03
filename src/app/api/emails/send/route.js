@@ -112,7 +112,7 @@ async function saveToSentFolder(mailOptions) {
 
 export async function POST(request) {
   try {
-    const { to, subject, text, attachments } = await request.json();
+    const { to, bcc, subject, text, attachments } = await request.json();
 
     // Configurem nodemailer amb les dades del servidor SMTP (ex: Gmail, hostalia, etc.)
     // Les credencials s'han de posar a l'arxiu .env.local
@@ -141,6 +141,7 @@ export async function POST(request) {
     const mailOptions = {
       from: `"Hemiòlia Produccions" <${process.env.SMTP_USER || 'info@hemiolia.cat'}>`,
       to,
+      ...(bcc ? { bcc } : {}),
       subject,
       text,
       html: htmlContent,
