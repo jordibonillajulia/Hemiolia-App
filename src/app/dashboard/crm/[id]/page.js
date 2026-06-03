@@ -534,7 +534,7 @@ export default function ContactDetailPage() {
     
     // Set default values in local editor states
     setEmailSubject("Salutacions des d'Hemiòlia Produccions");
-    setEmailText(`Hola ${contactName},\n\nEns posem en contacte amb tu per fer el seguiment de les nostres propostes per al vostre municipi (${contact.municipality || 'el vostre municipi'}).\n\nQualsevol cosa estem a la teva disposició.\n\nAtentament,\nL'equip d'Hemiòlia Produccions.`);
+    setEmailText(`Hola ${contactName},\n\nEns posem en contacte amb tu per fer el seguiment de les nostres propostes per al vostre municipi (${contact.municipality || 'el vostre municipi'}).\n\nQualsevol cosa estem a la teva disposició.\n\nAtentament,\n\nPaula Martí i Jordi Bonilla\nHEMIÒLIA\n619579935 - 639966697`);
     setEmailRecipients(uniqueEmails);
     setEmailAttachments([]);
     setNewAttachmentName('');
@@ -577,17 +577,8 @@ export default function ContactDetailPage() {
       });
 
       if (res.ok) {
-        await addInteraction({
-          contactId,
-          date: new Date().toISOString().split('T')[0],
-          showId: 'Seguiment / Correu',
-          interestLevel: 3,
-          technicalFeedback: `Assumpte: ${emailSubject}`,
-          otherInterests: `Correu de seguiment enviat a: ${emailRecipients.join(', ')}.\n\nFitxers adjunts: ${emailAttachments.length > 0 ? emailAttachments.map(a => a.name).join(', ') : 'cap'}`
-        });
         alert("Correu enviat correctament!");
         setIsEditingEmail(false);
-        loadData();
       } else {
         alert("Error a l'enviar el correu.");
       }
