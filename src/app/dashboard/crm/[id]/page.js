@@ -2051,109 +2051,73 @@ export default function ContactDetailPage() {
                 </div>
               )}
 
-              {/* Add manual attachment dropdown/form */}
-              {isAddingAttachmentManual ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(255,255,255,0.02)', padding: '0.8rem', borderRadius: '6px', border: '1px dashed rgba(255,255,255,0.1)' }}>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <input 
-                      type="text" 
-                      className="input-field" 
-                      placeholder="Nom del fitxer (ex: Dossier Silencis)" 
-                      value={newAttachmentName}
-                      onChange={e => setNewAttachmentName(e.target.value)}
-                      style={{ fontSize: '0.8rem', padding: '0.4rem 0.6rem' }}
-                    />
-                    <input 
-                      type="text" 
-                      className="input-field" 
-                      placeholder="Enllaç al fitxer (URL)" 
-                      value={newAttachmentUrl}
-                      onChange={e => setNewAttachmentUrl(e.target.value)}
-                      style={{ fontSize: '0.8rem', padding: '0.4rem 0.6rem' }}
-                    />
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' }}>
-                    <button type="button" className="btn btn-glass" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }} onClick={() => setIsAddingAttachmentManual(false)}>Cancel·lar</button>
-                    <button type="button" className="btn btn-primary" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }} onClick={handleAddAttachment}>Afegir</button>
-                  </div>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  <button 
-                    type="button" 
-                    className="btn btn-glass" 
-                    onClick={() => document.getElementById('local-file-uploader').click()}
-                    style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
-                  >
-                    📁 Pujar Fitxer Local
-                  </button>
-                  <input 
-                    type="file" 
-                    id="local-file-uploader" 
-                    style={{ display: 'none' }} 
-                    onChange={handleFileSelect} 
-                    multiple
-                  />
-                  <button 
-                    type="button" 
-                    className="btn btn-glass" 
-                    onClick={() => setIsAddingAttachmentManual(true)}
-                    style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
-                  >
-                    ➕ Adjuntar Enllaç Manual
-                  </button>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <button 
+                  type="button" 
+                  className="btn btn-glass" 
+                  onClick={() => document.getElementById('local-file-uploader').click()}
+                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
+                >
+                  📁 Pujar Fitxer Local
+                </button>
+                <input 
+                  type="file" 
+                  id="local-file-uploader" 
+                  style={{ display: 'none' }} 
+                  onChange={handleFileSelect} 
+                  multiple
+                />
+                
+                {/* Predefined show list attachments shortcuts */}
+                <select 
+                  onChange={e => {
+                    if (e.target.value) {
+                      const selected = JSON.parse(e.target.value);
+                      setEmailAttachments(prev => {
+                        if (prev.some(a => a.url === selected.url)) return prev;
+                        return [...prev, selected];
+                      });
+                      e.target.value = "";
+                    }
+                  }}
+                  className="input-field"
+                  style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', width: 'auto', flex: 1, minWidth: '150px', background: 'var(--color-background-input)', color: 'var(--color-text-primary)' }}
+                >
+                  <option value="">📂 Adjuntar Dossier Oficial...</option>
+                  {/* Layla, un viatge d'esperança */}
+                  <optgroup label="Layla, un viatge d'esperança">
+                    <option value={JSON.stringify({ name: 'Layla - +Info (CAT)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/LAYLA_+INFO_CAT.pdf' })}>Layla - +Info (CAT)</option>
+                    <option value={JSON.stringify({ name: 'Layla - +Info (ES)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/LAYLA_+INFO_CAS.pdf' })}>Layla - +Info (ES)</option>
+                    <option value={JSON.stringify({ name: 'Layla - +Info (EN)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/LAYLA_+INFO_EN.pdf' })}>Layla - +Info (EN)</option>
+                  </optgroup>
                   
-                  {/* Predefined show list attachments shortcuts */}
-                  <select 
-                    onChange={e => {
-                      if (e.target.value) {
-                        const selected = JSON.parse(e.target.value);
-                        setEmailAttachments(prev => {
-                          if (prev.some(a => a.url === selected.url)) return prev;
-                          return [...prev, selected];
-                        });
-                        e.target.value = "";
-                      }
-                    }}
-                    className="input-field"
-                    style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem', width: 'auto', flex: 1, minWidth: '150px', background: 'var(--color-background-input)', color: 'var(--color-text-primary)' }}
-                  >
-                    <option value="">📂 Adjuntar Dossier Oficial...</option>
-                    {/* Layla, un viatge d'esperança */}
-                    <optgroup label="Layla, un viatge d'esperança">
-                      <option value={JSON.stringify({ name: 'Layla - +Info (CAT)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/LAYLA_+INFO_CAT.pdf' })}>Layla - +Info (CAT)</option>
-                      <option value={JSON.stringify({ name: 'Layla - +Info (ES)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/LAYLA_+INFO_CAS.pdf' })}>Layla - +Info (ES)</option>
-                      <option value={JSON.stringify({ name: 'Layla - +Info (EN)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/LAYLA_+INFO_EN.pdf' })}>Layla - +Info (EN)</option>
-                    </optgroup>
-                    
-                    {/* Layla, el contacontes */}
-                    <optgroup label="Layla, el contacontes">
-                      <option value={JSON.stringify({ name: 'Layla Contacontes - +Info (CAT)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/LAYLA_CONTACONTES_+INFO_CAT.pdf' })}>Contacontes - +Info (CAT)</option>
-                      <option value={JSON.stringify({ name: 'Layla Contacontes - Dossier Pedagògic', url: 'https://hemiolia.cat/DOSSIER%20PEDAGO%CC%80GIC/LAYLA_CONTACONTES%20-%20Dossier%20Pedago%CC%80gic.pdf' })}>Contacontes - Dossier Pedagògic</option>
-                      <option value={JSON.stringify({ name: 'Layla Contacontes - Guia Docent', url: 'https://hemiolia.cat/GUIA%20DOCENT/LAYLA_CONTACONTES%20-%20Guia%20docent.pdf' })}>Contacontes - Guia Docent</option>
-                    </optgroup>
+                  {/* Layla, el contacontes */}
+                  <optgroup label="Layla, el contacontes">
+                    <option value={JSON.stringify({ name: 'Layla Contacontes - +Info (CAT)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/LAYLA_CONTACONTES_+INFO_CAT.pdf' })}>Contacontes - +Info (CAT)</option>
+                    <option value={JSON.stringify({ name: 'Layla Contacontes - Dossier Pedagògic', url: 'https://hemiolia.cat/DOSSIER%20PEDAGO%CC%80GIC/LAYLA_CONTACONTES%20-%20Dossier%20Pedago%CC%80gic.pdf' })}>Contacontes - Dossier Pedagògic</option>
+                    <option value={JSON.stringify({ name: 'Layla Contacontes - Guia Docent', url: 'https://hemiolia.cat/GUIA%20DOCENT/LAYLA_CONTACONTES%20-%20Guia%20docent.pdf' })}>Contacontes - Guia Docent</option>
+                  </optgroup>
 
-                    {/* Cavernus */}
-                    <optgroup label="Cavernus, una evolució musical">
-                      <option value={JSON.stringify({ name: 'Cavernus - +Info (CAT)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/CAVERNUS_+INFO_CAT.pdf' })}>Cavernus - +Info (CAT)</option>
-                      <option value={JSON.stringify({ name: 'Cavernus - Dossier Pedagògic', url: 'https://hemiolia.cat/DOSSIER%20PEDAGO%CC%80GIC/CAVERNUS%20-%20Dossier%20Pedago%CC%80gic.pdf' })}>Cavernus - Dossier Pedagògic</option>
-                      <option value={JSON.stringify({ name: 'Cavernus - Guia Docent', url: 'https://hemiolia.cat/GUIA%20DOCENT/CAVERNUS%20-%20Guia%20docent.pdf' })}>Cavernus - Guia Docent</option>
-                    </optgroup>
+                  {/* Cavernus */}
+                  <optgroup label="Cavernus, una evolució musical">
+                    <option value={JSON.stringify({ name: 'Cavernus - +Info (CAT)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/CAVERNUS_+INFO_CAT.pdf' })}>Cavernus - +Info (CAT)</option>
+                    <option value={JSON.stringify({ name: 'Cavernus - Dossier Pedagògic', url: 'https://hemiolia.cat/DOSSIER%20PEDAGO%CC%80GIC/CAVERNUS%20-%20Dossier%20Pedago%CC%80gic.pdf' })}>Cavernus - Dossier Pedagògic</option>
+                    <option value={JSON.stringify({ name: 'Cavernus - Guia Docent', url: 'https://hemiolia.cat/GUIA%20DOCENT/CAVERNUS%20-%20Guia%20docent.pdf' })}>Cavernus - Guia Docent</option>
+                  </optgroup>
 
-                    {/* Un Nadal Màgic */}
-                    <optgroup label="Un Nadal Màgic">
-                      <option value={JSON.stringify({ name: 'Un Nadal Màgic - +Info (CAT)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/UN_NADAL_MAGIC_+INFO_CAT.pdf' })}>Nadal Màgic - +Info (CAT)</option>
-                      <option value={JSON.stringify({ name: 'Un Nadal Màgic - Dossier Pedagògic', url: 'https://hemiolia.cat/DOSSIER%20PEDAGO%CC%80GIC/UN_NADAL_MA%CC%80GIC%20-%20Dossier%20Pedago%CC%80gic.pdf' })}>Nadal Màgic - Dossier Pedagògic</option>
-                      <option value={JSON.stringify({ name: 'Un Nadal Màgic - Guia Docent', url: 'https://hemiolia.cat/GUIA%20DOCENT/UN_NADAL_MA%CC%80GIC%20-%20Guia%20docent.pdf' })}>Nadal Màgic - Guia Docent</option>
-                    </optgroup>
+                  {/* Un Nadal Màgic */}
+                  <optgroup label="Un Nadal Màgic">
+                    <option value={JSON.stringify({ name: 'Un Nadal Màgic - +Info (CAT)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/UN_NADAL_MAGIC_+INFO_CAT.pdf' })}>Nadal Màgic - +Info (CAT)</option>
+                    <option value={JSON.stringify({ name: 'Un Nadal Màgic - Dossier Pedagògic', url: 'https://hemiolia.cat/DOSSIER%20PEDAGO%CC%80GIC/UN_NADAL_MA%CC%80GIC%20-%20Dossier%20Pedago%CC%80gic.pdf' })}>Nadal Màgic - Dossier Pedagògic</option>
+                    <option value={JSON.stringify({ name: 'Un Nadal Màgic - Guia Docent', url: 'https://hemiolia.cat/GUIA%20DOCENT/UN_NADAL_MA%CC%80GIC%20-%20Guia%20docent.pdf' })}>Nadal Màgic - Guia Docent</option>
+                  </optgroup>
 
-                    {/* Silencis Trencats */}
-                    <optgroup label="Silencis Trencats">
-                      <option value={JSON.stringify({ name: 'Silencis Trencats - +Info (CAT)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/SILENCIS%20TRENCATS%20-%20+INFO_CAT-1.pdf' })}>Silencis Trencats - +Info (CAT)</option>
-                    </optgroup>
-                  </select>
-                </div>
-              )}
+                  {/* Silencis Trencats */}
+                  <optgroup label="Silencis Trencats">
+                    <option value={JSON.stringify({ name: 'Silencis Trencats - +Info (CAT)', url: 'https://hemiolia.cat/+%20INFO%20ESPECTACLE/SILENCIS%20TRENCATS%20-%20+INFO_CAT-1.pdf' })}>Silencis Trencats - +Info (CAT)</option>
+                  </optgroup>
+                </select>
+              </div>
             </div>
             
             <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>

@@ -1328,33 +1328,6 @@ export default function CRMPage() {
                     </div>
                   )}
 
-                  {/* Add manual attachment dropdown/form */}
-                  {isAddingAttachmentManual ? (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', background: 'rgba(255,255,255,0.02)', padding: '0.8rem', borderRadius: '6px', border: '1px dashed rgba(255,255,255,0.1)' }}>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <input 
-                          type="text" 
-                          className="input-field" 
-                          placeholder="Nom del fitxer (ex: Dossier Silencis)" 
-                          value={newAttachmentName}
-                          onChange={e => setNewAttachmentName(e.target.value)}
-                          style={{ fontSize: '0.8rem', padding: '0.4rem 0.6rem' }}
-                        />
-                        <input 
-                          type="text" 
-                          className="input-field" 
-                          placeholder="Enllaç al fitxer (URL)" 
-                          value={newAttachmentUrl}
-                          onChange={e => setNewAttachmentUrl(e.target.value)}
-                          style={{ fontSize: '0.8rem', padding: '0.4rem 0.6rem' }}
-                        />
-                      </div>
-                      <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' }}>
-                        <button type="button" className="btn btn-glass" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }} onClick={() => setIsAddingAttachmentManual(false)}>Cancel·lar</button>
-                        <button type="button" className="btn btn-primary" style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem' }} onClick={handleAddAttachment}>Afegir</button>
-                      </div>
-                    </div>
-                  ) : (
                     <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                       <button
                         type="button"
@@ -1372,15 +1345,6 @@ export default function CRMPage() {
                         onChange={handleAiCampaignFileSelect}
                         multiple
                       />
-                      <button 
-                        type="button" 
-                        className="btn btn-glass" 
-                        onClick={() => setIsAddingAttachmentManual(true)}
-                        disabled={isSendingAiCampaign}
-                        style={{ fontSize: '0.75rem', padding: '0.35rem 0.75rem' }}
-                      >
-                        ➕ Adjuntar Enllaç Manual
-                      </button>
                       
                       {/* Predefined show list attachments shortcuts */}
                       <select 
@@ -1433,7 +1397,6 @@ export default function CRMPage() {
                         </optgroup>
                       </select>
                     </div>
-                  )}
                 </div>
 
                 {/* Recipient manager */}
