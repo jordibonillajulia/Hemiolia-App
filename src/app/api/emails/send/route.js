@@ -2,6 +2,50 @@ import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
 import { ImapFlow } from 'imapflow';
+import path from 'path';
+
+function textToHtml(text) {
+  if (!text) return { html: '', hasSignature: false };
+  
+  // 1. Escape HTML
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+    
+  // 2. Normalize newlines to \n
+  html = html.replace(/\r\n/g, '\n');
+
+  // 3. Define the signature pattern matching:
+  // Paula Martí i Jordi Bonilla
+  // HEMIÒLIA
+  // 619579935 - 639966697
+  const signaturePattern = /Paula\s+Martí\s+i\s+Jordi\s+Bonilla\s*\n\s*HEMIÒLIA\s*\n\s*619579935\s*-\s*639966697/i;
+  
+  const htmlSignature = `<div style="margin-top: 24px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 14px; line-height: 1.5; color: #000000;">
+  <img src="cid:logo-hemiolia" alt="HEMIÒLIA" style="display: block; width: 140px; height: auto; margin-bottom: 8px;" />
+  <div style="margin: 0; padding: 0;">Paula Martí i Jordi Bonilla</div>
+  <div style="margin: 0; padding: 0; color: #000000;">619579935 - 639966697</div>
+</div>`;
+
+  let hasSignature = false;
+  if (signaturePattern.test(html)) {
+    hasSignature = true;
+    html = html.replace(signaturePattern, '<!--SIGNATURE_PLACEHOLDER-->');
+  }
+
+  // 4. Convert newlines to <br />
+  html = html.replace(/\n/g, '<br />');
+
+  // 5. Replace placeholder back with the HTML signature
+  if (hasSignature) {
+    html = html.replace('<!--SIGNATURE_PLACEHOLDER-->', htmlSignature);
+  }
+
+  return { html, hasSignature };
+}
 
 async function compileRawEmail(mailOptions) {
   return new Promise((resolve, reject) => {
@@ -82,12 +126,28 @@ export async function POST(request) {
       },
     });
 
+    const { html: htmlContent, hasSignature } = textToHtml(text);
+
+    // Add inline attachment if signature is present
+    const inlineAttachments = [];
+    if (hasSignature) {
+      inlineAttachments.push({
+        filename: 'logo-hemiolia-dark.png',
+        path: path.join(process.cwd(), 'public', 'logo-hemiolia-dark.png'),
+        cid: 'logo-hemiolia'
+      });
+    }
+
     const mailOptions = {
       from: `"Hemiòlia Produccions" <${process.env.SMTP_USER || 'info@hemiolia.cat'}>`,
       to,
       subject,
       text,
-      ...(attachments && attachments.length > 0 ? { attachments } : {})
+      html: htmlContent,
+      attachments: [
+        ...(attachments || []),
+        ...inlineAttachments
+      ]
     };
 
     // Si no tenim configurat l'SMTP al .env.local, simplement fem un simulacre (mock) pel log
