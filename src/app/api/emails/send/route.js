@@ -114,6 +114,16 @@ export async function POST(request) {
   try {
     const { to, bcc, subject, text, attachments } = await request.json();
 
+    const senderEmail = process.env.SMTP_USER || 'info@hemiolia.cat';
+    let finalTo = to;
+    if (!finalTo || finalTo.trim() === '') {
+      if (bcc && bcc.trim() !== '') {
+        finalTo = `"Destinataris ocults" <${senderEmail}>`;
+      } else {
+        return NextResponse.json({ error: 'Falta el destinatari (to o bcc)' }, { status: 400 });
+      }
+    }
+
     // Configurem nodemailer amb les dades del servidor SMTP (ex: Gmail, hostalia, etc.)
     // Les credencials s'han de posar a l'arxiu .env.local
     const transporter = nodemailer.createTransport({
@@ -139,8 +149,8 @@ export async function POST(request) {
     }
 
     const mailOptions = {
-      from: `"Hemiòlia Produccions" <${process.env.SMTP_USER || 'info@hemiolia.cat'}>`,
-      to,
+      from: `"Hemiòlia Produccions" <${senderEmail}>`,
+      to: finalTo,
       ...(bcc ? { bcc } : {}),
       subject,
       text,

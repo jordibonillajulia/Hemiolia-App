@@ -547,8 +547,10 @@ export default function ContactDetailPage() {
   };
 
   const handleSendEditedEmail = async () => {
-    if (emailRecipients.length === 0) {
-      return alert("Si us plau, afegeix almenys un destinatari per poder enviar el correu.");
+    const hasTo = emailRecipients.length > 0;
+    const hasBcc = emailBcc && emailBcc.trim().length > 0;
+    if (!hasTo && !hasBcc) {
+      return alert("Si us plau, afegeix almenys un destinatari (a Destinataris o a Còpia oculta) per poder enviar el correu.");
     }
 
     // Prepare attachments payload for Nodemailer
