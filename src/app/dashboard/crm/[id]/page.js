@@ -210,6 +210,7 @@ export default function ContactDetailPage() {
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [emailSubject, setEmailSubject] = useState('');
   const [emailText, setEmailText] = useState('');
+  const [emailRecipients, setEmailRecipients] = useState([]);
   const [emailAttachments, setEmailAttachments] = useState([]);
   const [newAttachmentName, setNewAttachmentName] = useState('');
   const [newAttachmentUrl, setNewAttachmentUrl] = useState('');
@@ -473,13 +474,29 @@ export default function ContactDetailPage() {
     setEmailAttachments(prev => prev.filter((_, idx) => idx !== idxToRemove));
   };
 
+  const handleRemoveRecipient = (emailToRemove) => {
+    setEmailRecipients(prev => prev.filter(e => e !== emailToRemove));
+  };
+
   const handleSendEmail = () => {
-    const contact1 = contact.contact1 || { name: contact.name, email: contact.email };
-    if (!contact1.email) return alert("Aquest contacte no té correu electrònic.");
+    const emails = [];
+    if (contact.email) emails.push(contact.email);
+    if (contact.contact1?.email) emails.push(contact.contact1.email);
+    if (contact.contact2?.email) emails.push(contact.contact2.email);
+    if (contact.contact3?.email) emails.push(contact.contact3.email);
+    if (contact.contact4?.email) emails.push(contact.contact4.email);
+    
+    const uniqueEmails = Array.from(new Set(emails.map(e => e.trim()).filter(Boolean)));
+    if (uniqueEmails.length === 0) {
+      return alert("Aquest contacte no té cap adreça de correu electrònic.");
+    }
+
+    const contactName = contact.contact1?.name || contact.name || contact.entity;
     
     // Set default values in local editor states
     setEmailSubject("Salutacions des d'Hemiòlia Produccions");
-    setEmailText(`Hola ${contact1.name || contact.entity},\n\nEns posem en contacte amb tu per fer el seguiment de les nostres propostes per al vostre municipi (${contact.municipality || 'el vostre municipi'}).\n\nQualsevol cosa estem a la teva disposició.\n\nAtentament,\nL'equip d'Hemiòlia Produccions.`);
+    setEmailText(`Hola ${contactName},\n\nEns posem en contacte amb tu per fer el seguiment de les nostres propostes per al vostre municipi (${contact.municipality || 'el vostre municipi'}).\n\nQualsevol cosa estem a la teva disposició.\n\nAtentament,\nL'equip d'Hemiòlia Produccions.`);
+    setEmailRecipients(uniqueEmails);
     setEmailAttachments([]);
     setNewAttachmentName('');
     setNewAttachmentUrl('');
@@ -489,8 +506,9 @@ export default function ContactDetailPage() {
   };
 
   const handleSendEditedEmail = async () => {
-    const contact1 = contact.contact1 || { name: contact.name, email: contact.email };
-    if (!contact1.email) return alert("Aquest contacte no té correu electrònic.");
+    if (emailRecipients.length === 0) {
+      return alert("Si us plau, afegeix almenys un destinatari per poder enviar el correu.");
+    }
 
     // Prepare attachments payload for Nodemailer
     const attachmentsPayload = emailAttachments.map(a => ({
@@ -503,7 +521,7 @@ export default function ContactDetailPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          to: contact1.email,
+          to: emailRecipients.join(', '),
           subject: emailSubject,
           text: emailText,
           attachments: attachmentsPayload
@@ -1525,14 +1543,41 @@ export default function ContactDetailPage() {
             <h3 style={{ color: 'var(--color-accent)', marginBottom: '1.5rem' }}>✉️ Redactar Correu de Seguiment</h3>
             
             <div className="input-group" style={{ marginBottom: '1rem' }}>
-              <label>Destinatari</label>
-              <input 
-                className="input-field" 
-                type="text" 
-                value={contact.contact1?.email || contact.email || ''} 
-                disabled 
-                style={{ opacity: 0.7 }}
-              />
+              <label>Destinataris ({emailRecipients.length})</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', background: 'rgba(0,0,0,0.2)', padding: '0.5rem', borderRadius: '6px', border: '1px solid var(--color-border)', minHeight: '38px', alignItems: 'center' }}>
+                {emailRecipients.map((email, idx) => (
+                  <span key={idx} style={{ 
+                    fontSize: '0.75rem', 
+                    padding: '0.2rem 0.5rem', 
+                    background: 'rgba(255, 255, 255, 0.05)', 
+                    border: '1px solid rgba(255, 255, 255, 0.1)', 
+                    borderRadius: '4px',
+                    color: 'var(--color-accent)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem'
+                  }}>
+                    📧 {email}
+                    <button 
+                      type="button" 
+                      onClick={() => handleRemoveRecipient(email)}
+                      style={{ 
+                        background: 'transparent', 
+                        border: 'none', 
+                        color: '#ff6b6b', 
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        fontSize: '0.8rem',
+                        padding: '0 2px',
+                        lineHeight: '1'
+                      }}
+                      title="Eliminar destinatari"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
             </div>
             
             <div className="input-group" style={{ marginBottom: '1.5rem' }}>
