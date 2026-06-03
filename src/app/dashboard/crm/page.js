@@ -308,11 +308,6 @@ export default function CRMPage() {
         bodyText = bodyText.trim() + "\n\n" + signatureText;
       }
 
-      const finalIncludeOtherContacts = aiCampaignIncludeOtherContacts || !!data.includeOtherContacts;
-      if (data.includeOtherContacts) {
-        setAiCampaignIncludeOtherContacts(true);
-      }
-
       const recipientsList = [];
       matchedContacts.forEach(c => {
         const emails = [];
@@ -324,7 +319,7 @@ export default function CRMPage() {
           });
         }
 
-        if (finalIncludeOtherContacts) {
+        if (aiCampaignIncludeOtherContacts) {
           if (c.contact2?.email) emails.push({ email: c.contact2.email, name: c.contact2.name || c.entity });
           if (c.contact3?.email) emails.push({ email: c.contact3.email, name: c.contact3.name || c.entity });
           if (c.contact4?.email) emails.push({ email: c.contact4.email, name: c.contact4.name || c.entity });
