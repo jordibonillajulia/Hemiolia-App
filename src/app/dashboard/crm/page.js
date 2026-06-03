@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../lib/AuthContext';
-import { getContacts, addContact, deleteContact, updateContact } from '../../../lib/firestoreUtils';
+import { getContacts, addContact, deleteContact, updateContact, addInteraction } from '../../../lib/firestoreUtils';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { normalizeText } from '../../../lib/utils';
@@ -357,6 +357,14 @@ export default function CRMPage() {
 
         if (res.ok) {
           sentCount++;
+          await addInteraction({
+            contactId: c.id,
+            date: new Date().toISOString().split('T')[0],
+            showId: 'Campanya IA',
+            interestLevel: 3,
+            technicalFeedback: `Assumpte: ${aiCampaignSubject}`,
+            otherInterests: `Correu de campanya enviat per IA a: ${email}.\n\nFitxers adjunts: ${aiCampaignAttachments.length > 0 ? aiCampaignAttachments.map(a => a.name).join(', ') : 'cap'}`
+          });
         }
       } catch (err) {
         console.error(`Error enviant campanya IA a ${email}:`, err);

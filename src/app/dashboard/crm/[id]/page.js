@@ -577,8 +577,17 @@ export default function ContactDetailPage() {
       });
 
       if (res.ok) {
+        await addInteraction({
+          contactId,
+          date: new Date().toISOString().split('T')[0],
+          showId: 'Seguiment / Correu',
+          interestLevel: 3,
+          technicalFeedback: `Assumpte: ${emailSubject}`,
+          otherInterests: `Correu de seguiment enviat a: ${emailRecipients.join(', ')}.\n\nFitxers adjunts: ${emailAttachments.length > 0 ? emailAttachments.map(a => a.name).join(', ') : 'cap'}`
+        });
         alert("Correu enviat correctament!");
         setIsEditingEmail(false);
+        loadData();
       } else {
         alert("Error a l'enviar el correu.");
       }
