@@ -31,3 +31,13 @@ env:
     secret: GEMINI_API_KEY
   - variable: GOOGLE_SERVICE_ACCOUNT_JSON
     secret: GOOGLE_SERVICE_ACCOUNT_JSON
+
+  # SMTP configurations
+  - variable: SMTP_HOST
+    value: "smtp.strato.de"
+  - variable: SMTP_PORT
+    value: "465"
+  - variable: SMTP_USER
+    secret: SMTP_USER
+  - variable: SMTP_PASS
+    secret: SMTP_PASS
