@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import MailComposer from 'nodemailer/lib/mail-composer';
+import { verifySessionOrToken } from '@/lib/serverAuth';
 import { ImapFlow } from 'imapflow';
 import path from 'path';
 
@@ -111,6 +112,12 @@ async function saveToSentFolder(mailOptions) {
 
 export async function POST(request) {
   try {
+    // Verify authorization (only admins and CRM agents can send emails)
+    const session = await verifySessionOrToken(request, ['admin', 'crm']);
+    if (!session) {
+      return NextResponse.json({ error: 'No autoritzat' }, { status: 401 });
+    }
+
     const { to, cc, bcc, subject, text, attachments } = await request.json();
 
     const senderEmail = process.env.SMTP_USER || 'info@hemiolia.cat';

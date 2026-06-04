@@ -6,6 +6,7 @@ import { getContacts, addContact, deleteContact, updateContact, addInteraction }
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { normalizeText } from '../../../lib/utils';
+import { auth } from '../../../lib/firebase';
 
 const getStatusBadgeStyle = (status) => {
   const base = {
@@ -177,16 +178,16 @@ export default function CRMPage() {
     router.replace(`/dashboard/crm${qs ? '?' + qs : ''}`, { scroll: false });
   }, [router]);
 
+  const loadContacts = async () => {
+    const data = await getContacts();
+    setContacts(data);
+  };
+
   useEffect(() => {
     if (user) {
       loadContacts();
     }
   }, [user]);
-
-  const loadContacts = async () => {
-    const data = await getContacts();
-    setContacts(data);
-  };
 
   const handleAddContact = async (e) => {
     e.preventDefault();
@@ -279,9 +280,13 @@ export default function CRMPage() {
 
     setIsGeneratingAiCampaign(true);
     try {
+      const token = await auth.currentUser?.getIdToken();
       const res = await fetch('/api/crm/ai-campaign', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           userPrompt: aiCampaignPrompt,
           contacts
@@ -452,9 +457,13 @@ export default function CRMPage() {
         .replace(/{entitat}/g, r.entity || 'municipi');
 
       try {
+        const token = await auth.currentUser?.getIdToken();
         const res = await fetch('/api/emails/send', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify({
             to: email,
             subject: aiCampaignSubject,
@@ -545,9 +554,13 @@ export default function CRMPage() {
     if (!aiQuery.trim()) return;
     setIsAiFiltering(true);
     try {
+      const token = await auth.currentUser?.getIdToken();
       const res = await fetch('/api/crm/ai-filter', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ query: aiQuery, contacts })
       });
       if (res.ok) {

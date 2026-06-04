@@ -2,8 +2,15 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import forge from 'node-forge';
+import { verifySessionOrToken } from '@/lib/serverAuth';
 
 export async function GET(request) {
+  // Verify authorization (only admins are allowed to test certificates)
+  const session = await verifySessionOrToken(request, ['admin']);
+  if (!session) {
+    return NextResponse.json({ error: 'No autoritzat' }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const issuer = searchParams.get('issuer'); // 'JB' o 'PM'
 

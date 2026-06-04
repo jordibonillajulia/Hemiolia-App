@@ -30,9 +30,10 @@ service cloud.firestore {
       );
     }
 
-    // Gigs (Road-sheet) are publicly readable so that the public API can fetch them for the website
+    // Gigs (Road-sheet) read access is restricted to CRM agents and admins to protect sensitive data.
+    // The public website gets filtered public gigs via the secure /api/public/gigs API route.
     match /gigs/{gigId} {
-      allow read: if true;
+      allow read: if isAdmin() || isCrmAgent();
       allow write: if isAdmin();
     }
 

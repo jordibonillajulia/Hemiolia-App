@@ -1,8 +1,15 @@
 import { NextResponse } from 'next/server';
+import { verifySessionOrToken } from '@/lib/serverAuth';
 const { syncGig, deleteGig, syncReminder, deleteReminder } = require('../../../../lib/googleCalendar');
 
 export async function POST(request) {
   try {
+    // Verify authorization (only admins and CRM agents can sync calendar)
+    const session = await verifySessionOrToken(request, ['admin', 'crm']);
+    if (!session) {
+      return NextResponse.json({ error: 'No autoritzat' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { type, id, action, calendarEventId } = body;
 

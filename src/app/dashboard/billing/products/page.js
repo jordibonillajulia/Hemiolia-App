@@ -17,14 +17,14 @@ export default function BillingProductsPage() {
   const [vatType, setVatType] = useState('10'); // 0, 4, 10, 21
 
 
-  useEffect(() => {
-    if (user) loadProducts();
-  }, [user]);
-
   const loadProducts = async () => {
     const data = await getBillingProducts();
     setProducts(data);
   };
+
+  useEffect(() => {
+    if (user) loadProducts();
+  }, [user]);
 
   const resetForm = () => {
     setDescription('');

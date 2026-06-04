@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
+import { verifySessionOrToken } from '@/lib/serverAuth';
 
 export async function POST(request) {
   try {
+    // Verify authorization
+    const session = await verifySessionOrToken(request, ['admin', 'crm']);
+    if (!session) {
+      return NextResponse.json({ error: 'No autoritzat' }, { status: 401 });
+    }
+
     const { query: userQuery, contacts } = await request.json();
     if (!userQuery) {
       return NextResponse.json({ error: 'Query is required' }, { status: 400 });

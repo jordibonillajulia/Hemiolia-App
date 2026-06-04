@@ -17,7 +17,7 @@ import {
 } from '../../../../lib/firestoreUtils';
 import Link from 'next/link';
 import Papa from 'papaparse';
-import { storage } from '../../../../lib/firebase';
+import { storage, auth } from '../../../../lib/firebase';
 import { ref, uploadBytes, getDownloadURL, deleteObject, listAll } from 'firebase/storage';
 
 
@@ -127,13 +127,6 @@ export default function LedgersPage() {
   const [scanError, setScanError] = useState('');
   const [scannedFilePath, setScannedFilePath] = useState('');
 
-  // Initial Data Load
-  useEffect(() => {
-    if (user) {
-      loadData();
-    }
-  }, [user]);
-
   const loadData = async () => {
     setIsLoadingData(true);
     try {
@@ -151,6 +144,13 @@ export default function LedgersPage() {
       setIsLoadingData(false);
     }
   };
+
+  // Initial Data Load
+  useEffect(() => {
+    if (user) {
+      loadData();
+    }
+  }, [user]);
 
   // Auto Calculations in Form
   useEffect(() => {
@@ -332,8 +332,12 @@ export default function LedgersPage() {
     formData.append('period', filterPeriod === 'Tots' ? '1T' : filterPeriod);
 
     try {
+      const token = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/billing/expenses/scan', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
         body: formData
       });
 
@@ -556,9 +560,10 @@ export default function LedgersPage() {
   }, [currentList]);
 
   // Export to unified AEAT Excel Template (.xlsx)
-  const handleExportAEAT = () => {
-    // Generate the URL with query parameters for the Excel export API
-    const url = `/api/billing/ledgers/export?owner=${owner}&year=${filterYear}&period=${filterPeriod}`;
+  const handleExportAEAT = async () => {
+    const token = await auth.currentUser?.getIdToken();
+    // Generate the URL with query parameters for the Excel export API including the auth token
+    const url = `/api/billing/ledgers/export?owner=${owner}&year=${filterYear}&period=${filterPeriod}&token=${token}`;
     // Trigger download in the current window
     window.location.href = url;
   };

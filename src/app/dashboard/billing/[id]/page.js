@@ -6,6 +6,7 @@ import { useAuth } from '../../../../lib/AuthContext';
 import { getInvoiceById, updateInvoiceStatus, formatDisplayInvoiceNumber, formatClientName } from '../../../../lib/firestoreUtils';
 import Link from 'next/link';
 import { generateFacturaeXML } from '../../../../lib/facturaeGenerator';
+import { auth } from '../../../../lib/firebase';
 
 export default function InvoiceDetailPage() {
   const params = useParams();
@@ -34,10 +35,12 @@ export default function InvoiceDetailPage() {
 
     setIsSending(true);
     try {
+      const token = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/billing/verifactu/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({ invoiceId, isProduction: isProd }),
       });
@@ -69,9 +72,13 @@ export default function InvoiceDetailPage() {
     try {
       const xml = generateFacturaeXML(invoice);
       
+      const token = await auth.currentUser?.getIdToken();
       const response = await fetch('/api/billing/facturae/sign', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ 
           xmlString: xml,
           issuerNif: invoice.issuerData?.nif

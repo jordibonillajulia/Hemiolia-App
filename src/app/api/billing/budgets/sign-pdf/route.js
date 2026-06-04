@@ -5,9 +5,16 @@ import { PDFDocument } from 'pdf-lib';
 import { pdflibAddPlaceholder } from '@signpdf/placeholder-pdf-lib';
 import signpdf from '@signpdf/signpdf';
 import { P12Signer } from '@signpdf/signer-p12';
+import { verifySessionOrToken } from '@/lib/serverAuth';
 
 export async function POST(req) {
   try {
+    // 0. Verify authorization (only admins are allowed to sign budgets)
+    const session = await verifySessionOrToken(req, ['admin']);
+    if (!session) {
+      return NextResponse.json({ error: 'No autoritzat' }, { status: 401 });
+    }
+
     const { pdfBase64, issuerNif } = await req.json();
 
     if (!pdfBase64 || !issuerNif) {

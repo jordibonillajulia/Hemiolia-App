@@ -6,6 +6,7 @@ import { getInvoiceById, updateInvoiceStatus } from '@/lib/firestoreUtils';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { computeRegistroAlta } from '@kreyo/verifactu-hash-calculator';
+import { verifySessionOrToken } from '@/lib/serverAuth';
 
 function formatDateToAEAT(dateStr) {
   // input is YYYY-MM-DD
@@ -85,6 +86,12 @@ function postSOAP(xmlPayload, config, p12Buffer, isProduction = false) {
 
 export async function POST(request) {
   try {
+    // Verify authorization (only admins are allowed to send invoices to AEAT)
+    const session = await verifySessionOrToken(request, ['admin']);
+    if (!session) {
+      return NextResponse.json({ error: 'No autoritzat' }, { status: 401 });
+    }
+
     const body = await request.json();
     const { invoiceId, isProduction } = body;
 

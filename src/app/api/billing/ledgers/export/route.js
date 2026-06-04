@@ -5,6 +5,7 @@ import ExcelJS from 'exceljs';
 import { db } from '@/lib/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { formatClientName } from '@/lib/firestoreUtils';
+import { verifySessionOrToken } from '@/lib/serverAuth';
 
 export const dynamic = 'force-dynamic';
 
@@ -67,6 +68,12 @@ const updateMetadataHeader = (sheet, owner, filterYear) => {
 };
 
 export async function GET(request) {
+  // Verify authorization
+  const session = await verifySessionOrToken(request, ['admin', 'crm']);
+  if (!session) {
+    return NextResponse.json({ error: 'No autoritzat' }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const owner = searchParams.get('owner') || 'Jordi';
   const filterYear = searchParams.get('year') || '2026';

@@ -47,14 +47,14 @@ export default function BillingClientsPage() {
     }
   };
 
-  useEffect(() => {
-    if (user) loadClients();
-  }, [user]);
-
   const loadClients = async () => {
     const data = await getBillingClients();
     setClients(data);
   };
+
+  useEffect(() => {
+    if (user) loadClients();
+  }, [user]);
 
   const resetForm = () => {
     setType('Jurídica');

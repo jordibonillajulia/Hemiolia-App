@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '../../../../../lib/AuthContext';
 import { getBudgetById, deleteBudget, formatClientName } from '../../../../../lib/firestoreUtils';
 import Link from 'next/link';
+import { auth } from '../../../../../lib/firebase';
 
 export default function BudgetDetailPage() {
   const params = useParams();
@@ -109,10 +110,14 @@ export default function BudgetDetailPage() {
       // Extract raw Base64 bytes
       const pdfBase64 = pdf.output('datauristring').split(',')[1];
 
+      const token = await auth.currentUser?.getIdToken();
       // Request server to sign the PDF cryptographically (PAdES)
       const response = await fetch('/api/billing/budgets/sign-pdf', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           pdfBase64,
           issuerNif: budget.issuerData?.nif

@@ -104,34 +104,15 @@ const AddressAutocomplete = ({ value, onChange }) => {
 
 export default function RoadSheetPage() {
   const { user, loading, isAdmin } = useAuth();
-  const [gigs, setGigs] = useState([]);
-  const [isAdding, setIsAdding] = useState(false);
-  const [editingGigId, setEditingGigId] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchYear, setSearchYear] = useState('');
-
   const searchParams = useSearchParams();
   const highlightId = searchParams.get('highlight');
   const returnTo = searchParams.get('returnTo');
 
-  useEffect(() => {
-    const q = searchParams.get('q');
-    if (q) {
-      setSearchQuery(q);
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    const highlightId = searchParams.get('highlight');
-    if (highlightId && gigs.length > 0) {
-      setTimeout(() => {
-        const el = document.getElementById(`gig-card-${highlightId}`);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
-      }, 300);
-    }
-  }, [searchParams, gigs]);
+  const [gigs, setGigs] = useState([]);
+  const [isAdding, setIsAdding] = useState(false);
+  const [editingGigId, setEditingGigId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+  const [searchYear, setSearchYear] = useState('');
 
   // Form state
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -144,12 +125,6 @@ export default function RoadSheetPage() {
   const [contactPhone, setContactPhone] = useState('');
   const [scheduleDetails, setScheduleDetails] = useState('');
   const [status, setStatus] = useState('Pendent');
-
-  useEffect(() => {
-    if (user) {
-      loadGigs();
-    }
-  }, [user]);
 
   const loadGigs = async () => {
     const data = await getUpcomingGigs();
@@ -175,6 +150,24 @@ export default function RoadSheetPage() {
       setGigs(data);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      loadGigs();
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const highlightId = searchParams.get('highlight');
+    if (highlightId && gigs.length > 0) {
+      setTimeout(() => {
+        const el = document.getElementById(`gig-card-${highlightId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 300);
+    }
+  }, [searchParams, gigs]);
 
   const handleEditClick = (gig) => {
     setEditingGigId(gig.id);

@@ -6,6 +6,7 @@ import { useAuth } from '../../../../lib/AuthContext';
 import { getContactById, getInteractionsByContact, addInteraction, getShows, updateContact, getUpcomingGigs, getContacts } from '../../../../lib/firestoreUtils';
 import Link from 'next/link';
 import { normalizeText, formatNotesWithLineBreaks } from '../../../../lib/utils';
+import { auth } from '../../../../lib/firebase';
 
 // Helper to format date as DD/MM/YYYY with padding
 const formatDateDDMMYYYY = (dateStr) => {
@@ -222,16 +223,6 @@ export default function ContactDetailPage() {
 
   const searchParams = useSearchParams();
 
-  useEffect(() => {
-    if (user && contactId) {
-      loadData().then(() => {
-        if (searchParams.get('edit') === '1') {
-          setIsEditingContact(true);
-        }
-      });
-    }
-  }, [user, contactId]);
-
   const loadData = async () => {
     const c = await getContactById(contactId);
     setContact(c);
@@ -308,6 +299,16 @@ export default function ContactDetailPage() {
     const allC = await getContacts();
     setAllContacts(allC);
   };
+
+  useEffect(() => {
+    if (user && contactId) {
+      loadData().then(() => {
+        if (searchParams.get('edit') === '1') {
+          setIsEditingContact(true);
+        }
+      });
+    }
+  }, [user, contactId]);
 
   const getSearchQuery = (showTitle) => {
     if (!contact) return '';
@@ -590,9 +591,13 @@ export default function ContactDetailPage() {
     });
 
     try {
+      const token = await auth.currentUser?.getIdToken();
       const res = await fetch('/api/emails/send', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           to: emailRecipients.join(', '),
           cc: ccString,

@@ -2,9 +2,16 @@ import { NextResponse } from 'next/server';
 import { signFacturaeXML } from '../../../../../lib/facturaeSigner';
 import fs from 'fs';
 import path from 'path';
+import { verifySessionOrToken } from '@/lib/serverAuth';
 
 export async function POST(req) {
   try {
+    // Verify authorization (only admins are allowed to sign Facturae files)
+    const session = await verifySessionOrToken(req, ['admin']);
+    if (!session) {
+      return NextResponse.json({ error: 'No autoritzat' }, { status: 401 });
+    }
+
     const { xmlString, issuerNif } = await req.json();
 
     if (!xmlString || !issuerNif) {

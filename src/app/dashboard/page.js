@@ -25,7 +25,7 @@ export default function DashboardPage() {
             Benvinguts
           </h1>
           <p style={{ color: 'var(--color-text-secondary)', fontSize: '1.05rem', margin: 0 }}>
-            Hola <strong style={{ color: 'var(--color-accent)' }}>{user.email}</strong>. Gestiona l'activitat diària de la companyia musical Hemiòlia.
+            Hola <strong style={{ color: 'var(--color-accent)' }}>{user.email}</strong>. {"Gestiona l'activitat diària de la companyia musical Hemiòlia."}
           </p>
         </div>
         
@@ -47,7 +47,7 @@ export default function DashboardPage() {
             <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', fontSize: '1.8rem', opacity: 0.65 }}>👥</div>
             <h3 style={{ color: 'var(--color-accent)', marginBottom: '0.5rem', fontFamily: 'var(--font-heading)', fontSize: '1.5rem', letterSpacing: '0.5px' }}>Contactes</h3>
             <p style={{ color: 'var(--color-text-primary)', fontSize: '0.95rem', margin: 0, lineHeight: '1.5' }}>
-              Gestió d'organitzadors, programadors de cultura, teatres històrics i base de dades de contactes de la companyia.
+              {"Gestió d'organitzadors, programadors de cultura, teatres històrics i base de dades de contactes de la companyia."}
             </p>
           </Link>
 

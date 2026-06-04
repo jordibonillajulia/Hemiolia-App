@@ -1,5 +1,5 @@
 import { collection, addDoc, getDocs, doc, getDoc, query, where, orderBy, updateDoc, deleteDoc, limit } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, auth } from './firebase';
 
 // CONTACTS
 export const addContact = async (contactData) => {
@@ -31,11 +31,16 @@ export const deleteContact = async (id) => {
     if (docSnap.exists()) {
       const contact = docSnap.data();
       if (contact.calendarEventId) {
-        fetch('/api/calendar/sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'reminder', action: 'delete', calendarEventId: contact.calendarEventId })
-        }).catch(err => console.error("Calendar delete error:", err));
+        auth.currentUser?.getIdToken().then(token => {
+          fetch('/api/calendar/sync', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ type: 'reminder', action: 'delete', calendarEventId: contact.calendarEventId })
+          }).catch(err => console.error("Calendar delete error:", err));
+        });
       }
     }
   } catch (e) {
@@ -49,11 +54,16 @@ export const updateContact = async (id, data) => {
   const docRef = doc(db, 'contacts', id);
   await updateDoc(docRef, data);
   if (data.nextActionDate !== undefined || data.nextActionNotes !== undefined || data.municipality !== undefined || data.entity !== undefined) {
-    fetch('/api/calendar/sync', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'reminder', id })
-    }).catch(err => console.error("Calendar sync error:", err));
+    auth.currentUser?.getIdToken().then(token => {
+      fetch('/api/calendar/sync', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ type: 'reminder', id })
+      }).catch(err => console.error("Calendar sync error:", err));
+    });
   }
 };
 
@@ -92,11 +102,16 @@ export const addGig = async (gigData) => {
     ...gigData,
     createdAt: new Date().toISOString()
   });
-  fetch('/api/calendar/sync', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: 'gig', id: docRef.id })
-  }).catch(err => console.error("Calendar sync error:", err));
+  auth.currentUser?.getIdToken().then(token => {
+    fetch('/api/calendar/sync', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ type: 'gig', id: docRef.id })
+    }).catch(err => console.error("Calendar sync error:", err));
+  });
   return docRef;
 };
 
@@ -113,11 +128,16 @@ export const deleteGig = async (id) => {
     if (docSnap.exists()) {
       const gig = docSnap.data();
       if (gig.calendarEventId) {
-        fetch('/api/calendar/sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type: 'gig', action: 'delete', calendarEventId: gig.calendarEventId })
-        }).catch(err => console.error("Calendar delete error:", err));
+        auth.currentUser?.getIdToken().then(token => {
+          fetch('/api/calendar/sync', {
+            method: 'POST',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ type: 'gig', action: 'delete', calendarEventId: gig.calendarEventId })
+          }).catch(err => console.error("Calendar delete error:", err));
+        });
       }
     }
   } catch (e) {
@@ -130,11 +150,16 @@ export const deleteGig = async (id) => {
 export const updateGig = async (id, data) => {
   const docRef = doc(db, 'gigs', id);
   await updateDoc(docRef, data);
-  fetch('/api/calendar/sync', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ type: 'gig', id })
-  }).catch(err => console.error("Calendar sync error:", err));
+  auth.currentUser?.getIdToken().then(token => {
+    fetch('/api/calendar/sync', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ type: 'gig', id })
+    }).catch(err => console.error("Calendar sync error:", err));
+  });
 };
 
 // INVOICES (Facturació)
@@ -234,8 +259,14 @@ export const getNextInvoiceNumber = async (issuerPrefix, tipoFactura = 'F1') => 
   const year = new Date().getFullYear().toString();
   const isRectificativa = tipoFactura.startsWith('R');
   
-  // Obtenim totes les factures en memòria per evitar la necessitat de crear índexs compostos a Firebase
-  const snapshot = await getDocs(collection(db, 'invoices'));
+  // Optimització de rendiment: en lloc de descarregar totes les factures històriques a memòria,
+  // només demanem les factures de l'any actual mitjançant una consulta de rang de dates (no requereix indexs compostos).
+  const q = query(
+    collection(db, 'invoices'),
+    where('date', '>=', `${year}-01-01`),
+    where('date', '<=', `${year}-12-31`)
+  );
+  const snapshot = await getDocs(q);
   const invoices = snapshot.docs.map(doc => doc.data());
   
   // Filtrem per emissor i format de l'any actual (començant per "R[1-5]{year}" o "{year}")
@@ -325,7 +356,15 @@ export const deleteBudget = async (id) => {
 
 export const getNextBudgetNumber = async (issuerPrefix) => {
   const year = new Date().getFullYear().toString();
-  const snapshot = await getDocs(collection(db, 'budgets'));
+  
+  // Optimització de rendiment: en lloc de descarregar tots els pressupostos a memòria,
+  // només demanem els de l'any actual mitjançant una consulta de rang de dates.
+  const q = query(
+    collection(db, 'budgets'),
+    where('date', '>=', `${year}-01-01`),
+    where('date', '<=', `${year}-12-31`)
+  );
+  const snapshot = await getDocs(q);
   const budgets = snapshot.docs.map(doc => doc.data());
   
   // Format: PR-issuerId-YYYY-SEQ (ex: PR-JB-2026-001)

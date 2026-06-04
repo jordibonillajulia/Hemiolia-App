@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
+import { verifySessionOrToken } from '@/lib/serverAuth';
 
 export async function POST(request) {
   try {
+    // Verify authorization
+    const session = await verifySessionOrToken(request, ['admin', 'crm']);
+    if (!session) {
+      return NextResponse.json({ error: 'No autoritzat' }, { status: 401 });
+    }
+
     const { userPrompt, contacts } = await request.json();
     if (!userPrompt) {
       return NextResponse.json({ error: 'El prompt és obligatori.' }, { status: 400 });
