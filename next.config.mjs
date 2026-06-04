@@ -3,6 +3,7 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  output: 'standalone',
   /* config options here */
   experimental: {
     // Note: in older or different configurations, allowedDevOrigins might be at top level or nested.
