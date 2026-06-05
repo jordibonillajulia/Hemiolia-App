@@ -113,6 +113,7 @@ export default function RoadSheetPage() {
   const [editingGigId, setEditingGigId] = useState(null);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [searchYear, setSearchYear] = useState('');
+  const [viewedGig, setViewedGig] = useState(null);
 
   // Form state
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -442,6 +443,17 @@ export default function RoadSheetPage() {
                       </div>
                       
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <button 
+                          onClick={() => setViewedGig(gig)}
+                          className="btn btn-glass"
+                          style={{ padding: '0.4rem', border: 'none', background: 'transparent', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                          title="Visualitzar fitxa del bolo"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                        </button>
                         {(!isUpcoming || (gigStatus !== 'Pendent' && gigStatus !== 'No remunerat')) && (() => {
                           const bgColor = statusColors[gigStatus] || 'rgba(200, 200, 200, 0.2)';
                           const textColor = statusTextColors[gigStatus] || '#999';
@@ -544,6 +556,146 @@ export default function RoadSheetPage() {
               );
             });
           })()}
+        </div>
+      )}
+
+      {/* DETAILED VIEW GIG MODAL */}
+      {viewedGig && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(0,0,0,0.75)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          backdropFilter: 'blur(5px)'
+        }} className="no-print">
+          <div className="glass-panel animate-fade-in-up" style={{
+            width: '90%',
+            maxWidth: '600px',
+            padding: '2rem',
+            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
+            border: '1px solid var(--color-accent)',
+            maxHeight: '90vh',
+            overflowY: 'auto'
+          }}>
+            <h3 style={{ color: 'var(--color-accent)', marginTop: 0, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              👁️ Fitxa del Bolo
+            </h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '2rem' }}>
+              <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Títol / Espectacle</span>
+                <strong style={{ fontSize: '1.2rem', color: 'var(--color-primary)' }}>{viewedGig.title}</strong>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Data</span>
+                  <span>{viewedGig.date === 'a determinar' ? 'a determinar' : formatDateDDMMYYYY(viewedGig.date)}</span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Hora</span>
+                  <span>{viewedGig.showTime ? `${viewedGig.showTime} h` : '-'}</span>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Municipi</span>
+                  <span>{viewedGig.municipality || '-'}</span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Lloc (Teatre/Sala)</span>
+                  <span>{viewedGig.locationName || '-'}</span>
+                </div>
+              </div>
+
+              {viewedGig.address && (
+                <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Adreça completa</span>
+                  <span>{viewedGig.address}</span>
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <a 
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(viewedGig.locationName + ' ' + viewedGig.address + ' ' + viewedGig.municipality)}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="btn btn-glass" 
+                      style={{ padding: '0.3rem 0.5rem', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', textDecoration: 'none' }}
+                    >
+                      📍 Obrir a Google Maps
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Persona de contacte</span>
+                  <span>{viewedGig.contactPerson || '-'}</span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Telèfon de contacte</span>
+                  <span>
+                    {viewedGig.contactPhone || '-'}
+                    {viewedGig.contactPhone && (
+                      <span style={{ marginLeft: '0.5rem' }}>
+                        <a href={`tel:${viewedGig.contactPhone.replace(/\s+/g, '')}`} className="btn btn-glass" style={{ padding: '0.2rem 0.4rem', fontSize: '0.75rem', textDecoration: 'none' }}>📞 Trucar</a>
+                      </span>
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              {viewedGig.scheduleDetails && (
+                <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Horaris / Notes logistics</span>
+                  <div style={{ whiteSpace: 'pre-line', marginTop: '0.5rem', backgroundColor: 'var(--color-background-soft)', padding: '1rem', borderRadius: 'var(--radius-md)', fontSize: '0.9rem' }}>
+                    {viewedGig.scheduleDetails}
+                  </div>
+                </div>
+              )}
+
+              <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Estat del bolo</span>
+                <span style={{
+                  display: 'inline-block',
+                  marginTop: '0.3rem',
+                  fontSize: '0.85rem',
+                  padding: '0.2rem 0.6rem',
+                  borderRadius: '4px',
+                  fontWeight: 'bold',
+                  backgroundColor: viewedGig.status === 'Pendent' ? 'rgba(255, 165, 0, 0.2)' :
+                                   viewedGig.status === 'Facturat' ? 'rgba(52, 152, 219, 0.2)' :
+                                   viewedGig.status === 'Cobrat' ? 'rgba(46, 204, 113, 0.2)' :
+                                   'rgba(149, 165, 166, 0.2)',
+                  color: viewedGig.status === 'Pendent' ? '#ffa500' :
+                         viewedGig.status === 'Facturat' ? '#3498db' :
+                         viewedGig.status === 'Cobrat' ? '#2ecc71' :
+                         '#95a5a6'
+                }}>
+                  {viewedGig.status === 'Pendent' ? '⏳ Pendent' :
+                   viewedGig.status === 'Facturat' ? '🧾 Facturat' :
+                   viewedGig.status === 'Cobrat' ? '💰 Cobrat' :
+                   '🆓 ' + (viewedGig.status || 'Pendent')}
+                </span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+              <button 
+                onClick={() => setViewedGig(null)}
+                className="btn btn-primary"
+                style={{ padding: '0.5rem 1.5rem' }}
+              >
+                Tancar
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
