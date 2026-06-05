@@ -587,6 +587,9 @@ export default function LedgersPage() {
   const handleDownloadFile = async (url) => {
     try {
       const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP status ${response.status}`);
+      }
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -607,8 +610,7 @@ export default function LedgersPage() {
       URL.revokeObjectURL(blobUrl);
     } catch (err) {
       console.error("Error downloading file:", err);
-      // Fallback: open in new tab
-      window.open(url, '_blank');
+      alert("No s'ha pogut descarregar el document. És possible que el fitxer hagi estat eliminat del servidor de Firebase Storage.");
     }
   };
 
@@ -616,6 +618,9 @@ export default function LedgersPage() {
   const handlePrintFile = async (url) => {
     try {
       const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP status ${response.status}`);
+      }
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);
       const iframe = document.createElement('iframe');
@@ -632,8 +637,7 @@ export default function LedgersPage() {
       };
     } catch (err) {
       console.error("Error printing file:", err);
-      // Fallback: open in new tab
-      window.open(url, '_blank');
+      alert("No s'ha pogut imprimir el document. És possible que el fitxer hagi estat eliminat del servidor de Firebase Storage.");
     }
   };
 
@@ -1427,6 +1431,10 @@ export default function LedgersPage() {
                 />
               )}
             </div>
+
+            <p style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', margin: 0, textAlign: 'center' }}>
+              ℹ️ Si visualitzes un error <strong>403 (Permission denied)</strong> o el document no es carrega, vol dir que el fitxer original ja no existeix o s&apos;ha esborrat del servidor de Firebase Storage.
+            </p>
           </div>
         </div>
       )}
