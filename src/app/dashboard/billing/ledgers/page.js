@@ -637,6 +637,29 @@ export default function LedgersPage() {
     }
   };
 
+  // View invoice helper (resolves local filename to storage URL if necessary)
+  const handleViewInvoice = async (item) => {
+    if (!item.scannedFile) return;
+    
+    if (item.scannedFile.startsWith('http') || item.scannedFile.includes('://')) {
+      setPreviewFileUrl(item.scannedFile);
+    } else {
+      // It's a local filename, resolve it from Firebase Storage
+      setSyncStatus('Obtenint enllaç segur de la factura...');
+      try {
+        const itemPeriod = item.period || getQuarterFromDate(item.dateExp || item.dateReceipt);
+        const fileRef = ref(storage, `expenses/${item.owner}/${item.year}-${itemPeriod}/${item.scannedFile}`);
+        const downloadUrl = await getDownloadURL(fileRef);
+        setPreviewFileUrl(downloadUrl);
+        setSyncStatus('');
+      } catch (err) {
+        console.error("Error resolving storage file URL:", err);
+        setSyncStatus("Error: No s'ha pogut trobar el fitxer al servidor.");
+        setTimeout(() => setSyncStatus(''), 5000);
+      }
+    }
+  };
+
   if (loading || !user) return <div className="container mt-xl text-center">Carregant...</div>;
 
   return (
@@ -1265,7 +1288,7 @@ export default function LedgersPage() {
                 </div>
                 {viewedItem.scannedFile && (
                   <button
-                    onClick={() => setPreviewFileUrl(viewedItem.scannedFile)}
+                    onClick={() => handleViewInvoice(viewedItem)}
                     className="btn btn-glass"
                     style={{ 
                       padding: '0.4rem 0.8rem', 
@@ -1331,7 +1354,24 @@ export default function LedgersPage() {
               <h3 style={{ margin: 0, color: 'var(--color-accent)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 📄 Vista Prèvia de la Factura
               </h3>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <a 
+                  href={previewFileUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="btn btn-glass"
+                  style={{ 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    gap: '0.4rem', 
+                    padding: '0.4rem 0.8rem', 
+                    fontSize: '0.85rem',
+                    color: 'var(--color-text-primary)',
+                    textDecoration: 'none'
+                  }}
+                >
+                  🔗 Obrir en pestanya nova
+                </a>
                 <button 
                   onClick={() => handlePrintFile(previewFileUrl)}
                   className="btn btn-glass"
@@ -1375,7 +1415,7 @@ export default function LedgersPage() {
             <div style={{ flex: 1, minHeight: '350px', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
               {isPdf(previewFileUrl) ? (
                 <iframe 
-                  src={previewFileUrl} 
+                  src={`https://docs.google.com/viewer?url=${encodeURIComponent(previewFileUrl)}&embedded=true`} 
                   style={{ width: '100%', height: '60vh', border: 'none' }} 
                   title="Vista prèvia factura"
                 />
