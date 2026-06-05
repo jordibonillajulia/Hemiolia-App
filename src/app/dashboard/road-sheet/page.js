@@ -443,17 +443,6 @@ export default function RoadSheetPage() {
                       </div>
                       
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <button 
-                          onClick={() => setViewedGig(gig)}
-                          className="btn btn-glass"
-                          style={{ padding: '0.4rem', border: 'none', background: 'transparent', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                          title="Visualitzar fitxa del bolo"
-                        >
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                          </svg>
-                        </button>
                         {(!isUpcoming || (gigStatus !== 'Pendent' && gigStatus !== 'No remunerat')) && (() => {
                           const bgColor = statusColors[gigStatus] || 'rgba(200, 200, 200, 0.2)';
                           const textColor = statusTextColors[gigStatus] || '#999';
@@ -473,6 +462,17 @@ export default function RoadSheetPage() {
                             </span>
                           );
                         })()}
+                        <button 
+                          onClick={() => setViewedGig(gig)}
+                          className="btn btn-glass"
+                          style={{ padding: '0.4rem', border: 'none', background: 'transparent', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                          title="Visualitzar fitxa del bolo"
+                        >
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                        </button>
                         {isAdmin && (
                           <>
                             <button 
