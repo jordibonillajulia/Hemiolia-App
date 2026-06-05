@@ -58,6 +58,17 @@ const formatDateDDMMYYYY = (dateStr) => {
   return `${day}/${month}/${year}`;
 };
 
+// Helper to check if a URL represents a PDF file (supporting query params and Firebase Storage URLs)
+const isPdf = (url) => {
+  if (!url) return false;
+  try {
+    const decodedUrl = decodeURIComponent(url);
+    return decodedUrl.toLowerCase().split('?')[0].endsWith('.pdf');
+  } catch (e) {
+    return url.toLowerCase().includes('.pdf');
+  }
+};
+
 const GASTO_CONCEPTS = [
   { code: '', label: '-- Sense concepte especial --' },
   { code: 'G01', label: 'G01 - Consums d\'explotació (compres, materials)' },
@@ -126,6 +137,10 @@ export default function LedgersPage() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError] = useState('');
   const [scannedFilePath, setScannedFilePath] = useState('');
+
+  // View/Preview state
+  const [viewedItem, setViewedItem] = useState(null);
+  const [previewFileUrl, setPreviewFileUrl] = useState(null);
 
   const loadData = async () => {
     setIsLoadingData(true);
@@ -566,6 +581,60 @@ export default function LedgersPage() {
     const url = `/api/billing/ledgers/export?owner=${owner}&year=${filterYear}&period=${filterPeriod}&token=${token}`;
     // Trigger download in the current window
     window.location.href = url;
+  };
+
+  // Download file helper
+  const handleDownloadFile = async (url) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      
+      let filename = 'factura.pdf';
+      try {
+        const decodedUrl = decodeURIComponent(url);
+        const pathPart = decodedUrl.split('?')[0];
+        const parts = pathPart.split('/');
+        filename = parts[parts.length - 1] || 'factura';
+      } catch (e) {}
+      
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Error downloading file:", err);
+      // Fallback: open in new tab
+      window.open(url, '_blank');
+    }
+  };
+
+  // Print file helper
+  const handlePrintFile = async (url) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const iframe = document.createElement('iframe');
+      iframe.style.display = 'none';
+      iframe.src = blobUrl;
+      document.body.appendChild(iframe);
+      iframe.onload = () => {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+        setTimeout(() => {
+          document.body.removeChild(iframe);
+          URL.revokeObjectURL(blobUrl);
+        }, 1000);
+      };
+    } catch (err) {
+      console.error("Error printing file:", err);
+      // Fallback: open in new tab
+      window.open(url, '_blank');
+    }
   };
 
   if (loading || !user) return <div className="container mt-xl text-center">Carregant...</div>;
@@ -1039,7 +1108,18 @@ export default function LedgersPage() {
                     {(item.total || 0).toFixed(2)} €
                   </td>
                   <td data-label="Accions" style={{ padding: '0.8rem 1rem', verticalAlign: 'middle', whiteSpace: 'nowrap', textAlign: 'center' }}>
-                    {isAdmin ? (
+                    <button 
+                      onClick={() => setViewedItem(item)} 
+                      className="btn btn-glass" 
+                      style={{ padding: '0.3rem 0.5rem', fontSize: '0.8rem', marginRight: '0.4rem' }}
+                      title="Visualitzar registre complet"
+                    >
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: 'middle' }}>
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </button>
+                    {isAdmin && (
                       <>
                         <button 
                           onClick={() => handleEdit(item)} 
@@ -1058,8 +1138,6 @@ export default function LedgersPage() {
                           🗑️
                         </button>
                       </>
-                    ) : (
-                      <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>Només lectura</span>
                     )}
                   </td>
                 </tr>
@@ -1068,6 +1146,250 @@ export default function LedgersPage() {
           </table>
         )}
       </div>
+
+      {/* DETAILED VIEW MODAL */}
+      {viewedItem && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(0,0,0,0.75)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          backdropFilter: 'blur(5px)'
+        }} className="no-print">
+          <div className="glass-panel animate-fade-in-up" style={{
+            width: '90%',
+            maxWidth: '600px',
+            padding: '2rem',
+            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
+            border: '1px solid var(--color-accent)',
+            maxHeight: '90vh',
+            overflowY: 'auto'
+          }}>
+            <h3 style={{ color: 'var(--color-accent)', marginTop: 0, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              👁️ Detalls del Registre
+            </h3>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '2rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Exercici / Període</span>
+                  <strong>{viewedItem.year} - {viewedItem.period || getQuarterFromDate(viewedItem.dateExp || viewedItem.dateReceipt)}</strong>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Tipus de registre</span>
+                  <strong>{viewedItem.sheet === 'EXPEDIDAS_INGRESOS' ? 'Factura Emesa (Ingressos)' : 'Factura Rebuda (Despeses)'}</strong>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Data Expedició</span>
+                  <span>{formatDateDDMMYYYY(viewedItem.dateExp)}</span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Data Operació</span>
+                  <span>{formatDateDDMMYYYY(viewedItem.dateOp)}</span>
+                </div>
+              </div>
+
+              {viewedItem.sheet !== 'EXPEDIDAS_INGRESOS' && viewedItem.dateReceipt && (
+                <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Data Recepció</span>
+                  <span>{formatDateDDMMYYYY(viewedItem.dateReceipt)}</span>
+                </div>
+              )}
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Nº Factura / Identificació</span>
+                  <span style={{ fontFamily: 'monospace' }}>
+                    {viewedItem.sheet === 'EXPEDIDAS_INGRESOS'
+                      ? formatDisplayInvoiceNumber(viewedItem.invoiceNumber, viewedItem.owner === 'Jordi' ? 'JB' : 'PM')
+                      : viewedItem.invoiceNumber
+                    }
+                  </span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>NIF {viewedItem.sheet === 'EXPEDIDAS_INGRESOS' ? 'Client' : 'Proveïdor'}</span>
+                  <span style={{ fontFamily: 'monospace' }}>{viewedItem.sheet === 'EXPEDIDAS_INGRESOS' ? viewedItem.clientNif : viewedItem.supplierNif}</span>
+                </div>
+              </div>
+
+              <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Nom / Raó Social</span>
+                <span>{viewedItem.sheet === 'EXPEDIDAS_INGRESOS' ? formatClientName(viewedItem.clientName) : formatClientName(viewedItem.supplierName)}</span>
+              </div>
+
+              <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Concepte AEAT</span>
+                <span>
+                  {(() => {
+                    const conceptCode = viewedItem.sheet === 'EXPEDIDAS_INGRESOS' ? viewedItem.incomeConcept : viewedItem.expenseConcept;
+                    const conceptList = viewedItem.sheet === 'EXPEDIDAS_INGRESOS' ? INGRESO_CONCEPTS : GASTO_CONCEPTS;
+                    const found = conceptList.find(c => c.code === conceptCode);
+                    return found ? found.label : (conceptCode || 'Sense especificar');
+                  })()}
+                </span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Base Imposable</span>
+                  <span>{(viewedItem.base || 0).toFixed(2)} €</span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>IVA ({viewedItem.vatPercent ?? 0}%)</span>
+                  <span>{(viewedItem.vatQuota || 0).toFixed(2)} €</span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>IRPF ({viewedItem.irpfPercent ?? 0}%)</span>
+                  <span>{(viewedItem.irpfQuota || 0).toFixed(2)} €</span>
+                </div>
+              </div>
+
+              <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Total Factura</span>
+                <span style={{ fontSize: '1.2rem', fontWeight: 'bold', color: 'var(--color-accent)' }}>{(viewedItem.total || 0).toFixed(2)} €</span>
+              </div>
+
+              <div style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Factura digital (Document)</span>
+                  <span>{viewedItem.scannedFile ? 'Disponible' : 'Sense document adjunt'}</span>
+                </div>
+                {viewedItem.scannedFile && (
+                  <button
+                    onClick={() => setPreviewFileUrl(viewedItem.scannedFile)}
+                    className="btn btn-glass"
+                    style={{ 
+                      padding: '0.4rem 0.8rem', 
+                      fontSize: '0.8rem', 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      gap: '0.4rem', 
+                      color: 'var(--color-accent)', 
+                      borderColor: 'var(--color-accent)' 
+                    }}
+                    title="Visualitzar factura"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ verticalAlign: 'middle' }}>
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                      <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <span>Visualitzar Factura</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+              <button 
+                onClick={() => setViewedItem(null)}
+                className="btn btn-primary"
+                style={{ padding: '0.5rem 1.5rem' }}
+              >
+                Tancar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DOCUMENT PREVIEW MODAL */}
+      {previewFileUrl && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(0,0,0,0.85)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1100,
+          backdropFilter: 'blur(8px)'
+        }} className="no-print">
+          <div className="glass-panel animate-fade-in-up" style={{
+            width: '95%',
+            maxWidth: '900px',
+            padding: '1.5rem',
+            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
+            border: '1px solid var(--color-accent)',
+            maxHeight: '95vh',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1rem'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.8rem' }}>
+              <h3 style={{ margin: 0, color: 'var(--color-accent)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                📄 Vista Prèvia de la Factura
+              </h3>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button 
+                  onClick={() => handlePrintFile(previewFileUrl)}
+                  className="btn btn-glass"
+                  style={{ 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    gap: '0.4rem', 
+                    padding: '0.4rem 0.8rem', 
+                    fontSize: '0.85rem',
+                    color: 'var(--color-accent)',
+                    borderColor: 'var(--color-accent)'
+                  }}
+                >
+                  🖨️ Imprimir
+                </button>
+                <button 
+                  onClick={() => handleDownloadFile(previewFileUrl)}
+                  className="btn btn-glass"
+                  style={{ 
+                    display: 'inline-flex', 
+                    alignItems: 'center', 
+                    gap: '0.4rem', 
+                    padding: '0.4rem 0.8rem', 
+                    fontSize: '0.85rem',
+                    color: 'var(--color-success)',
+                    borderColor: 'var(--color-success)'
+                  }}
+                >
+                  📥 Descarregar
+                </button>
+                <button 
+                  onClick={() => setPreviewFileUrl(null)}
+                  className="btn btn-glass"
+                  style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
+                >
+                  Tancar
+                </button>
+              </div>
+            </div>
+            
+            <div style={{ flex: 1, minHeight: '350px', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              {isPdf(previewFileUrl) ? (
+                <iframe 
+                  src={previewFileUrl} 
+                  style={{ width: '100%', height: '60vh', border: 'none' }} 
+                  title="Vista prèvia factura"
+                />
+              ) : (
+                <img 
+                  src={previewFileUrl} 
+                  style={{ maxWidth: '100%', maxHeight: '60vh', objectFit: 'contain' }} 
+                  alt="Vista prèvia factura"
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -320,8 +320,16 @@ export default function BillingPage() {
                     </span>
                   </td>
                   <td data-label="Accions" style={{ padding: '1rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                    <Link href={`/dashboard/billing/${inv.id}`} className="btn btn-glass" style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', marginRight: '0.5rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-                      Veure &rarr;
+                    <Link 
+                      href={`/dashboard/billing/${inv.id}`} 
+                      className="btn btn-glass" 
+                      style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', marginRight: '0.5rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                      title="Veure factura"
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
                     </Link>
                     {isAdmin && inv.status !== 'Enviada' && (
                       <>
