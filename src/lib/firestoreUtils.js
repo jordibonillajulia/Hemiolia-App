@@ -367,8 +367,8 @@ export const getNextBudgetNumber = async (issuerPrefix) => {
   const snapshot = await getDocs(q);
   const budgets = snapshot.docs.map(doc => doc.data());
   
-  // Format: PR-issuerId-YYYY-SEQ (ex: PR-JB-2026-001)
-  const prefix = `PR-${issuerPrefix}-${year}-`;
+  // Format: PRissuerId-YYYYSEQ (ex: PRJB-2026001)
+  const prefix = `PR${issuerPrefix}-${year}`;
   const matchingBudgets = budgets.filter(b => 
     b.budgetNumber && 
     b.budgetNumber.startsWith(prefix)
