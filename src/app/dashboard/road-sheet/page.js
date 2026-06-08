@@ -478,7 +478,7 @@ export default function RoadSheetPage() {
                             <button 
                               onClick={() => handleEditClick(gig)}
                               className="btn btn-glass"
-                              style={{ padding: '0.4rem', border: 'none', background: 'transparent', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                              style={{ padding: '0.4rem', border: 'none', background: 'transparent', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-accent)' }}
                               title="Editar Bolo"
                             >
                               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

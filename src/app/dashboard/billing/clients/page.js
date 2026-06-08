@@ -346,7 +346,7 @@ export default function BillingClientsPage() {
                       <button 
                         onClick={() => handleEdit(client)} 
                         className="btn btn-glass" 
-                        style={{ padding: '0.3rem 0.5rem', marginRight: '0.35rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                        style={{ padding: '0.3rem 0.5rem', marginRight: '0.35rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-accent)' }}
                         title="Editar client"
                       >
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
