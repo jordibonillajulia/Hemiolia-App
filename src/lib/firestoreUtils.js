@@ -162,6 +162,21 @@ export const updateGig = async (id, data) => {
   });
 };
 
+// Helper to get today's date formatted as YYYY-MM-DD in Europe/Madrid timezone
+export const getSpainTodayStr = () => {
+  const dtf = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Madrid',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  const parts = dtf.formatToParts(new Date());
+  const year = parts.find(p => p.type === 'year').value;
+  const month = parts.find(p => p.type === 'month').value;
+  const day = parts.find(p => p.type === 'day').value;
+  return `${year}-${month}-${day}`;
+};
+
 // INVOICES (Facturació)
 export const addInvoice = async (invoiceData) => {
   // invoiceData includes: date, invoiceNumber, clientName, clientNif, amount, vat (IVA), irpf, status ('Pendent', 'Enviada', 'Error')
@@ -175,14 +190,57 @@ export const addInvoice = async (invoiceData) => {
 export const getInvoices = async () => {
   const q = query(collection(db, 'invoices'), orderBy('date', 'desc'));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  const invoices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  const todayStr = getSpainTodayStr();
+  const currentUser = auth.currentUser;
+  // Admin bypass check (or server side where currentUser is null)
+  const isAdmin = !currentUser || (currentUser.email && (
+    currentUser.email === 'info@hemiolia.cat' || 
+    currentUser.email === 'admin@hemiolia.cat' || 
+    currentUser.email === 'jordibonillajulia@gmail.com'
+  ));
+
+  const updatedInvoices = await Promise.all(invoices.map(async (inv) => {
+    if (inv.status !== 'Enviada' && inv.date !== todayStr && isAdmin) {
+      try {
+        const docRef = doc(db, 'invoices', inv.id);
+        await updateDoc(docRef, { date: todayStr });
+        return { ...inv, date: todayStr };
+      } catch (err) {
+        console.error(`Error updating pending invoice date for ${inv.id}:`, err);
+      }
+    }
+    return inv;
+  }));
+
+  return updatedInvoices;
 };
 
 export const getInvoiceById = async (id) => {
   const docRef = doc(db, 'invoices', id);
   const docSnap = await getDoc(docRef);
   if (docSnap.exists()) {
-    return { id: docSnap.id, ...docSnap.data() };
+    const inv = { id: docSnap.id, ...docSnap.data() };
+    
+    const todayStr = getSpainTodayStr();
+    const currentUser = auth.currentUser;
+    // Admin bypass check (or server side where currentUser is null)
+    const isAdmin = !currentUser || (currentUser.email && (
+      currentUser.email === 'info@hemiolia.cat' || 
+      currentUser.email === 'admin@hemiolia.cat' || 
+      currentUser.email === 'jordibonillajulia@gmail.com'
+    ));
+
+    if (inv.status !== 'Enviada' && inv.date !== todayStr && isAdmin) {
+      try {
+        await updateDoc(docRef, { date: todayStr });
+        inv.date = todayStr;
+      } catch (err) {
+        console.error(`Error updating pending invoice ${id} date:`, err);
+      }
+    }
+    return inv;
   }
   return null;
 };

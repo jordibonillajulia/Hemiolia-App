@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect } from 'react';
 import { useAuth } from '../../../../lib/AuthContext';
-import { addInvoice, getBillingClients, getBillingProducts, getNextInvoiceNumber, getInvoiceById, updateInvoice, formatDisplayInvoiceNumber, getBudgetById, updateBudget, getInvoices, formatClientName } from '../../../../lib/firestoreUtils';
+import { addInvoice, getBillingClients, getBillingProducts, getNextInvoiceNumber, getInvoiceById, updateInvoice, formatDisplayInvoiceNumber, getBudgetById, updateBudget, getInvoices, formatClientName, getSpainTodayStr } from '../../../../lib/firestoreUtils';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
@@ -49,8 +49,8 @@ function NewInvoiceForm() {
 
   // Form State
   const [issuerId, setIssuerId] = useState(ISSUERS[0].id);
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [operationDate, setOperationDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(getSpainTodayStr());
+  const [operationDate, setOperationDate] = useState(getSpainTodayStr());
   const [invoiceNumber, setInvoiceNumber] = useState('');
   
   const [selectedClientId, setSelectedClientId] = useState('');
