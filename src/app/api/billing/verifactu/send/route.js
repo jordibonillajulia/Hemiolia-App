@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import https from 'https';
-import { getInvoiceById, updateInvoiceStatus } from '@/lib/firestoreUtils';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { adminDb } from '@/lib/firebaseAdmin';
+import { getSpainTodayStr } from '@/lib/firestoreUtils';
 import { computeRegistroAlta } from '@kreyo/verifactu-hash-calculator';
 import { verifySessionOrToken } from '@/lib/serverAuth';
 
@@ -99,14 +98,23 @@ export async function POST(request) {
       return NextResponse.json({ error: "Falta el camp 'invoiceId' al cos de la petició." }, { status: 400 });
     }
 
-    // 1. Obtenir la factura a enviar de Firestore
-    const invoice = await getInvoiceById(invoiceId);
-    if (!invoice) {
+    // 1. Obtenir la factura a enviar de Firestore utilitzant l'Admin SDK
+    const invoiceRef = adminDb.collection('invoices').doc(invoiceId);
+    const invoiceDoc = await invoiceRef.get();
+    if (!invoiceDoc.exists) {
       return NextResponse.json({ error: `No s'ha trobat cap factura amb ID ${invoiceId}.` }, { status: 404 });
     }
+    const invoice = { id: invoiceDoc.id, ...invoiceDoc.data() };
 
     if (invoice.status === 'Enviada') {
       return NextResponse.json({ error: "Aquesta factura ja ha estat enviada i validada correctament per l'AEAT." }, { status: 400 });
+    }
+
+    // Actualitzar data a la d'avui si és pendent i diferent
+    const todayStr = getSpainTodayStr();
+    if (invoice.status !== 'Enviada' && invoice.date !== todayStr) {
+      await invoiceRef.update({ date: todayStr });
+      invoice.date = todayStr;
     }
 
     // 2. Determinar emissor i configurar certificat digital
@@ -150,8 +158,8 @@ export async function POST(request) {
       }, { status: 500 });
     }
 
-    // 3. Obtenir la darrera factura enviada per al mateix emissor (Encadenament)
-    const snapshot = await getDocs(collection(db, 'invoices'));
+    // 3. Obtenir la darrera factura enviada per al mateix emissor (Encadenament) utilitzant l'Admin SDK
+    const snapshot = await adminDb.collection('invoices').get();
     const allInvoices = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     const targetEnv = isProduction ? 'production' : 'test';
@@ -391,8 +399,8 @@ export async function POST(request) {
       const idPeticionMatch = responseBody.match(/<IdPeticion>([^<]+)<\/IdPeticion>/i) || responseBody.match(/<[^:]+:IdPeticion>([^<]+)<\/[^:]+:IdPeticion>/i);
       const verifactuId = csvMatch ? csvMatch[1].trim() : (idPeticionMatch ? idPeticionMatch[1].trim() : `VF-${Date.now()}`);
 
-      // 9. Actualitzar factura a Firestore
-      await updateInvoiceStatus(invoiceId, {
+      // 9. Actualitzar factura a Firestore utilitzant l'Admin SDK
+      await invoiceRef.update({
         status: 'Enviada',
         verifactuId: verifactuId,
         sentAt: new Date().toISOString(),
@@ -417,8 +425,8 @@ export async function POST(request) {
 
       console.error(`[Verifactu] Error de l'AEAT: ${errorCode} - ${errorDesc}`);
       
-      // Desar l'estat d'error a Firestore sense bloquejar
-      await updateInvoiceStatus(invoiceId, {
+      // Desar l'estat d'error a Firestore utilitzant l'Admin SDK
+      await invoiceRef.update({
         status: 'Error',
         lastError: `${errorCode}: ${errorDesc}`,
         lastAttemptAt: new Date().toISOString()

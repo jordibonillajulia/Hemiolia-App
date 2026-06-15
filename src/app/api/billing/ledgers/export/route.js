@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import ExcelJS from 'exceljs';
-import { db } from '@/lib/firebase';
-import { collection, getDocs } from 'firebase/firestore';
+import { adminDb } from '@/lib/firebaseAdmin';
 import { formatClientName } from '@/lib/firestoreUtils';
 import { verifySessionOrToken } from '@/lib/serverAuth';
 
@@ -82,10 +81,10 @@ export async function GET(request) {
   console.log(`Excel Export API called. Owner: ${owner}, Year: ${filterYear}, Period: ${filterPeriod}`);
 
   try {
-    // 1. Fetch data from Firestore
+    // 1. Fetch data from Firestore using Admin SDK
     const [issuedSnapshot, receivedSnapshot] = await Promise.all([
-      getDocs(collection(db, 'ledgers_issued')),
-      getDocs(collection(db, 'ledgers_received'))
+      adminDb.collection('ledgers_issued').get(),
+      adminDb.collection('ledgers_received').get()
     ]);
 
     const issued = issuedSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
