@@ -631,21 +631,21 @@ export default function InvoiceDetailPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ background: '#ffffff', borderBottom: '1px solid #0f172a' }}>
-                  <th style={{ padding: '0.4rem 0.5rem', textAlign: 'right', fontSize: '0.75rem', fontWeight: 'bold', color: '#0f172a', borderBottom: '1px solid #0f172a' }}>Base imposable</th>
+                  <th style={{ padding: '0.4rem 0.5rem', textAlign: 'right', fontSize: '0.75rem', fontWeight: 'bold', color: '#0f172a', borderBottom: '1px solid #0f172a', whiteSpace: 'nowrap' }}>Base imposable</th>
                   <th style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontSize: '0.75rem', fontWeight: 'bold', color: '#0f172a', borderBottom: '1px solid #0f172a' }}>Tipus impositiu</th>
-                  <th style={{ padding: '0.4rem 0.5rem', textAlign: 'right', fontSize: '0.75rem', fontWeight: 'bold', color: '#0f172a', borderBottom: '1px solid #0f172a' }}>Quota Repercutida</th>
+                  <th style={{ padding: '0.4rem 0.5rem', textAlign: 'right', fontSize: '0.75rem', fontWeight: 'bold', color: '#0f172a', borderBottom: '1px solid #0f172a', whiteSpace: 'nowrap' }}>Quota Repercutida</th>
                 </tr>
               </thead>
               <tbody>
                 {taxLines.map((tLine, idx) => (
                   <tr key={idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
-                    <td style={{ padding: '0.45rem 0.5rem', textAlign: 'right', fontSize: '0.8rem', color: '#334155' }}>
+                    <td style={{ padding: '0.45rem 0.5rem', textAlign: 'right', fontSize: '0.8rem', color: '#334155', whiteSpace: 'nowrap' }}>
                       {formatCurrency(tLine.base)}
                     </td>
                     <td style={{ padding: '0.45rem 0.5rem', textAlign: 'center', fontSize: '0.8rem', color: '#334155' }}>
                       {tLine.type}
                     </td>
-                    <td style={{ padding: '0.45rem 0.5rem', textAlign: 'right', fontSize: '0.8rem', color: '#334155' }}>
+                    <td style={{ padding: '0.45rem 0.5rem', textAlign: 'right', fontSize: '0.8rem', color: '#334155', whiteSpace: 'nowrap' }}>
                       {formatCurrency(tLine.cuota)}
                     </td>
                   </tr>
