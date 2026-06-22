@@ -234,7 +234,7 @@ export default function BudgetsPage() {
                 <tr key={b.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <td data-label="Data" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatDateDDMMYYYY(b.date)}</td>
                   <td data-label="Nº Pressupost" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{b.budgetNumber}</td>
-                  <td data-label="Client" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
+                  <td data-label="Client" style={{ padding: '1rem', whiteSpace: 'normal', maxWidth: '300px' }}>
                     <span className="text-right-mobile">
                       {formatClientName(b.clientName)}
                     </span>

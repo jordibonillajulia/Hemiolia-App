@@ -301,7 +301,7 @@ export default function BillingPage() {
                 <tr key={inv.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                   <td data-label="Data d'Emissió" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatDateDDMMYYYY(inv.date)}</td>
                   <td data-label="Nº Factura" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatDisplayInvoiceNumber(inv.invoiceNumber, inv.issuerId)}</td>
-                  <td data-label="Client" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>
+                  <td data-label="Client" style={{ padding: '1rem', whiteSpace: 'normal', maxWidth: '300px' }}>
                     <span className="text-right-mobile">
                       {formatClientName(inv.clientName)}
                     </span>
