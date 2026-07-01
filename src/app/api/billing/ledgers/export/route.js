@@ -45,6 +45,23 @@ const parseNifAndCountry = (nif, defaultCountryCode) => {
   return { nif: cleanNif, country, isSpain: isSpainNif };
 };
 
+const copyRowStyles = (sheet, sourceRowNum, targetRowNum, maxCols) => {
+  const sourceRow = sheet.getRow(sourceRowNum);
+  const targetRow = sheet.getRow(targetRowNum);
+  
+  if (sourceRow.height) {
+    targetRow.height = sourceRow.height;
+  }
+  
+  for (let c = 1; c <= maxCols; c++) {
+    const sourceCell = sourceRow.getCell(c);
+    const targetCell = targetRow.getCell(c);
+    if (sourceCell.style) {
+      targetCell.style = { ...sourceCell.style };
+    }
+  }
+};
+
 const getQuarterFromDate = (dateStr) => {
   if (!dateStr) return '1T';
   const month = new Date(dateStr).getMonth() + 1;
@@ -187,6 +204,10 @@ export async function GET(request) {
         const clientIsSpain = parsed.isSpain;
         const clientNifClean = parsed.nif;
 
+        if (rowIdx > 10) {
+          copyRowStyles(sheetIssued, 10, rowIdx, 36);
+        }
+
         sheetIssued.getCell(`A${rowIdx}`).value = item.year;
         sheetIssued.getCell(`B${rowIdx}`).value = item.period || getQuarterFromDate(item.dateExp);
         sheetIssued.getCell(`C${rowIdx}`).value = item.activityCode || 'A';
@@ -281,6 +302,10 @@ export async function GET(request) {
         const supplierCountry = parsed.country;
         const supplierIsSpain = parsed.isSpain;
         const supplierNifClean = parsed.nif;
+
+        if (rowIdxRec > 10) {
+          copyRowStyles(sheetReceived, 10, rowIdxRec, 42);
+        }
 
         sheetReceived.getCell(`A${rowIdxRec}`).value = item.year;
         sheetReceived.getCell(`B${rowIdxRec}`).value = item.period || getQuarterFromDate(item.dateExp || item.dateReceipt);
