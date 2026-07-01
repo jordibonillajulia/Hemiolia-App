@@ -25,6 +25,26 @@ const isSpain = (countryCode) => {
   return code === 'ES' || code === 'ESP' || code === 'ESPANYA' || code === 'ESPAÑA' || code === 'SPAIN';
 };
 
+const parseNifAndCountry = (nif, defaultCountryCode) => {
+  let cleanNif = String(nif || '').toUpperCase().trim();
+  let country = defaultCountryCode || 'ES';
+  let isSpainNif = isSpain(country);
+
+  if (cleanNif.length >= 9 && /^[A-Z]{2}[A-Z0-9]/.test(cleanNif)) {
+    const prefix = cleanNif.substring(0, 2);
+    if (prefix === 'ES') {
+      cleanNif = cleanNif.substring(2);
+      country = 'ES';
+      isSpainNif = true;
+    } else {
+      country = prefix;
+      isSpainNif = false;
+    }
+  }
+
+  return { nif: cleanNif, country, isSpain: isSpainNif };
+};
+
 const getQuarterFromDate = (dateStr) => {
   if (!dateStr) return '1T';
   const month = new Date(dateStr).getMonth() + 1;
@@ -162,8 +182,10 @@ export async function GET(request) {
 
       let rowIdx = 10;
       for (const item of filteredIssued) {
-        const clientCountry = item.clientCountryCode || 'ES';
-        const clientIsSpain = isSpain(clientCountry);
+        const parsed = parseNifAndCountry(item.clientNif, item.clientCountryCode);
+        const clientCountry = parsed.country;
+        const clientIsSpain = parsed.isSpain;
+        const clientNifClean = parsed.nif;
 
         sheetIssued.getCell(`A${rowIdx}`).value = item.year;
         sheetIssued.getCell(`B${rowIdx}`).value = item.period || getQuarterFromDate(item.dateExp);
@@ -198,7 +220,7 @@ export async function GET(request) {
         sheetIssued.getCell(`N${rowIdx}`).value = clientIsSpain ? null : String(item.clientNifType || '02').padStart(2, '0');
         sheetIssued.getCell(`O${rowIdx}`).value = clientIsSpain ? null : clientCountry;
         
-        sheetIssued.getCell(`P${rowIdx}`).value = String(item.clientNif || '').trim();
+        sheetIssued.getCell(`P${rowIdx}`).value = clientNifClean;
         sheetIssued.getCell(`Q${rowIdx}`).value = formatClientName(item.clientName);
         sheetIssued.getCell(`R${rowIdx}`).value = String(item.operationKey || '01').padStart(2, '0');
         
@@ -255,8 +277,10 @@ export async function GET(request) {
 
       let rowIdxRec = 10;
       for (const item of filteredReceived) {
-        const supplierCountry = item.supplierCountryCode || 'ES';
-        const supplierIsSpain = isSpain(supplierCountry);
+        const parsed = parseNifAndCountry(item.supplierNif, item.supplierCountryCode);
+        const supplierCountry = parsed.country;
+        const supplierIsSpain = parsed.isSpain;
+        const supplierNifClean = parsed.nif;
 
         sheetReceived.getCell(`A${rowIdxRec}`).value = item.year;
         sheetReceived.getCell(`B${rowIdxRec}`).value = item.period || getQuarterFromDate(item.dateExp || item.dateReceipt);
@@ -300,7 +324,7 @@ export async function GET(request) {
         sheetReceived.getCell(`P${rowIdxRec}`).value = supplierIsSpain ? null : String(item.supplierNifType || '02').padStart(2, '0');
         sheetReceived.getCell(`Q${rowIdxRec}`).value = supplierIsSpain ? null : supplierCountry;
         
-        sheetReceived.getCell(`R${rowIdxRec}`).value = String(item.supplierNif || '').trim();
+        sheetReceived.getCell(`R${rowIdxRec}`).value = supplierNifClean;
         sheetReceived.getCell(`S${rowIdxRec}`).value = formatClientName(item.supplierName);
         sheetReceived.getCell(`T${rowIdxRec}`).value = String(item.operationKey || '01').padStart(2, '0');
         
@@ -311,10 +335,11 @@ export async function GET(request) {
         sheetReceived.getCell(`V${rowIdxRec}`).value = (item.isIsp === 'S' || item.isIsp === 'SI' || item.isIsp === true) ? 'SI' : 'NO';
         
         // Deducible periodo posterior (Col W): 'S' or 'N'
-        sheetReceived.getCell(`W${rowIdxRec}`).value = (item.isDeductiblePosterior === 'S' || item.isDeductiblePosterior === 'SI' || item.isDeductiblePosterior === true) ? 'S' : 'N';
+        const isDeductPosterior = (item.isDeductiblePosterior === 'S' || item.isDeductiblePosterior === 'SI' || item.isDeductiblePosterior === true);
+        sheetReceived.getCell(`W${rowIdxRec}`).value = isDeductPosterior ? 'S' : 'N';
         
-        sheetReceived.getCell(`X${rowIdxRec}`).value = item.year;
-        sheetReceived.getCell(`Y${rowIdxRec}`).value = item.period || getQuarterFromDate(item.dateExp || item.dateReceipt);
+        sheetReceived.getCell(`X${rowIdxRec}`).value = isDeductPosterior ? item.year : null;
+        sheetReceived.getCell(`Y${rowIdxRec}`).value = isDeductPosterior ? (item.period || getQuarterFromDate(item.dateExp || item.dateReceipt)) : null;
 
         const cellZ = sheetReceived.getCell(`Z${rowIdxRec}`);
         cellZ.value = item.total;
