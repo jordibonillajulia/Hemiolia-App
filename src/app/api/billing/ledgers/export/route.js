@@ -93,6 +93,14 @@ const updateMetadataHeader = (sheet, owner, filterYear) => {
       }
     }
   }
+
+  // 2. Set skip labels in Column A of rows 1 to 5
+  // Since Column A contains text, the AEAT validator will skip these rows as header/description rows
+  sheet.getCell('A1').value = 'INFO_CABECERA';
+  sheet.getCell('A2').value = 'INFO_EJERCICIO';
+  sheet.getCell('A3').value = 'INFO_NIF';
+  sheet.getCell('A4').value = 'INFO_LIBRO';
+  sheet.getCell('A5').value = 'INFO_CONTRIBUYENTE';
 };
 
 export async function GET(request) {
@@ -348,8 +356,8 @@ export async function GET(request) {
         // Bien de inversión (Col U): 'S' or 'N'
         sheetReceived.getCell(`U${rowIdxRec}`).value = (item.isInvestmentGood === 'S' || item.isInvestmentGood === 'SI' || item.isInvestmentGood === true) ? 'S' : 'N';
         
-        // Inversión Sujeto Pasivo (Col V): 'SI' or 'NO'
-        sheetReceived.getCell(`V${rowIdxRec}`).value = (item.isIsp === 'S' || item.isIsp === 'SI' || item.isIsp === true) ? 'SI' : 'NO';
+        // Inversión Sujeto Pasivo (Col V): 'S' or 'N'
+        sheetReceived.getCell(`V${rowIdxRec}`).value = (item.isIsp === 'S' || item.isIsp === 'SI' || item.isIsp === true) ? 'S' : 'N';
         
         // Deducible periodo posterior (Col W): 'S' or 'N'
         const isDeductPosterior = (item.isDeductiblePosterior === 'S' || item.isDeductiblePosterior === 'SI' || item.isDeductiblePosterior === true);
