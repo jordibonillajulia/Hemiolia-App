@@ -48,6 +48,10 @@ export function generateFacturaeXML(invoice) {
   if (invoice.notes) {
     invoiceDescriptionText += ` Observacions: ${invoice.notes}`;
   }
+  const has10PercentVat = (invoice.lines || []).some(line => parseFloat(line.vatPercent) === 10 && !line.isVatExempt);
+  if (has10PercentVat) {
+    invoiceDescriptionText += " Aplicació del tipus reduït d'IVA del 10% segons l’article 91.U.2.13è de la Llei 37/1992, de 28 de desembre de l'Impost sobre el Valor Afegit.";
+  }
   invoiceDescriptionText = invoiceDescriptionText.substring(0, 2500);
   
   const baseImposable = parseFloat(invoice.totals?.baseImposable || 0);

@@ -288,7 +288,10 @@ export default function BudgetDetailPage() {
     });
   }
 
-  const isLongBudget = (budget.lines || []).length > 3 || (budget.notes || '').length > 60;
+  const has10PercentVat = budget.lines?.some(line => parseFloat(line.vatPercent) === 10 && !line.isVatExempt);
+  const legalNote10 = "Aplicació del tipus reduït d'IVA del 10% segons l’article 91.U.2.13è de la Llei 37/1992, de 28 de desembre de l'Impost sobre el Valor Afegit";
+
+  const isLongBudget = (budget.lines || []).length > 3 || (budget.notes || '').length > 60 || has10PercentVat;
 
   return (
     <div className="container" style={{ paddingTop: 'var(--space-md)', paddingBottom: 'var(--space-xl)' }}>
@@ -489,6 +492,21 @@ export default function BudgetDetailPage() {
               })}
             </tbody>
           </table>
+
+          {has10PercentVat && (
+            <div className="legal-note-vat10" style={{ 
+              fontSize: '0.52rem', 
+              color: '#475569', 
+              marginTop: '0.2rem', 
+              paddingLeft: '0.8rem',
+              fontStyle: 'italic', 
+              lineHeight: '1.3', 
+              fontWeight: 'normal',
+              whiteSpace: 'nowrap'
+            }}>
+              <span className="legal-line-1">{legalNote10}</span>
+            </div>
+          )}
         </div>
 
         {/* CONCEPTE / DESCRIPCIO BOX */}
