@@ -50,7 +50,7 @@ export function generateFacturaeXML(invoice) {
   }
   const has10PercentVat = (invoice.lines || []).some(line => parseFloat(line.vatPercent) === 10 && !line.isVatExempt);
   if (has10PercentVat) {
-    invoiceDescriptionText += " Aplicació del tipus reduït d'IVA del 10% segons l’article 91.U.2.13è de la Llei 37/1992, de 28 de desembre de l'Impost sobre el Valor Afegit.";
+    invoiceDescriptionText += " D'acord amb el que s'especifica l'article 91.U.2.13, de la llei 37-1992 de 28 de desembre de l'IVA (BOE 312, de 29-12-1992), s'aplica el tipus d'IVA reduït a aquesta prestació de serveis.";
   }
   invoiceDescriptionText = invoiceDescriptionText.substring(0, 2500);
   
