@@ -661,16 +661,21 @@ function NewInvoiceForm() {
               </div>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span>Base Imposable:</span> <span>{formatCurrency(totals.baseImposable)}</span>
+                <span>Base imposable:</span> <span>{formatCurrency(totals.baseImposable)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span>Total IVA:</span> <span>{formatCurrency(totals.totalIva)}</span>
+                <span>Quota repercutida:</span> <span>{formatCurrency(totals.totalIva)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: '#ff6b6b' }}>
-                <span>Total IRPF (-{irpfPercent}%):</span> <span>-{formatCurrency(totals.totalIrpf)}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', fontWeight: '500', borderTop: '1px dashed rgba(255,255,255,0.1)', paddingTop: '0.3rem' }}>
+                <span>Total factura:</span> <span>{formatCurrency(totals.baseImposable + totals.totalIva)}</span>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', fontWeight: 'bold', fontSize: '1.4rem', color: 'var(--color-accent)' }}>
-                <span>TOTAL A COBRAR:</span> <span>{formatCurrency(totals.total)}</span>
+              {parseFloat(totals.totalIrpf || 0) > 0 && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: '#ff6b6b' }}>
+                  <span>IRPF ({irpfPercent}%):</span> <span>-{formatCurrency(totals.totalIrpf)}</span>
+                </div>
+              )}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', paddingTop: '1rem', borderTop: '1.5px solid rgba(255,255,255,0.2)', fontWeight: 'bold', fontSize: '1.4rem', color: 'var(--color-accent)' }}>
+                <span>Total per pagar:</span> <span>{formatCurrency(totals.total)}</span>
               </div>
             </div>
           </div>
