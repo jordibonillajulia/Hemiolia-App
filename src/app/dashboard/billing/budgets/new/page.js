@@ -246,6 +246,10 @@ function BudgetForm() {
     }
   };
 
+  const formatCurrency = (val) => {
+    return (parseFloat(val) || 0).toLocaleString('ca-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  };
+
   const totals = calculateTotals();
 
   if (loading || !user) return <div className="container mt-xl text-center">Carregant...</div>;
@@ -450,16 +454,16 @@ function BudgetForm() {
               </div>
               
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span>Base Imposable:</span> <span>{totals.baseImposable.toFixed(2)} €</span>
+                <span>Base Imposable:</span> <span>{formatCurrency(totals.baseImposable)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span>Total IVA:</span> <span>{totals.totalIva.toFixed(2)} €</span>
+                <span>Total IVA:</span> <span>{formatCurrency(totals.totalIva)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', color: '#ff6b6b' }}>
-                <span>Total IRPF (-{irpfPercent}%):</span> <span>-{totals.totalIrpf.toFixed(2)} €</span>
+                <span>Total IRPF (-{irpfPercent}%):</span> <span>-{formatCurrency(totals.totalIrpf)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', fontWeight: 'bold', fontSize: '1.4rem', color: 'var(--color-accent)' }}>
-                <span>TOTAL PRESSUPOST:</span> <span>{totals.total.toFixed(2)} €</span>
+                <span>TOTAL PRESSUPOST:</span> <span>{formatCurrency(totals.total)}</span>
               </div>
             </div>
           </div>

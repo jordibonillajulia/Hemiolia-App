@@ -278,7 +278,7 @@ export default function InvoiceDetailPage() {
 
   // Descripció de la factura amb nota legal del 10% d'IVA si escau
   const has10PercentVat = invoice.lines?.some(line => parseFloat(line.vatPercent) === 10 && !line.isVatExempt);
-  const legalNote10 = "D'acord amb el que s'especifica l'article 91.U.2.13, de la llei 37-1992 de 28 de desembre de l'IVA (BOE 312, de 29-12-1992), s'aplica el tipus d'IVA reduït a aquesta prestació de serveis";
+  const legalNote10 = "D'acord amb el que s'especifica l'article 91.U.2.13, de la llei 37-1992 de 28 de desembre de l'IVA (BOE 312, de 29-12-1992), s'aplica el tipus d'IVA reduït a aquesta prestació de serveis.";
   
   const isLongInvoice = (invoice.lines || []).length > 3 || (invoice.notes || '').length > 60 || invoice.tipoFactura?.startsWith('R') || has10PercentVat;
 
