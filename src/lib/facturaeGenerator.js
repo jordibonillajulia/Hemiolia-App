@@ -54,6 +54,15 @@ export function generateFacturaeXML(invoice) {
   }
   invoiceDescriptionText = invoiceDescriptionText.substring(0, 2500);
   
+  // Extract file/expedient reference if present in invoice object or notes
+  let fileReference = invoice.fileNumber || invoice.expediente || invoice.contractNumber || '';
+  if (!fileReference && invoice.notes) {
+    const match = invoice.notes.match(/(?:CODI\s+D[''’]EXPEDIENT|EXPEDIENT|NÚM\.?\s*EXPEDIENT|EXPEDIENT\s*NÚM\.?)\s*:\s*([A-Za-z0-9\-_]+)/i);
+    if (match) {
+      fileReference = match[1].trim();
+    }
+  }
+
   const baseImposable = parseFloat(invoice.totals?.baseImposable || 0);
   const totalIva = parseFloat(invoice.totals?.totalIva || 0);
   const totalIrpf = parseFloat(invoice.totals?.totalIrpf || 0);
@@ -291,7 +300,7 @@ export function generateFacturaeXML(invoice) {
         <InvoiceCurrencyCode>EUR</InvoiceCurrencyCode>
         <TaxCurrencyCode>EUR</TaxCurrencyCode>
         <LanguageName>ca</LanguageName>
-        <InvoiceDescription>${escapeXml(invoiceDescriptionText)}</InvoiceDescription>
+        <InvoiceDescription>${escapeXml(invoiceDescriptionText)}</InvoiceDescription>${fileReference ? `\n        <FileReference>${escapeXml(fileReference)}</FileReference>\n        <ReceiverContractReference>${escapeXml(fileReference)}</ReceiverContractReference>` : ''}
       </InvoiceIssueData>
 ${taxesXml}${totalIrpf > 0 ? `\n      ${witholdingsXml}` : ''}
       <InvoiceTotals>
