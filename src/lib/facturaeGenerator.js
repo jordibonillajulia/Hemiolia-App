@@ -5,6 +5,11 @@ export function generateFacturaeXML(invoice) {
   const escapeXml = (unsafe) => {
     if (!unsafe) return '';
     return unsafe.toString()
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&apos;/g, "'")
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
