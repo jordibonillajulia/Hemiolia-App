@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../../../lib/AuthContext';
 import { getBillingClients, addBillingClient, updateBillingClient, deleteBillingClient, formatClientName } from '../../../../lib/firestoreUtils';
 import Link from 'next/link';
@@ -12,6 +12,7 @@ export default function BillingClientsPage() {
   const [clients, setClients] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const formRef = useRef(null);
 
   // Form State
   const [type, setType] = useState('Jurídica');
@@ -90,6 +91,13 @@ export default function BillingClientsPage() {
     setDir3UnidadTramitadora(client.dir3UnidadTramitadora || '');
     setEditingId(client.id);
     setIsAdding(true);
+    setTimeout(() => {
+      if (formRef.current) {
+        formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 50);
   };
 
   const handleSubmit = async (e) => {
@@ -187,7 +195,19 @@ export default function BillingClientsPage() {
               </Link>
               <button 
                 className="btn btn-primary" 
-                onClick={() => setIsAdding(!isAdding)}
+                onClick={() => {
+                  const nextAdding = !isAdding;
+                  setIsAdding(nextAdding);
+                  if (nextAdding) {
+                    setTimeout(() => {
+                      if (formRef.current) {
+                        formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      } else {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }
+                    }, 50);
+                  }
+                }}
                 style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.5rem 1rem', fontSize: '0.85rem', height: '38px', fontWeight: '500', boxSizing: 'border-box', lineHeight: 'normal' }}
               >
                 {isAdding ? 'Cancel·lar' : '+ Nou Client'}
@@ -198,7 +218,7 @@ export default function BillingClientsPage() {
       </div>
 
       {isAdding && (
-        <div className="glass-panel animate-fade-in-up" style={{ marginBottom: 'var(--space-lg)' }}>
+        <div ref={formRef} className="glass-panel animate-fade-in-up" style={{ marginBottom: 'var(--space-lg)' }}>
           <form onSubmit={handleSubmit} className="grid-2col-responsive">
             <div className="input-group grid-span-all-desktop" style={{ borderBottom: '1px dashed var(--color-border)', paddingBottom: '1rem', marginBottom: '0.5rem' }}>
               <label style={{ color: 'var(--color-accent)', fontWeight: 'bold' }}>⚡ Autocompletar des de DIR3 (Administracions Públiques)</label>

@@ -1002,7 +1002,10 @@ export default function ContactDetailPage() {
                   {(isAdmin || isCrm) && (
                     <button 
                       className="btn btn-glass" 
-                      onClick={() => setIsEditingContact(true)} 
+                      onClick={() => {
+                        setIsEditingContact(true);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }} 
                       style={{ fontSize: '0.8rem', whiteSpace: 'nowrap' }}
                     >
                       ✏️ Editar Dades
