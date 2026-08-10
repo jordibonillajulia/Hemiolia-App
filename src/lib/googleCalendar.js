@@ -65,6 +65,46 @@ const getFirestoreAdmin = () => {
 };
 
 /**
+ * Helper to parse a local date string (YYYY-MM-DD) and time string (HH:mm)
+ * in a specific time zone (default Europe/Madrid) into a JavaScript Date object (UTC).
+ */
+function parseZonedDateTime(dateStr, timeStr, timeZone = 'Europe/Madrid') {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const [hour, minute] = timeStr.split(':').map(Number);
+
+  const targetUtc = Date.UTC(year, month - 1, day, hour, minute, 0);
+
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+
+  const parts = formatter.formatToParts(new Date(targetUtc));
+  const p = {};
+  parts.forEach(part => { if (part.type !== 'literal') p[part.type] = part.value; });
+
+  const formattedHour = parseInt(p.hour, 10) % 24;
+
+  const formattedAsUtc = Date.UTC(
+    parseInt(p.year, 10),
+    parseInt(p.month, 10) - 1,
+    parseInt(p.day, 10),
+    formattedHour,
+    parseInt(p.minute, 10),
+    parseInt(p.second, 10)
+  );
+
+  const offsetMs = formattedAsUtc - targetUtc;
+  return new Date(targetUtc - offsetMs);
+}
+
+/**
  * Sync a Road-sheet Gig (Bolo) to Google Calendar
  */
 async function syncGig(gigId) {
@@ -121,8 +161,7 @@ async function syncGig(gigId) {
   // Time details
   let start, end;
   if (gig.showTime) {
-    const startStr = `${gig.date}T${gig.showTime}:00`;
-    const startDate = new Date(startStr);
+    const startDate = parseZonedDateTime(gig.date, gig.showTime.trim(), 'Europe/Madrid');
     
     // Add 2 hours duration by default
     const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
