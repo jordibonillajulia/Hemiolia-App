@@ -305,13 +305,30 @@ export default function RoadSheetPage() {
                 />
               </div>
               <div className="input-group">
-                <label>Hora del concert</label>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <label style={{ marginBottom: 0 }}>Hora del concert</label>
+                  <label style={{ fontSize: '0.8rem', fontWeight: 'normal', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', margin: 0, userSelect: 'none' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={showTime === 'a determinar'} 
+                      disabled={date === 'a determinar'}
+                      onChange={e => {
+                        if (e.target.checked) {
+                          setShowTime('a determinar');
+                        } else {
+                          setShowTime('');
+                        }
+                      }} 
+                    />
+                    A determinar
+                  </label>
+                </div>
                 <input 
                   type="time" 
                   className="input-field" 
-                  value={date === 'a determinar' ? '' : showTime} 
+                  value={date === 'a determinar' || showTime === 'a determinar' ? '' : showTime} 
                   onChange={e => setShowTime(e.target.value)} 
-                  disabled={date === 'a determinar'}
+                  disabled={date === 'a determinar' || showTime === 'a determinar'}
                 />
               </div>
             </div>
@@ -505,7 +522,7 @@ export default function RoadSheetPage() {
                     </div>
                     
                     <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', fontWeight: 'bold', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                      <span>📅 {gig.date === 'a determinar' ? 'a determinar' : formatDateDDMMYYYY(gig.date)} {gig.showTime ? `a les ${gig.showTime}` : ''} | 📍 {gig.municipality && gig.locationName ? `${gig.municipality} (${gig.locationName})` : (gig.municipality || gig.locationName)}</span>
+                      <span>📅 {gig.date === 'a determinar' ? 'a determinar' : formatDateDDMMYYYY(gig.date)}{gig.showTime && gig.showTime !== 'a determinar' ? ` a les ${gig.showTime}` : (gig.date !== 'a determinar' ? ' (Hora a determinar)' : '')} | 📍 {gig.municipality && gig.locationName ? `${gig.municipality} (${gig.locationName})` : (gig.municipality || gig.locationName)}</span>
                       {isUpcoming && gig.municipality && (
                         <a 
                           href={`https://www.google.com/search?q=temps+${encodeURIComponent(gig.municipality)}`} 
@@ -608,7 +625,7 @@ export default function RoadSheetPage() {
                 </div>
                 <div>
                   <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Hora</span>
-                  <span>{viewedGig.showTime ? `${viewedGig.showTime} h` : '-'}</span>
+                  <span>{viewedGig.showTime && viewedGig.showTime !== 'a determinar' ? `${viewedGig.showTime} h` : (viewedGig.date !== 'a determinar' ? 'Hora a determinar' : '-')}</span>
                 </div>
               </div>
 

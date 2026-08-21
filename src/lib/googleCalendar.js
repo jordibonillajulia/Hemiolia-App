@@ -105,6 +105,17 @@ function parseZonedDateTime(dateStr, timeStr, timeZone = 'Europe/Madrid') {
 }
 
 /**
+ * Helper to get the next day's date string (YYYY-MM-DD) for Google Calendar all-day event end date (exclusive).
+ */
+function getNextDayStr(dateStr) {
+  if (!dateStr || !dateStr.includes('-')) return dateStr;
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const d = new Date(Date.UTC(year, month - 1, day));
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().split('T')[0];
+}
+
+/**
  * Sync a Road-sheet Gig (Bolo) to Google Calendar
  */
 async function syncGig(gigId) {
@@ -140,7 +151,8 @@ async function syncGig(gigId) {
   }
 
   // Construct Calendar Event fields
-  const title = `${gig.title || ''}${gig.municipality ? ' - ' + gig.municipality : ''}`;
+  const hasTime = gig.showTime && gig.showTime.trim() !== '' && gig.showTime !== 'a determinar' && gig.showTime.includes(':');
+  const title = `${gig.title || ''}${gig.municipality ? ' - ' + gig.municipality : ''}${!hasTime ? ' (Hora a determinar)' : ''}`;
   const location = `${gig.locationName || ''} (${gig.address || ''})`.trim();
   
   let description = `🚐 LOGÍSTICA DE BOLO\n`;
@@ -160,7 +172,7 @@ async function syncGig(gigId) {
 
   // Time details
   let start, end;
-  if (gig.showTime) {
+  if (hasTime) {
     const startDate = parseZonedDateTime(gig.date, gig.showTime.trim(), 'Europe/Madrid');
     
     // Add 2 hours duration by default
@@ -175,12 +187,12 @@ async function syncGig(gigId) {
       timeZone: 'Europe/Madrid'
     };
   } else {
-    // All-day event
+    // All-day event (Google Calendar API v3 requires end date to be exclusive, i.e. next day)
     start = {
       date: gig.date
     };
     end = {
-      date: gig.date
+      date: getNextDayStr(gig.date)
     };
   }
 
@@ -303,7 +315,7 @@ async function syncReminder(contactId) {
     date: contact.nextActionDate
   };
   const end = {
-    date: contact.nextActionDate
+    date: getNextDayStr(contact.nextActionDate)
   };
 
   const eventResource = {
