@@ -539,7 +539,7 @@ export default function RoadSheetPage() {
                     </div>
                     
                     <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', fontWeight: 'bold', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                      <span>📅 {gig.date === 'a determinar' ? 'a determinar' : formatDateDDMMYYYY(gig.date)}{gig.showTime && gig.showTime !== 'a determinar' ? ` a les ${gig.showTime}` : (gig.date !== 'a determinar' ? ' (Hora a determinar)' : '')} | 📍 {gig.municipality && gig.locationName ? `${gig.municipality} (${gig.locationName})` : (gig.municipality || gig.locationName)}</span>
+                      <span>📅 {gig.date === 'a determinar' ? 'a determinar' : formatDateDDMMYYYY(gig.date)}{gig.showTime && gig.showTime !== 'a determinar' ? ` a les ${gig.showTime}` : (gig.showTime === 'a determinar' ? ' (Hora a determinar)' : '')} | 📍 {gig.municipality && gig.locationName ? `${gig.municipality} (${gig.locationName})` : (gig.municipality || gig.locationName)}</span>
                       {isUpcoming && gig.municipality && (
                         <a 
                           href={`https://www.google.com/search?q=temps+${encodeURIComponent(gig.municipality)}`} 
