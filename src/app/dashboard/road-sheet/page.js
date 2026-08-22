@@ -173,7 +173,7 @@ export default function RoadSheetPage() {
   const handleEditClick = (gig) => {
     setEditingGigId(gig.id);
     setDate(gig.date || '');
-    setShowTime(gig.showTime || '');
+    setShowTime(gig.showTime || (gig.date && gig.date !== 'a determinar' ? 'a determinar' : ''));
     setTitle(gig.title || '');
     setLocationName(gig.locationName || '');
     setMunicipality(gig.municipality || '');
@@ -196,7 +196,8 @@ export default function RoadSheetPage() {
   const handleAddGig = async (e) => {
     e.preventDefault();
     try {
-      const rawData = { date, showTime: date === 'a determinar' ? '' : showTime, title, locationName, municipality, address, contactPerson, contactPhone, scheduleDetails, status };
+      const finalShowTime = date === 'a determinar' ? '' : (showTime || 'a determinar');
+      const rawData = { date, showTime: finalShowTime, title, locationName, municipality, address, contactPerson, contactPhone, scheduleDetails, status };
       // Firebase odia els camps 'undefined'. Ens assegurem que tot sigui com a mínim un string buit o s'elimini:
       const gigData = JSON.parse(JSON.stringify(rawData));
       
@@ -305,31 +306,67 @@ export default function RoadSheetPage() {
                 />
               </div>
               <div className="input-group">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <label style={{ marginBottom: 0 }}>Hora del concert</label>
-                  <label style={{ fontSize: '0.8rem', fontWeight: 'normal', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', margin: 0, userSelect: 'none' }}>
-                    <input 
-                      type="checkbox" 
-                      checked={showTime === 'a determinar'} 
-                      disabled={date === 'a determinar'}
-                      onChange={e => {
-                        if (e.target.checked) {
-                          setShowTime('a determinar');
-                        } else {
-                          setShowTime('');
-                        }
-                      }} 
-                    />
-                    A determinar
-                  </label>
+                <label style={{ marginBottom: '0.5rem', display: 'block' }}>Hora del concert</label>
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <button 
+                    type="button" 
+                    className={`btn ${showTime !== 'a determinar' ? 'btn-primary' : 'btn-glass'}`}
+                    style={{ 
+                      padding: '0.4rem 0.8rem', 
+                      fontSize: '0.85rem', 
+                      flex: 1, 
+                      borderColor: showTime !== 'a determinar' ? 'var(--color-primary)' : 'var(--color-border)',
+                      fontWeight: showTime !== 'a determinar' ? 'bold' : 'normal'
+                    }}
+                    disabled={date === 'a determinar'}
+                    onClick={() => {
+                      if (showTime === 'a determinar') setShowTime('');
+                    }}
+                  >
+                    🕒 Especificar hora
+                  </button>
+                  <button 
+                    type="button" 
+                    className={`btn ${showTime === 'a determinar' ? 'btn-primary' : 'btn-glass'}`}
+                    style={{ 
+                      padding: '0.4rem 0.8rem', 
+                      fontSize: '0.85rem', 
+                      flex: 1,
+                      backgroundColor: showTime === 'a determinar' ? 'rgba(255, 183, 3, 0.25)' : 'transparent',
+                      color: showTime === 'a determinar' ? 'var(--color-accent)' : 'var(--color-text-secondary)',
+                      borderColor: showTime === 'a determinar' ? 'var(--color-accent)' : 'var(--color-border)',
+                      fontWeight: showTime === 'a determinar' ? 'bold' : 'normal'
+                    }}
+                    disabled={date === 'a determinar'}
+                    onClick={() => setShowTime('a determinar')}
+                  >
+                    ❓ A determinar
+                  </button>
                 </div>
-                <input 
-                  type="time" 
-                  className="input-field" 
-                  value={date === 'a determinar' || showTime === 'a determinar' ? '' : showTime} 
-                  onChange={e => setShowTime(e.target.value)} 
-                  disabled={date === 'a determinar' || showTime === 'a determinar'}
-                />
+                {showTime === 'a determinar' ? (
+                  <div style={{ 
+                    padding: '0.6rem 0.8rem', 
+                    backgroundColor: 'rgba(255, 183, 3, 0.15)', 
+                    border: '1px solid rgba(255, 183, 3, 0.3)', 
+                    borderRadius: 'var(--radius-md)', 
+                    fontSize: '0.85rem', 
+                    color: 'var(--color-accent)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}>
+                    <span>📆</span>
+                    <span>Hora pendent de confirmar. Apareixerà al calendari com a <strong>esdeveniment de tot el dia</strong>.</span>
+                  </div>
+                ) : (
+                  <input 
+                    type="time" 
+                    className="input-field" 
+                    value={date === 'a determinar' ? '' : showTime} 
+                    onChange={e => setShowTime(e.target.value)} 
+                    disabled={date === 'a determinar'}
+                  />
+                )}
               </div>
             </div>
             <div className="input-group">
