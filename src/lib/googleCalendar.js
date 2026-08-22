@@ -153,7 +153,14 @@ async function syncGig(gigId) {
   // Construct Calendar Event fields
   const hasTime = gig.showTime && gig.showTime.trim() !== '' && gig.showTime !== 'a determinar' && gig.showTime.includes(':');
   const title = `${gig.title || ''}${gig.municipality ? ' - ' + gig.municipality : ''}${gig.showTime === 'a determinar' ? ' (Hora a determinar)' : ''}`;
-  const location = `${gig.locationName || ''} (${gig.address || ''})`.trim();
+  let location = '';
+  if (gig.locationName && gig.address) {
+    location = `${gig.locationName} (${gig.address})`;
+  } else if (gig.locationName) {
+    location = gig.locationName;
+  } else if (gig.address) {
+    location = gig.address;
+  }
   
   let description = `🚐 LOGÍSTICA DE BOLO\n`;
   description += `---------------------------------\n`;
