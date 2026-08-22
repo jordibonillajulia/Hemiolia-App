@@ -650,6 +650,19 @@ export default function RoadSheetPage() {
                 <div>
                   <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Municipi</span>
                   <span>{viewedGig.municipality || '-'}</span>
+                  {viewedGig.municipality && (
+                    <div style={{ marginTop: '0.4rem' }}>
+                      <a 
+                        href={`https://www.google.com/search?q=temps+${encodeURIComponent(viewedGig.municipality)}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="btn btn-glass" 
+                        style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', textDecoration: 'none' }}
+                      >
+                        🌤️ Previsió del temps
+                      </a>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <span style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', display: 'block' }}>Lloc (Teatre/Sala)</span>
