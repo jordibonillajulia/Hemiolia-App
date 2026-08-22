@@ -114,6 +114,7 @@ export default function RoadSheetPage() {
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [searchYear, setSearchYear] = useState('');
   const [viewedGig, setViewedGig] = useState(null);
+  const [justEditedId, setJustEditedId] = useState(null);
 
   // Form state
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -201,14 +202,29 @@ export default function RoadSheetPage() {
       // Firebase odia els camps 'undefined'. Ens assegurem que tot sigui com a mínim un string buit o s'elimini:
       const gigData = JSON.parse(JSON.stringify(rawData));
       
+      let targetId = editingGigId;
       if (editingGigId) {
         await updateGig(editingGigId, gigData);
       } else {
-        await addGig(gigData);
+        const docRef = await addGig(gigData);
+        if (docRef && docRef.id) targetId = docRef.id;
       }
       setIsAdding(false);
       resetForm();
       await loadGigs();
+
+      if (targetId) {
+        setJustEditedId(targetId);
+        setTimeout(() => {
+          const el = document.getElementById(`gig-card-${targetId}`);
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }, 200);
+        setTimeout(() => {
+          setJustEditedId(null);
+        }, 3000);
+      }
     } catch (err) {
       console.error("Error guardant bolo:", err);
       alert("No s'ha pogut guardar el bolo. Revisa que tinguis connexió i que tots els camps siguin correctes.");
@@ -467,7 +483,7 @@ export default function RoadSheetPage() {
                 'Cobrat': '#2ecc71',
                 'No remunerat': '#95a5a6'
               };
-               const isHighlighted = highlightId === gig.id;
+               const isHighlighted = highlightId === gig.id || justEditedId === gig.id;
                return (
                  <div 
                    id={`gig-card-${gig.id}`}
