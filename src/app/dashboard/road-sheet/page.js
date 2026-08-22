@@ -113,6 +113,7 @@ export default function RoadSheetPage() {
   const [editingGigId, setEditingGigId] = useState(null);
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [searchYear, setSearchYear] = useState('');
+  const [searchStatus, setSearchStatus] = useState('');
   const [viewedGig, setViewedGig] = useState(null);
   const [justEditedId, setJustEditedId] = useState(null);
 
@@ -263,6 +264,18 @@ export default function RoadSheetPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          <select 
+            className="input-field" 
+            style={{ flex: '1 1 140px', minWidth: '120px', marginBottom: 0 }}
+            value={searchStatus}
+            onChange={(e) => setSearchStatus(e.target.value)}
+          >
+            <option value="">Tots els estats</option>
+            <option value="Pendent">⏳ Pendent</option>
+            <option value="Facturat">🧾 Facturat</option>
+            <option value="Cobrat">💰 Cobrat</option>
+            <option value="No remunerat">🆓 No remunerat</option>
+          </select>
           {(() => {
             const allYears = Array.from(new Set(gigs.filter(g => g.date).map(g => g.date.split('-')[0]))).sort().reverse();
             return (
@@ -415,11 +428,14 @@ export default function RoadSheetPage() {
             const combinedGigs = [...upcomingGigs, ...pastGigs];
             const filteredGigs = combinedGigs.filter(g => {
               const q = normalizeText(searchQuery);
+              const gigStatus = g.status || 'Pendent';
               const matchesText = normalizeText(g.title || '').includes(q) || 
                                   normalizeText(g.locationName || '').includes(q) ||
-                                  normalizeText(g.municipality || '').includes(q);
+                                  normalizeText(g.municipality || '').includes(q) ||
+                                  normalizeText(gigStatus).includes(q);
               const matchesYear = searchYear === '' || (g.date && g.date.startsWith(searchYear));
-              return matchesText && matchesYear;
+              const matchesStatus = searchStatus === '' || gigStatus === searchStatus;
+              return matchesText && matchesYear && matchesStatus;
             });
             
             if (filteredGigs.length === 0) {
