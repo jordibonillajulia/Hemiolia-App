@@ -628,174 +628,166 @@ export default function RoadSheetPage() {
           backgroundColor: 'rgba(0,0,0,0.75)',
           display: 'flex',
           justifyContent: 'center',
-          alignItems: 'center',
+          alignItems: 'flex-end',
           zIndex: 1000,
           backdropFilter: 'blur(5px)'
         }} className="no-print">
-          <div className="glass-panel animate-fade-in-up" style={{
-            width: '90%',
-            maxWidth: '600px',
-            padding: '2rem',
-            boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
+          <style>{`
+            @media (min-width: 600px) {
+              .gig-modal-sheet {
+                align-self: center !important;
+                border-radius: var(--radius-lg) !important;
+                max-height: 90vh !important;
+                width: 90% !important;
+                max-width: 600px !important;
+              }
+            }
+            .gig-modal-notes {
+              max-height: 80px;
+              overflow-y: auto;
+            }
+            @media (min-height: 700px) {
+              .gig-modal-notes {
+                max-height: 120px;
+              }
+            }
+          `}</style>
+          <div className="glass-panel animate-fade-in-up gig-modal-sheet" style={{
+            width: '100%',
+            padding: '1rem 1rem 0.75rem',
+            boxShadow: '0 -4px 32px 0 rgba(0, 0, 0, 0.5)',
             border: '1px solid var(--color-accent)',
-            maxHeight: '90vh',
-            overflowY: 'auto'
+            borderBottom: 'none',
+            borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
+            maxHeight: '96svh',
+            overflowY: 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.6rem'
           }}>
-            <h3 style={{ color: 'var(--color-accent)', marginTop: 0, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              👁️ Fitxa del Bolo
-            </h3>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', marginBottom: '2rem' }}>
 
-              {/* ESPECTACLE */}
-              <div>
-                <div style={{ fontSize: '0.7rem', fontWeight: '700', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--color-accent)', marginBottom: '0.6rem', opacity: 0.8 }}>Espectacle</div>
-                <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-md)', padding: '0.9rem 1rem', border: '1px solid rgba(255,255,255,0.07)' }}>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '0.2rem' }}>Títol</span>
-                  <strong style={{ fontSize: '1.15rem', color: 'var(--color-primary)' }}>{viewedGig.title}</strong>
-                </div>
-              </div>
-
-              {/* DATA I HORA */}
-              <div>
-                <div style={{ fontSize: '0.7rem', fontWeight: '700', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--color-accent)', marginBottom: '0.6rem', opacity: 0.8 }}>Data i hora</div>
-                <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-md)', padding: '0.9rem 1rem', border: '1px solid rgba(255,255,255,0.07)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '0.2rem' }}>Data</span>
-                    <span style={{ fontWeight: '500' }}>{viewedGig.date === 'a determinar' ? '— a determinar' : formatDateDDMMYYYY(viewedGig.date)}</span>
-                  </div>
-                  <div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '0.2rem' }}>Hora del concert</span>
-                    <span style={{ fontWeight: '500' }}>
-                      {viewedGig.showTime && viewedGig.showTime !== 'a determinar'
-                        ? `${viewedGig.showTime} h`
-                        : viewedGig.showTime === 'a determinar'
-                          ? '— a determinar'
-                          : '—'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* LLOC */}
-              <div>
-                <div style={{ fontSize: '0.7rem', fontWeight: '700', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--color-accent)', marginBottom: '0.6rem', opacity: 0.8 }}>Lloc</div>
-                <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-md)', padding: '0.9rem 1rem', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    <div>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '0.2rem' }}>Municipi</span>
-                      <span style={{ fontWeight: '500' }}>{viewedGig.municipality || '—'}</span>
-                      {viewedGig.municipality && (
-                        <div style={{ marginTop: '0.5rem' }}>
-                          <a
-                            href={`https://www.google.com/search?q=temps+${encodeURIComponent(viewedGig.municipality)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn btn-glass"
-                            style={{ padding: '0.25rem 0.55rem', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', textDecoration: 'none' }}
-                          >
-                            🌤️ Previsió del temps
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '0.2rem' }}>Teatre / Sala</span>
-                      <span style={{ fontWeight: '500' }}>{viewedGig.locationName || '—'}</span>
-                    </div>
-                  </div>
-                  {viewedGig.address && (
-                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '0.7rem' }}>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '0.2rem' }}>Adreça</span>
-                      <span style={{ fontWeight: '500' }}>{viewedGig.address}</span>
-                      <div style={{ marginTop: '0.5rem' }}>
-                        <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((viewedGig.locationName ? viewedGig.locationName + ' ' : '') + viewedGig.address + (viewedGig.municipality ? ' ' + viewedGig.municipality : ''))}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="btn btn-glass"
-                          style={{ padding: '0.25rem 0.55rem', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', textDecoration: 'none' }}
-                        >
-                          📍 Obrir a Google Maps
-                        </a>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* CONTACTE */}
-              <div>
-                <div style={{ fontSize: '0.7rem', fontWeight: '700', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--color-accent)', marginBottom: '0.6rem', opacity: 0.8 }}>Contacte</div>
-                <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-md)', padding: '0.9rem 1rem', border: '1px solid rgba(255,255,255,0.07)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '0.2rem' }}>Persona de contacte</span>
-                    <span style={{ fontWeight: '500' }}>{viewedGig.contactPerson || '—'}</span>
-                  </div>
-                  <div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', display: 'block', marginBottom: '0.2rem' }}>Telèfon</span>
-                    <span style={{ fontWeight: '500' }}>
-                      {viewedGig.contactPhone ? (
-                        <>
-                          {viewedGig.contactPhone}
-                          <span style={{ marginLeft: '0.5rem' }}>
-                            <a href={`tel:${viewedGig.contactPhone.replace(/\s+/g, '')}`} className="btn btn-glass" style={{ padding: '0.2rem 0.4rem', fontSize: '0.75rem', textDecoration: 'none' }}>📞 Trucar</a>
-                          </span>
-                        </>
-                      ) : '—'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* HORARIS I NOTES LOGÍSTIQUES */}
-              {viewedGig.scheduleDetails && (
-                <div>
-                  <div style={{ fontSize: '0.7rem', fontWeight: '700', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--color-accent)', marginBottom: '0.6rem', opacity: 0.8 }}>Horaris / Notes logístiques</div>
-                  <div style={{ whiteSpace: 'pre-line', backgroundColor: 'rgba(255,255,255,0.04)', padding: '1rem', borderRadius: 'var(--radius-md)', fontSize: '0.9rem', border: '1px solid rgba(255,255,255,0.07)', lineHeight: '1.6' }}>
-                    {viewedGig.scheduleDetails}
-                  </div>
-                </div>
-              )}
-
-              {/* ESTAT */}
-              <div>
-                <div style={{ fontSize: '0.7rem', fontWeight: '700', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--color-accent)', marginBottom: '0.6rem', opacity: 0.8 }}>Estat de cobrament</div>
-                <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-md)', padding: '0.9rem 1rem', border: '1px solid rgba(255,255,255,0.07)' }}>
-                  <span style={{
-                    display: 'inline-block',
-                    fontSize: '0.85rem',
-                    padding: '0.3rem 0.8rem',
-                    borderRadius: '4px',
-                    fontWeight: 'bold',
-                    backgroundColor: viewedGig.status === 'Pendent' ? 'rgba(255, 165, 0, 0.2)' :
-                                     viewedGig.status === 'Facturat' ? 'rgba(52, 152, 219, 0.2)' :
-                                     viewedGig.status === 'Cobrat' ? 'rgba(46, 204, 113, 0.2)' :
-                                     'rgba(149, 165, 166, 0.2)',
-                    color: viewedGig.status === 'Pendent' ? '#ffa500' :
-                           viewedGig.status === 'Facturat' ? '#3498db' :
-                           viewedGig.status === 'Cobrat' ? '#2ecc71' :
-                           '#95a5a6'
-                  }}>
-                    {viewedGig.status === 'Pendent' ? '⏳ Pendent' :
-                     viewedGig.status === 'Facturat' ? '🧾 Facturat' :
-                     viewedGig.status === 'Cobrat' ? '💰 Cobrat' :
-                     '🆓 ' + (viewedGig.status || 'Pendent')}
-                  </span>
-                </div>
-              </div>
-
+            {/* HEADER */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
+              <h3 style={{ color: 'var(--color-accent)', margin: 0, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                👁️ Fitxa del Bolo
+              </h3>
+              <button
+                onClick={() => setViewedGig(null)}
+                style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', fontSize: '1.2rem', cursor: 'pointer', padding: '0.2rem 0.4rem', lineHeight: 1 }}
+                title="Tancar"
+              >✕</button>
             </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-              <button 
+            {/* TÍTOL */}
+            <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-md)', padding: '0.6rem 0.8rem', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)', display: 'block', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.15rem' }}>Espectacle</span>
+              <strong style={{ fontSize: '1rem', color: 'var(--color-primary)', lineHeight: 1.2 }}>{viewedGig.title}</strong>
+            </div>
+
+            {/* DATA + HORA + ESTAT (fila compacta) */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-md)', padding: '0.6rem 0.8rem', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)', display: 'block', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.15rem' }}>Data</span>
+                <span style={{ fontWeight: '500', fontSize: '0.85rem' }}>{viewedGig.date === 'a determinar' ? 'A det.' : formatDateDDMMYYYY(viewedGig.date)}</span>
+              </div>
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-md)', padding: '0.6rem 0.8rem', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)', display: 'block', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.15rem' }}>Hora</span>
+                <span style={{ fontWeight: '500', fontSize: '0.85rem' }}>
+                  {viewedGig.showTime && viewedGig.showTime !== 'a determinar'
+                    ? `${viewedGig.showTime}h`
+                    : viewedGig.showTime === 'a determinar' ? 'A det.' : '—'}
+                </span>
+              </div>
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-md)', padding: '0.6rem 0.8rem', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)', display: 'block', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.15rem' }}>Estat</span>
+                <span style={{
+                  fontWeight: 'bold', fontSize: '0.8rem',
+                  color: viewedGig.status === 'Pendent' ? '#ffa500' :
+                         viewedGig.status === 'Facturat' ? '#3498db' :
+                         viewedGig.status === 'Cobrat' ? '#2ecc71' : '#95a5a6'
+                }}>
+                  {viewedGig.status === 'Pendent' ? '⏳ Pend.' :
+                   viewedGig.status === 'Facturat' ? '🧾 Fact.' :
+                   viewedGig.status === 'Cobrat' ? '💰 Cobrat' :
+                   '🆓 ' + (viewedGig.status || 'Pendent')}
+                </span>
+              </div>
+            </div>
+
+            {/* LLOC */}
+            <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-md)', padding: '0.6rem 0.8rem', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Lloc</span>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginTop: '0.4rem' }}>
+                <div>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)', display: 'block' }}>Municipi</span>
+                  <span style={{ fontWeight: '500', fontSize: '0.85rem' }}>{viewedGig.municipality || '—'}</span>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)', display: 'block' }}>Teatre / Sala</span>
+                  <span style={{ fontWeight: '500', fontSize: '0.85rem' }}>{viewedGig.locationName || '—'}</span>
+                </div>
+              </div>
+              {viewedGig.address && (
+                <div style={{ marginTop: '0.4rem', paddingTop: '0.4rem', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+                  <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)', display: 'block' }}>Adreça</span>
+                  <span style={{ fontWeight: '500', fontSize: '0.85rem' }}>{viewedGig.address}</span>
+                </div>
+              )}
+              {/* Botons d'acció del lloc */}
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                {viewedGig.municipality && (
+                  <a href={`https://www.google.com/search?q=temps+${encodeURIComponent(viewedGig.municipality)}`} target="_blank" rel="noopener noreferrer" className="btn btn-glass" style={{ padding: '0.25rem 0.55rem', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', textDecoration: 'none' }}>
+                    🌤️ Previsió del temps
+                  </a>
+                )}
+                {viewedGig.address && (
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((viewedGig.locationName ? viewedGig.locationName + ' ' : '') + viewedGig.address + (viewedGig.municipality ? ' ' + viewedGig.municipality : ''))}`} target="_blank" rel="noopener noreferrer" className="btn btn-glass" style={{ padding: '0.25rem 0.55rem', fontSize: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', textDecoration: 'none' }}>
+                    📍 Google Maps
+                  </a>
+                )}
+              </div>
+            </div>
+
+            {/* CONTACTE */}
+            <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-md)', padding: '0.6rem 0.8rem', border: '1px solid rgba(255,255,255,0.07)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+              <div>
+                <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)', display: 'block', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.15rem' }}>Contacte</span>
+                <span style={{ fontWeight: '500', fontSize: '0.85rem' }}>{viewedGig.contactPerson || '—'}</span>
+              </div>
+              <div>
+                <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)', display: 'block', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.15rem' }}>Telèfon</span>
+                <span style={{ fontWeight: '500', fontSize: '0.85rem' }}>
+                  {viewedGig.contactPhone ? (
+                    <>
+                      {viewedGig.contactPhone}{' '}
+                      <a href={`tel:${viewedGig.contactPhone.replace(/\s+/g, '')}`} className="btn btn-glass" style={{ padding: '0.15rem 0.35rem', fontSize: '0.7rem', textDecoration: 'none' }}>📞</a>
+                    </>
+                  ) : '—'}
+                </span>
+              </div>
+            </div>
+
+            {/* HORARIS / NOTES */}
+            {viewedGig.scheduleDetails && (
+              <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-md)', padding: '0.6rem 0.8rem', border: '1px solid rgba(255,255,255,0.07)' }}>
+                <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)', display: 'block', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.3rem' }}>Horaris / Notes logístiques</span>
+                <div className="gig-modal-notes" style={{ whiteSpace: 'pre-line', fontSize: '0.85rem', lineHeight: '1.5' }}>
+                  {viewedGig.scheduleDetails}
+                </div>
+              </div>
+            )}
+
+            {/* TANCAR */}
+            <div style={{ paddingBottom: '0.5rem' }}>
+              <button
                 onClick={() => setViewedGig(null)}
                 className="btn btn-primary"
-                style={{ padding: '0.5rem 1.5rem' }}
+                style={{ width: '100%', padding: '0.6rem' }}
               >
                 Tancar
               </button>
             </div>
+
           </div>
         </div>
       )}
