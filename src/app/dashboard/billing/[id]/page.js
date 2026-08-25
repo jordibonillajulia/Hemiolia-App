@@ -287,7 +287,7 @@ export default function InvoiceDetailPage() {
       {/* NO-PRINT HEADER */}
       <div className="no-print no-print-header" style={{ marginBottom: 'var(--space-lg)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <Link href="/dashboard/billing" className="btn-back no-print" title="Tornar a Facturació" style={{ marginRight: '1rem' }}>
+          <Link href={`/dashboard/billing?highlight=${invoice.id}`} className="btn-back no-print" title="Tornar a Facturació" style={{ marginRight: '1rem' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="19" y1="12" x2="5" y2="12"></line>
               <polyline points="12 19 5 12 12 5"></polyline>

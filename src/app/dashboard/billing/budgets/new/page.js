@@ -232,12 +232,14 @@ function BudgetForm() {
         totals: calculateTotals()
       };
 
+      let targetId = editId;
       if (editId) {
         await updateBudget(editId, dataToSave);
       } else {
-        await addBudget(dataToSave);
+        const docRef = await addBudget(dataToSave);
+        if (docRef && docRef.id) targetId = docRef.id;
       }
-      router.push('/dashboard/billing/budgets');
+      router.push(targetId ? `/dashboard/billing/budgets?highlight=${targetId}` : '/dashboard/billing/budgets');
     } catch (err) {
       console.error(err);
       alert('Error en guardar el pressupost.');

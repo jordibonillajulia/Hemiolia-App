@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../../../../lib/AuthContext';
 import { getBudgets, deleteBudget, getBillingClients, formatClientName } from '../../../../lib/firestoreUtils';
 import Link from 'next/link';
@@ -45,6 +46,8 @@ const formatDateDDMMYYYY = (dateStr) => {
 
 export default function BudgetsPage() {
   const { user, loading, isAdmin } = useAuth();
+  const searchParams = useSearchParams();
+  const highlightId = searchParams ? searchParams.get('highlight') : null;
   const [budgets, setBudgets] = useState([]);
   const [clients, setClients] = useState([]);
   
@@ -64,6 +67,17 @@ export default function BudgetsPage() {
       });
     }
   }, [user]);
+
+  useEffect(() => {
+    if (highlightId && budgets.length > 0) {
+      setTimeout(() => {
+        const el = document.getElementById(`budget-row-${highlightId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 300);
+    }
+  }, [highlightId, budgets]);
 
   // Llista única de clients per al filtre desplegable (combinant els desats i els existents als pressupostos)
   const dropdownClients = (() => {
@@ -208,6 +222,14 @@ export default function BudgetsPage() {
         )}
       </div>
 
+      <style>{`
+        .budget-highlight-row {
+          border: 2px solid var(--color-accent) !important;
+          background-color: rgba(212, 175, 55, 0.15) !important;
+          box-shadow: 0 0 25px rgba(255, 183, 3, 0.45) !important;
+        }
+      `}</style>
+
       <div className="glass-panel table-container-responsive" style={{ padding: 0 }}>
         {budgets.length === 0 ? (
           <p style={{ padding: 'var(--space-lg)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
@@ -230,9 +252,21 @@ export default function BudgetsPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredBudgets.map(b => (
-                <tr key={b.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td data-label="Data" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatDateDDMMYYYY(b.date)}</td>
+              {filteredBudgets.map(b => {
+                const isHighlighted = highlightId === b.id;
+                return (
+                  <tr 
+                    id={`budget-row-${b.id}`}
+                    key={b.id} 
+                    className={isHighlighted ? 'budget-highlight-row' : ''}
+                    style={{ 
+                      borderBottom: isHighlighted ? '2px solid var(--color-accent)' : '1px solid rgba(255,255,255,0.05)',
+                      backgroundColor: isHighlighted ? 'rgba(212, 175, 55, 0.15)' : undefined,
+                      boxShadow: isHighlighted ? '0 0 25px rgba(255, 183, 3, 0.45)' : undefined,
+                      transition: 'all 0.3s ease-in-out'
+                    }}
+                  >
+                    <td data-label="Data" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatDateDDMMYYYY(b.date)}</td>
                   <td data-label="Nº Pressupost" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{b.budgetNumber}</td>
                   <td data-label="Client" style={{ padding: '1rem', whiteSpace: 'normal', maxWidth: '300px' }}>
                     <span className="text-right-mobile">

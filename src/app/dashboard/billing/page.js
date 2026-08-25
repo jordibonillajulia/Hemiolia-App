@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../../../lib/AuthContext';
 import { getInvoices, deleteInvoice, formatDisplayInvoiceNumber, getBillingClients, formatClientName } from '../../../lib/firestoreUtils';
 import Link from 'next/link';
@@ -46,6 +47,8 @@ const formatDateDDMMYYYY = (dateStr) => {
 
 export default function BillingPage() {
   const { user, loading, isAdmin } = useAuth();
+  const searchParams = useSearchParams();
+  const highlightId = searchParams ? searchParams.get('highlight') : null;
   const [invoices, setInvoices] = useState([]);
   const [clients, setClients] = useState([]);
   
@@ -64,6 +67,17 @@ export default function BillingPage() {
       });
     }
   }, [user]);
+
+  useEffect(() => {
+    if (highlightId && invoices.length > 0) {
+      setTimeout(() => {
+        const el = document.getElementById(`invoice-row-${highlightId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 300);
+    }
+  }, [highlightId, invoices]);
 
   // Llista única de clients per al filtre desplegable (combinant els desats i els existents a les factures)
   const dropdownClients = (() => {
@@ -275,6 +289,14 @@ export default function BillingPage() {
         </div>
       </div>
 
+      <style>{`
+        .invoice-highlight-row {
+          border: 2px solid var(--color-accent) !important;
+          background-color: rgba(212, 175, 55, 0.15) !important;
+          box-shadow: 0 0 25px rgba(255, 183, 3, 0.45) !important;
+        }
+      `}</style>
+
       <div className="glass-panel table-container-responsive" style={{ padding: 0 }}>
         {invoices.length === 0 ? (
           <p style={{ padding: 'var(--space-lg)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
@@ -297,9 +319,21 @@ export default function BillingPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredInvoices.map(inv => (
-                <tr key={inv.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                  <td data-label="Data d'Emissió" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatDateDDMMYYYY(inv.date)}</td>
+              {filteredInvoices.map(inv => {
+                const isHighlighted = highlightId === inv.id;
+                return (
+                  <tr 
+                    id={`invoice-row-${inv.id}`}
+                    key={inv.id} 
+                    className={isHighlighted ? 'invoice-highlight-row' : ''}
+                    style={{ 
+                      borderBottom: isHighlighted ? '2px solid var(--color-accent)' : '1px solid rgba(255,255,255,0.05)',
+                      backgroundColor: isHighlighted ? 'rgba(212, 175, 55, 0.15)' : undefined,
+                      boxShadow: isHighlighted ? '0 0 25px rgba(255, 183, 3, 0.45)' : undefined,
+                      transition: 'all 0.3s ease-in-out'
+                    }}
+                  >
+                    <td data-label="Data d'Emissió" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatDateDDMMYYYY(inv.date)}</td>
                   <td data-label="Nº Factura" style={{ padding: '1rem', whiteSpace: 'nowrap' }}>{formatDisplayInvoiceNumber(inv.invoiceNumber, inv.issuerId)}</td>
                   <td data-label="Client" style={{ padding: '1rem', whiteSpace: 'normal', maxWidth: '300px' }}>
                     <span className="text-right-mobile">

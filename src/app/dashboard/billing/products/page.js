@@ -1,15 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../../../../lib/AuthContext';
 import { getBillingProducts, addBillingProduct, updateBillingProduct, deleteBillingProduct } from '../../../../lib/firestoreUtils';
 import Link from 'next/link';
 
 export default function BillingProductsPage() {
   const { user, loading, isAdmin } = useAuth();
+  const searchParams = useSearchParams();
+  const highlightId = searchParams ? searchParams.get('highlight') : null;
   const [products, setProducts] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [justEditedId, setJustEditedId] = useState(null);
 
   // Form State
   const [description, setDescription] = useState('');
@@ -26,6 +30,17 @@ export default function BillingProductsPage() {
     if (user) loadProducts();
   }, [user]);
 
+  useEffect(() => {
+    if (highlightId && products.length > 0) {
+      setTimeout(() => {
+        const el = document.getElementById(`product-row-${highlightId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 300);
+    }
+  }, [highlightId, products]);
+
   const resetForm = () => {
     setDescription('');
     setUnitPrice('');
@@ -40,9 +55,9 @@ export default function BillingProductsPage() {
     setUnitPrice(product.unitPrice || '');
     setVatType(product.vatType || '10');
 
-    
     setEditingId(product.id);
     setIsAdding(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSubmit = async (e) => {
@@ -55,13 +70,28 @@ export default function BillingProductsPage() {
       exemptionCause: '',
       exemptionText: ''
     };
+    let targetId = editingId;
     if (editingId) {
       await updateBillingProduct(editingId, data);
     } else {
-      await addBillingProduct(data);
+      const docRef = await addBillingProduct(data);
+      if (docRef && docRef.id) targetId = docRef.id;
     }
     resetForm();
-    loadProducts();
+    await loadProducts();
+
+    if (targetId) {
+      setJustEditedId(targetId);
+      setTimeout(() => {
+        const el = document.getElementById(`product-row-${targetId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 200);
+      setTimeout(() => {
+        setJustEditedId(null);
+      }, 3000);
+    }
   };
 
   const handleDelete = async (id, desc) => {
@@ -122,6 +152,14 @@ export default function BillingProductsPage() {
         </div>
       )}
 
+      <style>{`
+        .product-highlight-row {
+          border: 2px solid var(--color-accent) !important;
+          background-color: rgba(212, 175, 55, 0.15) !important;
+          box-shadow: 0 0 25px rgba(255, 183, 3, 0.45) !important;
+        }
+      `}</style>
+
       <div className="glass-panel table-container-responsive" style={{ padding: 0 }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead style={{ background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid var(--color-border)' }}>
@@ -133,45 +171,58 @@ export default function BillingProductsPage() {
             </tr>
           </thead>
           <tbody>
-            {products.map(p => (
-              <tr key={p.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <td data-label="Descripció" style={{ padding: '1rem' }}>{p.description}</td>
-                <td data-label="Import" style={{ padding: '1rem' }}>{p.unitPrice.toFixed(2)} €</td>
-                <td data-label="IVA" style={{ padding: '1rem' }}>{`${p.vatType}%`}</td>
-                <td data-label="Accions" style={{ padding: '1rem' }}>
-                  {isAdmin ? (
-                    <>
-                      <button 
-                        onClick={() => handleEdit(p)} 
-                        className="btn btn-glass" 
-                        style={{ padding: '0.3rem 0.6rem', marginRight: '0.5rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-accent)' }}
-                        title="Editar espectacle"
-                      >
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
-                          <path d="m15 5 4 4"></path>
-                        </svg>
-                      </button>
-                      <button 
-                        onClick={() => handleDelete(p.id, p.description)} 
-                        className="btn btn-glass" 
-                        style={{ padding: '0.3rem 0.6rem', color: '#ff6b6b', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-                        title="Esborrar espectacle"
-                      >
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="3 6 5 6 21 6"></polyline>
-                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                          <line x1="10" y1="11" x2="10" y2="17"></line>
-                          <line x1="14" y1="11" x2="14" y2="17"></line>
-                        </svg>
-                      </button>
-                    </>
-                  ) : (
-                    <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>Només lectura</span>
-                  )}
-                </td>
-              </tr>
-            ))}
+            {products.map(p => {
+              const isHighlighted = highlightId === p.id || justEditedId === p.id;
+              return (
+                <tr 
+                  id={`product-row-${p.id}`}
+                  key={p.id} 
+                  className={isHighlighted ? 'product-highlight-row' : ''}
+                  style={{ 
+                    borderBottom: isHighlighted ? '2px solid var(--color-accent)' : '1px solid rgba(255,255,255,0.05)',
+                    backgroundColor: isHighlighted ? 'rgba(212, 175, 55, 0.15)' : undefined,
+                    boxShadow: isHighlighted ? '0 0 25px rgba(255, 183, 3, 0.45)' : undefined,
+                    transition: 'all 0.3s ease-in-out'
+                  }}
+                >
+                  <td data-label="Descripció" style={{ padding: '1rem' }}>{p.description}</td>
+                  <td data-label="Import" style={{ padding: '1rem' }}>{p.unitPrice.toFixed(2)} €</td>
+                  <td data-label="IVA" style={{ padding: '1rem' }}>{`${p.vatType}%`}</td>
+                  <td data-label="Accions" style={{ padding: '1rem' }}>
+                    {isAdmin ? (
+                      <>
+                        <button 
+                          onClick={() => handleEdit(p)} 
+                          className="btn btn-glass" 
+                          style={{ padding: '0.3rem 0.6rem', marginRight: '0.5rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-accent)' }}
+                          title="Editar espectacle"
+                        >
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+                            <path d="m15 5 4 4"></path>
+                          </svg>
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(p.id, p.description)} 
+                          className="btn btn-glass" 
+                          style={{ padding: '0.3rem 0.6rem', color: '#ff6b6b', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                          title="Esborrar espectacle"
+                        >
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            <line x1="10" y1="11" x2="10" y2="17"></line>
+                            <line x1="14" y1="11" x2="14" y2="17"></line>
+                          </svg>
+                        </button>
+                      </>
+                    ) : (
+                      <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>Només lectura</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
             {products.length === 0 && (
               <tr><td colSpan="4" style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-text-secondary)' }}>No hi ha productes registrats.</td></tr>
             )}
@@ -181,3 +232,4 @@ export default function BillingProductsPage() {
     </div>
   );
 }
+

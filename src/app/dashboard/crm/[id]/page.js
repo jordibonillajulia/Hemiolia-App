@@ -720,6 +720,7 @@ export default function ContactDetailPage() {
     if (filterReminder) params.set('reminder', '1');
     if (filterPerformed) params.set('performed', '1');
     if (aiParam) params.set('ai', aiParam);
+    if (contactId) params.set('highlight', contactId);
     const qs = params.toString();
     return `/dashboard/crm${qs ? '?' + qs : ''}`;
   };

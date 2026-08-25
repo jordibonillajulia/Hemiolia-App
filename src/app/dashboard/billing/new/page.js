@@ -313,6 +313,7 @@ function NewInvoiceForm() {
 
       const fromBudgetId = searchParams.get('fromBudget');
 
+      let targetId = editId;
       if (editId) {
         const inv = await getInvoiceById(editId);
         if (inv && inv.status === 'Enviada') {
@@ -322,12 +323,13 @@ function NewInvoiceForm() {
         }
         await updateInvoice(editId, dataToSave);
       } else {
-        await addInvoice(dataToSave);
+        const docRef = await addInvoice(dataToSave);
+        if (docRef && docRef.id) targetId = docRef.id;
         if (fromBudgetId) {
           await updateBudget(fromBudgetId, { status: 'Acceptat' });
         }
       }
-      router.push('/dashboard/billing');
+      router.push(targetId ? `/dashboard/billing?highlight=${targetId}` : '/dashboard/billing');
     } catch (err) {
       console.error(err);
       alert('Error en guardar la factura.');

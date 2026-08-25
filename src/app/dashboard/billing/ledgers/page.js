@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../../../../lib/AuthContext';
 import { 
   getInvoices, 
@@ -94,6 +95,9 @@ const INGRESO_CONCEPTS = [
 
 export default function LedgersPage() {
   const { user, loading, isAdmin } = useAuth();
+  const searchParams = useSearchParams();
+  const highlightId = searchParams ? searchParams.get('highlight') : null;
+  const [justEditedId, setJustEditedId] = useState(null);
   
   // Data State
   const [issued, setIssued] = useState([]);
@@ -166,6 +170,17 @@ export default function LedgersPage() {
       loadData();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (highlightId && (issued.length > 0 || received.length > 0)) {
+      setTimeout(() => {
+        const el = document.getElementById(`ledger-row-${highlightId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 300);
+    }
+  }, [highlightId, issued, received]);
 
   // Auto Calculations in Form
   useEffect(() => {
@@ -409,7 +424,7 @@ export default function LedgersPage() {
 
   // Handle Form Submit (Add / Edit)
 
-  const handleSubmit = async (e) => {
+  const handleSaveManual = async (e) => {
     e.preventDefault();
     const dataToSave = {
       owner,
@@ -418,10 +433,10 @@ export default function LedgersPage() {
       dateExp,
       dateOp,
       invoiceNumber,
-      clientNif: nif,
-      clientName: formatClientName(name),
-      supplierNif: nif,
-      supplierName: formatClientName(name),
+      clientNif: type === 'issued' ? nif : null,
+      clientName: type === 'issued' ? formatClientName(name) : null,
+      supplierNif: type === 'received' ? nif : null,
+      supplierName: type === 'received' ? formatClientName(name) : null,
       base: parseFloat(base) || 0,
       vatPercent: parseFloat(vatPercent) || 0,
       vatQuota: parseFloat(vatQuota) || 0,
@@ -436,6 +451,7 @@ export default function LedgersPage() {
       scannedFile: scannedFilePath || null
     };
 
+    let targetId = editingId;
     if (type === 'issued') {
       dataToSave.sheet = "EXPEDIDAS_INGRESOS";
       dataToSave.incomeConcept = concept;
@@ -447,7 +463,8 @@ export default function LedgersPage() {
       if (editingId) {
         await updateLedgerIssued(editingId, dataToSave);
       } else {
-        await addLedgerIssued(dataToSave);
+        const docRef = await addLedgerIssued(dataToSave);
+        if (docRef && docRef.id) targetId = docRef.id;
       }
     } else {
       dataToSave.sheet = "RECIBIDAS_GASTOS";
@@ -463,12 +480,26 @@ export default function LedgersPage() {
       if (editingId) {
         await updateLedgerReceived(editingId, dataToSave);
       } else {
-        await addLedgerReceived(dataToSave);
+        const docRef = await addLedgerReceived(dataToSave);
+        if (docRef && docRef.id) targetId = docRef.id;
       }
     }
 
     resetForm();
-    loadData();
+    await loadData();
+
+    if (targetId) {
+      setJustEditedId(targetId);
+      setTimeout(() => {
+        const el = document.getElementById(`ledger-row-${targetId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 200);
+      setTimeout(() => {
+        setJustEditedId(null);
+      }, 3000);
+    }
   };
 
   const handleEdit = (item) => {
@@ -490,6 +521,7 @@ export default function LedgersPage() {
     setConcept(type === 'issued' ? (item.incomeConcept || 'I08') : (item.expenseConcept || ''));
     setScannedFilePath(item.scannedFile || '');
     setIsFormOpen(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleDelete = async (item) => {
@@ -1055,6 +1087,14 @@ export default function LedgersPage() {
         </div>
       </div>
 
+      <style>{`
+        .ledger-highlight-row {
+          border: 2px solid var(--color-accent) !important;
+          background-color: rgba(212, 175, 55, 0.15) !important;
+          box-shadow: 0 0 25px rgba(255, 183, 3, 0.45) !important;
+        }
+      `}</style>
+
       {/* LEDGER DATA TABLE */}
       <div className="glass-panel table-container-responsive" style={{ padding: 0 }}>
         {isLoadingData ? (
@@ -1079,8 +1119,20 @@ export default function LedgersPage() {
               </tr>
             </thead>
             <tbody>
-              {currentList.map(item => (
-                <tr key={item.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+              {currentList.map(item => {
+                const isHighlighted = highlightId === item.id || justEditedId === item.id;
+                return (
+                  <tr 
+                    id={`ledger-row-${item.id}`}
+                    key={item.id} 
+                    className={isHighlighted ? 'ledger-highlight-row' : ''}
+                    style={{ 
+                      borderBottom: isHighlighted ? '2px solid var(--color-accent)' : '1px solid rgba(255,255,255,0.05)',
+                      backgroundColor: isHighlighted ? 'rgba(212, 175, 55, 0.15)' : undefined,
+                      boxShadow: isHighlighted ? '0 0 25px rgba(255, 183, 3, 0.45)' : undefined,
+                      transition: 'all 0.3s ease-in-out'
+                    }}
+                  >
                   <td data-label="Ex / Per" style={{ padding: '0.8rem 1rem', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>
                     <strong>{item.year} ({item.period || getQuarterFromDate(item.dateExp || item.dateReceipt)})</strong>
                   </td>

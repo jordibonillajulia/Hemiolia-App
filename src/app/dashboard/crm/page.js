@@ -96,9 +96,11 @@ export default function CRMPage() {
   const { user, loading, isAdmin, isCrm } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const highlightId = searchParams.get('highlight');
   const [contacts, setContacts] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingContactId, setEditingContactId] = useState(null);
+  const [justEditedId, setJustEditedId] = useState(null);
   
   // Form state
   const [entity, setEntity] = useState(''); // Teatre o Ajuntament
@@ -189,6 +191,17 @@ export default function CRMPage() {
     }
   }, [user]);
 
+  useEffect(() => {
+    if (highlightId && contacts.length > 0) {
+      setTimeout(() => {
+        const el = document.getElementById(`contact-row-${highlightId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 300);
+    }
+  }, [highlightId, contacts]);
+
   const handleAddContact = async (e) => {
     e.preventDefault();
     const contactData = { 
@@ -201,10 +214,11 @@ export default function CRMPage() {
       contact3: { name: c3Name, role: c3Role, email: c3Email, phone: c3Phone },
       contact4: { name: c4Name, role: c4Role, email: c4Email, phone: c4Phone }
     };
+    let targetId = editingContactId;
     if (editingContactId) {
       await updateContact(editingContactId, contactData);
     } else {
-      await addContact({
+      const docRef = await addContact({
         ...contactData,
         performedShows: [],
         interestedShows: [],
@@ -213,10 +227,24 @@ export default function CRMPage() {
         nextActionDate: '',
         nextActionNotes: ''
       });
+      if (docRef && docRef.id) targetId = docRef.id;
     }
     setIsAdding(false);
     resetForm();
-    loadContacts();
+    await loadContacts();
+
+    if (targetId) {
+      setJustEditedId(targetId);
+      setTimeout(() => {
+        const el = document.getElementById(`contact-row-${targetId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 200);
+      setTimeout(() => {
+        setJustEditedId(null);
+      }, 3000);
+    }
   };
 
   const resetForm = () => {
@@ -1026,6 +1054,14 @@ export default function CRMPage() {
         </div>
       </div>
 
+      <style>{`
+        .contact-highlight-row {
+          border: 2px solid var(--color-accent) !important;
+          background-color: rgba(212, 175, 55, 0.15) !important;
+          box-shadow: 0 0 25px rgba(255, 183, 3, 0.45) !important;
+        }
+      `}</style>
+
       <div className="glass-panel table-container-responsive" style={{ padding: 0 }}>
         {filteredContacts.length === 0 ? (
           <p style={{ padding: 'var(--space-lg)', textAlign: 'center', color: 'var(--color-text-secondary)' }}>
@@ -1053,9 +1089,20 @@ export default function CRMPage() {
                   s.trim() !== '' && 
                   !['cap', 'cap espectacle', 'ningú', 'ningu', 'none', 'sense especificar', 'sense'].includes(s.trim().toLowerCase())
                 );
+                const isHighlighted = highlightId === contact.id || justEditedId === contact.id;
                 
                 return (
-                  <tr key={contact.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <tr 
+                    id={`contact-row-${contact.id}`}
+                    key={contact.id} 
+                    className={isHighlighted ? 'contact-highlight-row' : ''}
+                    style={{ 
+                      borderBottom: isHighlighted ? '2px solid var(--color-accent)' : '1px solid rgba(255,255,255,0.05)',
+                      backgroundColor: isHighlighted ? 'rgba(212, 175, 55, 0.15)' : undefined,
+                      boxShadow: isHighlighted ? '0 0 25px rgba(255, 183, 3, 0.45)' : undefined,
+                      transition: 'all 0.3s ease-in-out'
+                    }}
+                  >
                     <td data-label="Entitat" style={{ padding: '1rem', fontWeight: 'bold' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                         <span>{contact.entity}</span>
