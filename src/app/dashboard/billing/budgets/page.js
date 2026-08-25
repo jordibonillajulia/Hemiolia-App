@@ -338,7 +338,8 @@ export default function BudgetsPage() {
                     )}
                   </td>
                 </tr>
-              ))}
+              );
+            })}
             </tbody>
           </table>
         )}

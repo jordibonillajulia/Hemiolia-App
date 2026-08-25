@@ -1228,7 +1228,8 @@ export default function LedgersPage() {
                     )}
                   </td>
                 </tr>
-              ))}
+              );
+            })}
             </tbody>
           </table>
         )}

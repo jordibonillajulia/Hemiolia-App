@@ -395,7 +395,8 @@ export default function BillingPage() {
                     )}
                   </td>
                 </tr>
-              ))}
+              );
+            })}
             </tbody>
           </table>
         )}

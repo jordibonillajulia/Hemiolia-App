@@ -443,7 +443,8 @@ export default function BillingClientsPage() {
                   )}
                 </td>
               </tr>
-            ))}
+            );
+          })}
             {clients.length === 0 && (
               <tr><td colSpan="5" style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-text-secondary)' }}>No hi ha clients registrats.</td></tr>
             )}
