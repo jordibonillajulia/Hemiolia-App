@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../../../lib/AuthContext';
 import { getUpcomingGigs, addGig, deleteGig, updateGig } from '../../../lib/firestoreUtils';
 import Link from 'next/link';
@@ -116,6 +117,23 @@ export default function RoadSheetPage() {
   const [searchStatus, setSearchStatus] = useState('');
   const [viewedGig, setViewedGig] = useState(null);
   const [justEditedId, setJustEditedId] = useState(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setViewedGig(null);
+      }
+    };
+    if (viewedGig) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [viewedGig]);
 
   // Form state
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -618,70 +636,70 @@ export default function RoadSheetPage() {
       )}
 
       {/* DETAILED VIEW GIG MODAL */}
-      {viewedGig && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100vw',
-          height: '100vh',
-          backgroundColor: 'rgba(0,0,0,0.75)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'flex-end',
-          zIndex: 1000,
-          backdropFilter: 'blur(5px)'
-        }} className="no-print">
+      {isMounted && viewedGig && createPortal(
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'rgba(0,0,0,0.75)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 99999,
+            backdropFilter: 'blur(6px)',
+            padding: '1rem'
+          }} 
+          className="no-print"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setViewedGig(null);
+          }}
+        >
           <style>{`
-            @media (min-width: 600px) {
-              .gig-modal-sheet {
-                align-self: center !important;
-                border-radius: var(--radius-lg) !important;
-                max-height: 90vh !important;
-                width: 90% !important;
-                max-width: 600px !important;
-              }
+            .gig-modal-sheet {
+              border-radius: var(--radius-lg) !important;
+              max-height: 90vh !important;
+              width: 100% !important;
+              max-width: 580px !important;
+              border: 2px solid var(--color-accent) !important;
+              box-shadow: 0 0 30px rgba(212, 175, 55, 0.35), 0 12px 40px rgba(0, 0, 0, 0.7) !important;
             }
             .gig-modal-notes {
-              max-height: 80px;
+              max-height: 120px;
               overflow-y: auto;
             }
-            @media (min-height: 700px) {
-              .gig-modal-notes {
-                max-height: 120px;
-              }
-            }
           `}</style>
-          <div className="glass-panel animate-fade-in-up gig-modal-sheet" style={{
-            width: '100%',
-            padding: '1rem 1rem 0.75rem',
-            boxShadow: '0 -4px 32px 0 rgba(0, 0, 0, 0.5)',
-            border: '1px solid var(--color-accent)',
-            borderBottom: 'none',
-            borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
-            maxHeight: '96svh',
-            overflowY: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.6rem'
-          }}>
+          <div 
+            className="glass-panel animate-fade-in-up gig-modal-sheet" 
+            style={{
+              padding: '1.25rem 1.25rem 1rem',
+              overflowY: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.75rem',
+              position: 'relative'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
 
             {/* HEADER */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.2rem' }}>
-              <h3 style={{ color: 'var(--color-accent)', margin: 0, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <h3 style={{ color: 'var(--color-accent)', margin: 0, fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 'bold' }}>
                 👁️ Fitxa del Bolo
               </h3>
               <button
                 onClick={() => setViewedGig(null)}
-                style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', fontSize: '1.2rem', cursor: 'pointer', padding: '0.2rem 0.4rem', lineHeight: 1 }}
+                style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', fontSize: '1.3rem', cursor: 'pointer', padding: '0.2rem 0.5rem', lineHeight: 1, borderRadius: '4px' }}
                 title="Tancar"
               >✕</button>
             </div>
 
             {/* TÍTOL */}
-            <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-md)', padding: '0.6rem 0.8rem', border: '1px solid rgba(255,255,255,0.07)' }}>
-              <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)', display: 'block', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.15rem' }}>Espectacle</span>
-              <strong style={{ fontSize: '1rem', color: 'var(--color-primary)', lineHeight: 1.2 }}>{viewedGig.title}</strong>
+            <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-md)', padding: '0.7rem 0.9rem', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)', display: 'block', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.2rem' }}>Espectacle</span>
+              <strong style={{ fontSize: '1.05rem', color: 'var(--color-primary)', lineHeight: 1.3 }}>{viewedGig.title}</strong>
             </div>
 
             {/* DATA + HORA + ESTAT (fila compacta) */}
@@ -749,21 +767,28 @@ export default function RoadSheetPage() {
             </div>
 
             {/* CONTACTE */}
-            <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-md)', padding: '0.6rem 0.8rem', border: '1px solid rgba(255,255,255,0.07)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+            <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 'var(--radius-md)', padding: '0.6rem 0.8rem', border: '1px solid rgba(255,255,255,0.07)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem', alignItems: 'center' }}>
               <div>
                 <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)', display: 'block', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.15rem' }}>Contacte</span>
                 <span style={{ fontWeight: '500', fontSize: '0.85rem' }}>{viewedGig.contactPerson || '—'}</span>
               </div>
               <div>
-                <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)', display: 'block', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.15rem' }}>Telèfon</span>
-                <span style={{ fontWeight: '500', fontSize: '0.85rem' }}>
-                  {viewedGig.contactPhone ? (
-                    <>
-                      {viewedGig.contactPhone}{' '}
-                      <a href={`tel:${viewedGig.contactPhone.replace(/\s+/g, '')}`} className="btn btn-glass" style={{ padding: '0.15rem 0.35rem', fontSize: '0.7rem', textDecoration: 'none' }}>📞</a>
-                    </>
-                  ) : '—'}
-                </span>
+                <span style={{ fontSize: '0.65rem', color: 'var(--color-text-secondary)', display: 'block', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.2rem' }}>Telèfon</span>
+                {viewedGig.contactPhone ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                    <span style={{ fontWeight: '500', fontSize: '0.85rem' }}>{viewedGig.contactPhone}</span>
+                    <a 
+                      href={`tel:${viewedGig.contactPhone.replace(/\s+/g, '')}`} 
+                      className="btn btn-glass" 
+                      style={{ padding: '0.2rem 0.55rem', fontSize: '0.75rem', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+                      title={`Trucar al ${viewedGig.contactPhone}`}
+                    >
+                      📞 <span>Trucar</span>
+                    </a>
+                  </div>
+                ) : (
+                  <span style={{ fontWeight: '500', fontSize: '0.85rem' }}>—</span>
+                )}
               </div>
             </div>
 
@@ -778,7 +803,7 @@ export default function RoadSheetPage() {
             )}
 
             {/* TANCAR */}
-            <div style={{ paddingBottom: '0.5rem' }}>
+            <div style={{ paddingTop: '0.2rem' }}>
               <button
                 onClick={() => setViewedGig(null)}
                 className="btn btn-primary"
@@ -789,7 +814,8 @@ export default function RoadSheetPage() {
             </div>
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
