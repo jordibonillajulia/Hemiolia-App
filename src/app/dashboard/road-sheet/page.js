@@ -494,46 +494,18 @@ export default function RoadSheetPage() {
                      transition: 'all 0.3s ease-in-out'
                    }}
                  >
-                   <div style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
-                        <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--color-primary)' }}>{gig.title}</h3>
-                        <span style={{ 
-                          fontSize: '0.7rem', 
-                          padding: '0.2rem 0.5rem', 
-                          borderRadius: '4px', 
-                          backgroundColor: isUpcoming ? 'rgba(46, 204, 113, 0.2)' : 'rgba(255, 255, 255, 0.1)',
-                          color: isUpcoming ? '#2ecc71' : 'var(--color-text-secondary)',
-                          border: `1px solid ${isUpcoming ? '#27ae60' : 'rgba(255, 255, 255, 0.2)'}`
-                        }}>
-                          {isUpcoming ? 'PROPER' : 'REALITZAT'}
-                        </span>
-                      </div>
+                   <div style={{ borderBottom: '1px solid var(--color-border)', paddingBottom: '0.6rem', marginBottom: '0.6rem' }}>
+                    {/* FILA 1: Títol i Botons d'acció */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.6rem', marginBottom: '0.45rem' }}>
+                      <h3 style={{ margin: 0, fontSize: '1.15rem', color: 'var(--color-primary)', lineHeight: 1.25, wordBreak: 'break-word' }}>
+                        {gig.title}
+                      </h3>
                       
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        {(!isUpcoming || (gigStatus !== 'Pendent' && gigStatus !== 'No remunerat')) && (() => {
-                          const bgColor = statusColors[gigStatus] || 'rgba(200, 200, 200, 0.2)';
-                          const textColor = statusTextColors[gigStatus] || '#999';
-                          const icon = statusIcons[gigStatus] || gigStatus;
-                          return (
-                            <span style={{ 
-                              fontSize: '0.7rem', 
-                              padding: '0.2rem 0.5rem', 
-                              borderRadius: '4px', 
-                              fontWeight: 'bold',
-                              letterSpacing: '0.5px',
-                              backgroundColor: bgColor,
-                              color: textColor,
-                              border: `1px solid ${bgColor.replace('0.2', '0.5')}`
-                            }}>
-                              {icon}
-                            </span>
-                          );
-                        })()}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', flexShrink: 0 }}>
                         <button 
                           onClick={() => setViewedGig(gig)}
                           className="btn btn-glass"
-                          style={{ padding: '0.4rem', border: 'none', background: 'transparent', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                          style={{ padding: '0.35rem', border: 'none', background: 'transparent', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                           title="Visualitzar fitxa del bolo"
                         >
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -546,7 +518,7 @@ export default function RoadSheetPage() {
                             <button 
                               onClick={() => handleEditClick(gig)}
                               className="btn btn-glass"
-                              style={{ padding: '0.4rem', border: 'none', background: 'transparent', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-accent)' }}
+                              style={{ padding: '0.35rem', border: 'none', background: 'transparent', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-accent)' }}
                               title="Editar Bolo"
                             >
                               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -557,7 +529,7 @@ export default function RoadSheetPage() {
                             <button 
                               onClick={() => handleRemoveGig(gig.id, gig.title)}
                               className="btn btn-glass"
-                              style={{ padding: '0.4rem', border: 'none', background: 'transparent', color: '#ff6b6b', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+                              style={{ padding: '0.35rem', border: 'none', background: 'transparent', color: '#ff6b6b', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                               title="Eliminar Bolo"
                             >
                               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -571,8 +543,45 @@ export default function RoadSheetPage() {
                         )}
                       </div>
                     </div>
+
+                    {/* FILA 2: Fila d'etiquetes (Badges) alineades horitzontalment */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.45rem' }}>
+                      <span style={{ 
+                        fontSize: '0.7rem', 
+                        padding: '0.2rem 0.55rem', 
+                        borderRadius: '4px', 
+                        fontWeight: '600',
+                        letterSpacing: '0.3px',
+                        backgroundColor: isUpcoming ? 'rgba(46, 204, 113, 0.18)' : 'rgba(255, 255, 255, 0.08)',
+                        color: isUpcoming ? '#2ecc71' : 'var(--color-text-secondary)',
+                        border: `1px solid ${isUpcoming ? '#27ae60' : 'rgba(255, 255, 255, 0.15)'}`
+                      }}>
+                        {isUpcoming ? '🟢 PROPER' : '⚪ REALITZAT'}
+                      </span>
+
+                      {(() => {
+                        const bgColor = statusColors[gigStatus] || 'rgba(200, 200, 200, 0.2)';
+                        const textColor = statusTextColors[gigStatus] || '#999';
+                        const icon = statusIcons[gigStatus] || gigStatus;
+                        return (
+                          <span style={{ 
+                            fontSize: '0.7rem', 
+                            padding: '0.2rem 0.55rem', 
+                            borderRadius: '4px', 
+                            fontWeight: 'bold',
+                            letterSpacing: '0.3px',
+                            backgroundColor: bgColor,
+                            color: textColor,
+                            border: `1px solid ${bgColor.replace('0.2', '0.45')}`
+                          }}>
+                            {icon}
+                          </span>
+                        );
+                      })()}
+                    </div>
                     
-                    <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', fontWeight: 'bold', marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    {/* FILA 3: Data, Lloc i Previsió */}
+                    <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.88rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                       <span>📅 {gig.date === 'a determinar' ? 'a determinar' : formatDateDDMMYYYY(gig.date)}{gig.showTime && gig.showTime !== 'a determinar' ? ` a les ${gig.showTime}` : (gig.showTime === 'a determinar' ? ' (Hora a determinar)' : '')} | 📍 {gig.municipality && gig.locationName ? `${gig.municipality} (${gig.locationName})` : (gig.municipality || gig.locationName)}</span>
                       {isUpcoming && gig.municipality && (
                         <a 
