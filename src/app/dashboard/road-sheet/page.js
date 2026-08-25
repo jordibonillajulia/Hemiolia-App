@@ -581,18 +581,28 @@ export default function RoadSheetPage() {
                     </div>
                     
                     {/* FILA 3: Data, Lloc i Previsió */}
-                    <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.88rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                      <span>📅 {gig.date === 'a determinar' ? 'a determinar' : formatDateDDMMYYYY(gig.date)}{gig.showTime && gig.showTime !== 'a determinar' ? ` a les ${gig.showTime}` : (gig.showTime === 'a determinar' ? ' (Hora a determinar)' : '')} | 📍 {gig.municipality && gig.locationName ? `${gig.municipality} (${gig.locationName})` : (gig.municipality || gig.locationName)}</span>
-                      {isUpcoming && gig.municipality && (
-                        <a 
-                          href={`https://www.google.com/search?q=temps+${encodeURIComponent(gig.municipality)}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="btn btn-glass" 
-                          style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem', borderColor: 'transparent', color: 'var(--color-text-primary)' }}
-                        >
-                          🌤️ Previsió del temps
-                        </a>
+                    <div style={{ color: 'var(--color-text-secondary)', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: '0.35rem 0.8rem', flexWrap: 'wrap' }}>
+                      <span style={{ fontWeight: 'bold', color: 'var(--color-text-primary)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap' }}>
+                        📅 {gig.date === 'a determinar' ? 'a determinar' : formatDateDDMMYYYY(gig.date)}{gig.showTime && gig.showTime !== 'a determinar' ? ` a les ${gig.showTime}` : (gig.showTime === 'a determinar' ? ' (Hora a determinar)' : '')}
+                      </span>
+                      
+                      {(gig.municipality || gig.locationName) && (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                          <span>
+                            📍 <span style={{ fontWeight: '600', color: 'var(--color-text-primary)' }}>{gig.municipality && gig.locationName ? `${gig.municipality} (${gig.locationName})` : (gig.municipality || gig.locationName)}</span>
+                          </span>
+                          {isUpcoming && gig.municipality && (
+                            <a 
+                              href={`https://www.google.com/search?q=temps+${encodeURIComponent(gig.municipality)}`} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              className="btn btn-glass" 
+                              style={{ padding: '0.15rem 0.45rem', fontSize: '0.72rem', borderColor: 'rgba(255,255,255,0.15)', color: 'var(--color-text-primary)' }}
+                            >
+                              🌤️ Previsió del temps
+                            </a>
+                          )}
+                        </span>
                       )}
                     </div>
                   </div>
