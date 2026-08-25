@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '../../../../lib/AuthContext';
 import { getBillingClients, addBillingClient, updateBillingClient, deleteBillingClient, formatClientName } from '../../../../lib/firestoreUtils';
 import Link from 'next/link';
@@ -9,9 +10,12 @@ import { DIR3_DB } from '../../../../lib/dir3Database';
 
 export default function BillingClientsPage() {
   const { user, loading, isAdmin } = useAuth();
+  const searchParams = useSearchParams();
+  const highlightId = searchParams ? searchParams.get('highlight') : null;
   const [clients, setClients] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [justEditedId, setJustEditedId] = useState(null);
   const formRef = useRef(null);
 
   // Form State
@@ -56,6 +60,17 @@ export default function BillingClientsPage() {
   useEffect(() => {
     if (user) loadClients();
   }, [user]);
+
+  useEffect(() => {
+    if (highlightId && clients.length > 0) {
+      setTimeout(() => {
+        const el = document.getElementById(`client-row-${highlightId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 300);
+    }
+  }, [highlightId, clients]);
 
   const resetForm = () => {
     setType('Jurídica');
@@ -117,13 +132,28 @@ export default function BillingClientsPage() {
       dir3OrganoGestor: dir3OrganoGestor.toUpperCase().trim(),
       dir3UnidadTramitadora: dir3UnidadTramitadora.toUpperCase().trim()
     };
+    let targetId = editingId;
     if (editingId) {
       await updateBillingClient(editingId, data);
     } else {
-      await addBillingClient(data);
+      const docRef = await addBillingClient(data);
+      if (docRef && docRef.id) targetId = docRef.id;
     }
     resetForm();
-    loadClients();
+    await loadClients();
+
+    if (targetId) {
+      setJustEditedId(targetId);
+      setTimeout(() => {
+        const el = document.getElementById(`client-row-${targetId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 200);
+      setTimeout(() => {
+        setJustEditedId(null);
+      }, 3000);
+    }
   };
 
   const handleDelete = async (id, name) => {
@@ -329,6 +359,14 @@ export default function BillingClientsPage() {
         </div>
       )}
 
+      <style>{`
+        .client-highlight-row {
+          border: 2px solid var(--color-accent) !important;
+          background-color: rgba(212, 175, 55, 0.15) !important;
+          box-shadow: 0 0 25px rgba(255, 183, 3, 0.45) !important;
+        }
+      `}</style>
+
       <div className="glass-panel table-container-responsive" style={{ padding: 0 }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
           <thead style={{ background: 'rgba(255,255,255,0.05)', borderBottom: '1px solid var(--color-border)' }}>
@@ -341,9 +379,21 @@ export default function BillingClientsPage() {
             </tr>
           </thead>
           <tbody>
-            {clients.map(client => (
-              <tr key={client.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <td data-label="Nom / Raó Social" style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'normal', maxWidth: '300px' }}>
+            {clients.map(client => {
+              const isHighlighted = highlightId === client.id || justEditedId === client.id;
+              return (
+                <tr 
+                  id={`client-row-${client.id}`}
+                  key={client.id} 
+                  className={isHighlighted ? 'client-highlight-row' : ''}
+                  style={{ 
+                    borderBottom: isHighlighted ? '2px solid var(--color-accent)' : '1px solid rgba(255,255,255,0.05)',
+                    backgroundColor: isHighlighted ? 'rgba(212, 175, 55, 0.15)' : undefined,
+                    boxShadow: isHighlighted ? '0 0 25px rgba(255, 183, 3, 0.45)' : undefined,
+                    transition: 'all 0.3s ease-in-out'
+                  }}
+                >
+                  <td data-label="Nom / Raó Social" style={{ padding: '0.6rem 0.8rem', fontSize: '0.88rem', whiteSpace: 'normal', maxWidth: '300px' }}>
                   <span className="text-right-mobile">
                     {formatClientName(client.name)}
                   </span>
