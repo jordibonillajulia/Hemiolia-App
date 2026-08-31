@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../../../lib/AuthContext';
 import { getUpcomingGigs, addGig, deleteGig, updateGig } from '../../../lib/firestoreUtils';
@@ -45,58 +45,219 @@ const formatDateDDMMYYYY = (dateStr) => {
   return `${day}/${month}/${year}`;
 };
 
-// La previsió meteorològica ara és un simple enllaç per estalviar recursos i evitar errors de CORS
-
-const AddressAutocomplete = ({ value, onChange }) => {
+// Autocomplete d'adreces per al GPS i Google Maps amb suggeriments en temps real
+const AddressAutocomplete = ({ value, onChange, municipality, locationName, onSelectMunicipality }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const containerRef = useRef(null);
+
+  // Tancar el desplegable en fer clic a fora
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if (value && value.length > 3 && isOpen) {
-        setLoading(true);
-        fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(value)}&format=json&addressdetails=1&limit=5&countrycodes=es,ad,fr`)
-          .then(res => res.json())
-          .then(data => {
-            setSuggestions(data);
-            setLoading(false);
-          })
-          .catch(() => setLoading(false));
-      } else {
-        setSuggestions([]);
+    if (!value || value.trim().length < 2) {
+      setSuggestions([]);
+      setLoading(false);
+      setHasSearched(false);
+      return;
+    }
+
+    const controller = new AbortController();
+    const delayDebounceFn = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const bias = municipality || locationName || '';
+        const res = await fetch(`/api/geocode?q=${encodeURIComponent(value.trim())}&bias=${encodeURIComponent(bias)}`, {
+          signal: controller.signal,
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setSuggestions(data.results || []);
+        } else {
+          setSuggestions([]);
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.warn('Geocode fetch error:', err);
+          setSuggestions([]);
+        }
+      } finally {
+        setLoading(false);
+        setHasSearched(true);
       }
-    }, 500);
-    return () => clearTimeout(delayDebounceFn);
-  }, [value, isOpen]);
+    }, 250);
+
+    return () => {
+      clearTimeout(delayDebounceFn);
+      controller.abort();
+    };
+  }, [value, municipality, locationName]);
+
+  const handleSelect = (item) => {
+    onChange(item.fullAddress || item.mainText);
+    if (item.municipality && onSelectMunicipality) {
+      onSelectMunicipality(item.municipality);
+    }
+    setIsOpen(false);
+    setHighlightedIndex(-1);
+  };
+
+  const handleKeyDown = (e) => {
+    if (!isOpen || suggestions.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : 0));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedIndex(prev => (prev > 0 ? prev - 1 : suggestions.length - 1));
+    } else if (e.key === 'Enter' && highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
+      e.preventDefault();
+      handleSelect(suggestions[highlightedIndex]);
+    } else if (e.key === 'Escape') {
+      setIsOpen(false);
+    }
+  };
+
+  const googleMapsQuery = [locationName, value, municipality].filter(Boolean).join(' ');
 
   return (
-    <div style={{ position: 'relative' }}>
-      <input 
-        type="text" 
-        className="input-field" 
-        value={value} 
-        onChange={e => { onChange(e.target.value); setIsOpen(true); }} 
-        onFocus={() => setIsOpen(true)}
-        placeholder="Carrer Major 12, Barcelona..." 
-        autoComplete="off"
-      />
-      {isOpen && suggestions.length > 0 && (
-        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, backgroundColor: 'var(--color-background-soft)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', zIndex: 100, maxHeight: '200px', overflowY: 'auto', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+    <div ref={containerRef} style={{ position: 'relative' }}>
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+        <input 
+          type="text" 
+          className="input-field" 
+          value={value || ''} 
+          onChange={e => { onChange(e.target.value); setIsOpen(true); }} 
+          onFocus={() => { if (value && value.length >= 2) setIsOpen(true); }} 
+          onKeyDown={handleKeyDown}
+          placeholder="Escriu carrer, plaça o teatre (ex: Rambla Catalunya 10)..." 
+          autoComplete="off"
+          style={{ paddingRight: '4.5rem', marginBottom: 0 }}
+        />
+        <div style={{ position: 'absolute', right: '0.6rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+          {loading && (
+            <span style={{ fontSize: '0.85rem', color: 'var(--color-accent)', display: 'inline-block' }} title="Cercant suggeriments...">
+              ⏳
+            </span>
+          )}
+          {value && (
+            <button
+              type="button"
+              onClick={() => { onChange(''); setSuggestions([]); setIsOpen(false); }}
+              style={{ background: 'none', border: 'none', color: 'var(--color-text-secondary)', cursor: 'pointer', fontSize: '0.95rem', padding: '0.2rem 0.4rem', lineHeight: 1 }}
+              title="Esborrar adreça"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* DROPDOWN DE SUGGERIMENTS EN TEMPS REAL */}
+      {isOpen && (value?.length >= 2) && (
+        <div 
+          style={{ 
+            position: 'absolute', 
+            top: 'calc(100% + 4px)', 
+            left: 0, 
+            right: 0, 
+            backgroundColor: '#1b1e24', 
+            border: '1px solid var(--color-accent)', 
+            borderRadius: 'var(--radius-md)', 
+            zIndex: 1000, 
+            maxHeight: '260px', 
+            overflowY: 'auto', 
+            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+            padding: '0.3rem 0'
+          }}
+        >
+          <div style={{ padding: '0.4rem 0.8rem', fontSize: '0.7rem', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span>🗺️ Suggeriments Google Maps / GPS</span>
+            {suggestions.length > 0 && <span style={{ opacity: 0.8 }}>{suggestions.length} trobats</span>}
+          </div>
+
+          {loading && suggestions.length === 0 && (
+            <div style={{ padding: '1rem', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '0.85rem' }}>
+              🔍 Cercant adreces disponibles...
+            </div>
+          )}
+
+          {!loading && suggestions.length === 0 && hasSearched && (
+            <div style={{ padding: '0.8rem', textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: '0.82rem' }}>
+              No s'han trobat suggeriments exactes.<br />
+              <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>Pots deixar la que has escrit i verificar-la amb el botó inferior.</span>
+            </div>
+          )}
+
           {suggestions.map((s, i) => (
             <div 
               key={i} 
-              style={{ padding: '0.8rem', cursor: 'pointer', borderBottom: i === suggestions.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.1)' }}
-              onClick={() => {
-                onChange(s.display_name);
-                setIsOpen(false);
+              style={{ 
+                padding: '0.65rem 0.8rem', 
+                cursor: 'pointer', 
+                borderBottom: i === suggestions.length - 1 ? 'none' : '1px solid rgba(255,255,255,0.05)',
+                backgroundColor: i === highlightedIndex ? 'rgba(212, 175, 55, 0.15)' : 'transparent',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.6rem',
+                transition: 'background-color 0.15s ease'
               }}
-              onMouseEnter={e => e.target.style.backgroundColor = 'rgba(255,255,255,0.1)'}
-              onMouseLeave={e => e.target.style.backgroundColor = 'transparent'}
+              onClick={() => handleSelect(s)}
+              onMouseEnter={() => setHighlightedIndex(i)}
             >
-              {s.display_name}
+              <span style={{ fontSize: '1.1rem', lineHeight: 1, marginTop: '2px' }}>📍</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: '600', fontSize: '0.88rem', color: 'var(--color-text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {s.mainText}
+                </div>
+                {s.secondaryText && (
+                  <div style={{ fontSize: '0.76rem', color: 'var(--color-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {s.secondaryText}
+                  </div>
+                )}
+              </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* COMPROVACIÓ GOOGLE MAPS DIRECTA */}
+      {(value || locationName || municipality) && (
+        <div style={{ marginTop: '0.45rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.78rem', flexWrap: 'wrap', gap: '0.4rem' }}>
+          <span style={{ color: value ? 'var(--color-text-secondary)' : '#e67e22' }}>
+            {value ? '✅ Adreça introduïda' : '⚠️ Escriu l\'adreça per al GPS'}
+          </span>
+          <a 
+            href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(googleMapsQuery)}`} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            style={{ 
+              color: 'var(--color-accent)', 
+              textDecoration: 'none', 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '0.3rem',
+              fontWeight: '500',
+              padding: '0.2rem 0.55rem',
+              borderRadius: 'var(--radius-sm)',
+              backgroundColor: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.1)'
+            }}
+            title="Obre la cerca actual a Google Maps en una pestanya nova per confirmar que el punt és exacte"
+          >
+            🗺️ Comprovar a Google Maps ↗
+          </a>
         </div>
       )}
     </div>
@@ -406,7 +567,17 @@ export default function RoadSheetPage() {
             </div>
             <div className="input-group">
               <label>Adreça completa (Per al GPS)</label>
-              <AddressAutocomplete value={address} onChange={setAddress} />
+              <AddressAutocomplete 
+                value={address} 
+                onChange={setAddress} 
+                municipality={municipality}
+                locationName={locationName}
+                onSelectMunicipality={(mun) => {
+                  if (!municipality && mun) {
+                    setMunicipality(mun);
+                  }
+                }}
+              />
             </div>
             <div className="grid-2col-responsive">
               <div className="input-group">
