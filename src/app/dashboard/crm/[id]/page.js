@@ -213,7 +213,8 @@ export default function ContactDetailPage() {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [interactionTitle, setInteractionTitle] = useState('');
   const [interactionContactPerson, setInteractionContactPerson] = useState('');
-  const [showId, setShowId] = useState('');
+  const [selectedInteractionShows, setSelectedInteractionShows] = useState([]);
+  const [customShowInput, setCustomShowInput] = useState('');
   const [interestLevel, setInterestLevel] = useState(0);
   const [interactionNotes, setInteractionNotes] = useState('');
   const [technicalFeedback, setTechnicalFeedback] = useState('');
@@ -394,13 +395,49 @@ export default function ContactDetailPage() {
     });
   };
 
+  const getInteractionShows = (interaction) => {
+    if (Array.isArray(interaction?.shows) && interaction.shows.length > 0) {
+      return interaction.shows;
+    }
+    if (interaction?.showId) {
+      return interaction.showId.split(',').map(s => s.trim()).filter(Boolean);
+    }
+    return [];
+  };
+
+  const handleToggleInteractionShow = (showTitle) => {
+    const title = showTitle.trim();
+    if (!title) return;
+    setSelectedInteractionShows(prev => {
+      if (prev.includes(title)) {
+        return prev.filter(s => s !== title);
+      } else {
+        return [...prev, title];
+      }
+    });
+  };
+
+  const handleAddCustomInteractionShow = (e) => {
+    if (e) e.preventDefault();
+    const title = customShowInput.trim();
+    if (!title) return;
+    setSelectedInteractionShows(prev => {
+      if (!prev.includes(title)) {
+        return [...prev, title];
+      }
+      return prev;
+    });
+    setCustomShowInput('');
+  };
+
   const resetInteractionForm = () => {
     setEditingInteractionId(null);
     setInteractionType('call');
     setDate(new Date().toISOString().split('T')[0]);
     setInteractionTitle('');
     setInteractionContactPerson('');
-    setShowId('');
+    setSelectedInteractionShows([]);
+    setCustomShowInput('');
     setInterestLevel(0);
     setInteractionNotes('');
     setTechnicalFeedback('');
@@ -412,11 +449,13 @@ export default function ContactDetailPage() {
 
   const handleEditInteraction = (interaction) => {
     setEditingInteractionId(interaction.id);
-    setInteractionType(interaction.type || (interaction.showId ? 'meeting' : 'call'));
+    const showsList = getInteractionShows(interaction);
+    setInteractionType(interaction.type || (showsList.length > 0 ? 'meeting' : 'call'));
     setDate(interaction.date || new Date().toISOString().split('T')[0]);
     setInteractionTitle(interaction.title || '');
     setInteractionContactPerson(interaction.contactPerson || '');
-    setShowId(interaction.showId || '');
+    setSelectedInteractionShows(showsList);
+    setCustomShowInput('');
     setInterestLevel(interaction.interestLevel !== undefined && interaction.interestLevel !== null ? Number(interaction.interestLevel) : 0);
     setInteractionNotes(interaction.notes || '');
     setTechnicalFeedback(interaction.technicalFeedback || '');
@@ -444,7 +483,8 @@ export default function ContactDetailPage() {
       date,
       title: interactionTitle.trim(),
       contactPerson: interactionContactPerson.trim(),
-      showId: showId.trim(),
+      shows: selectedInteractionShows,
+      showId: selectedInteractionShows.join(', '), // backwards compatibility
       interestLevel: parseInt(interestLevel, 10) || 0,
       notes: interactionNotes.trim(),
       technicalFeedback: technicalFeedback.trim(),
@@ -1731,29 +1771,132 @@ export default function ContactDetailPage() {
               </div>
             </div>
 
-            {/* Row 2: Title / Subject & Show */}
-            <div className="grid-2col-responsive" style={{ gap: '1rem' }}>
-              <div className="input-group" style={{ marginBottom: 0 }}>
-                <label>Títol / Resum breu</label>
-                <input 
-                  type="text" 
-                  className="input-field" 
-                  value={interactionTitle} 
-                  onChange={e => setInteractionTitle(e.target.value)} 
-                  placeholder="Ex: Trucada per dates del Layla, enviament de pressupost..." 
-                />
+            {/* Row 2: Title / Subject */}
+            <div className="input-group" style={{ marginBottom: 0 }}>
+              <label>Títol / Resum breu</label>
+              <input 
+                type="text" 
+                className="input-field" 
+                value={interactionTitle} 
+                onChange={e => setInteractionTitle(e.target.value)} 
+                placeholder="Ex: Trucada per dates del Layla, enviament de pressupost..." 
+              />
+            </div>
+
+            {/* Row: Related Shows (Multi-select) */}
+            <div className="input-group" style={{ marginBottom: 0 }}>
+              <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>Espectacle(s) relacionat(s) (opcional - pots triar-ne més d'un)</span>
+                {selectedInteractionShows.length > 0 && (
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-accent)', fontWeight: 'bold' }}>
+                    {selectedInteractionShows.length} seleccionat{selectedInteractionShows.length > 1 ? 's' : ''}
+                  </span>
+                )}
+              </label>
+
+              {/* Selected Shows badges */}
+              {selectedInteractionShows.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.6rem' }}>
+                  {selectedInteractionShows.map(showTitle => (
+                    <span
+                      key={showTitle}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.35rem',
+                        background: 'rgba(212, 175, 55, 0.18)',
+                        color: 'var(--color-accent)',
+                        border: '1px solid var(--color-accent)',
+                        padding: '0.25rem 0.6rem',
+                        borderRadius: '16px',
+                        fontSize: '0.82rem',
+                        fontWeight: '600'
+                      }}
+                    >
+                      🎭 {showTitle}
+                      <button
+                        type="button"
+                        onClick={() => handleToggleInteractionShow(showTitle)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--color-accent)',
+                          cursor: 'pointer',
+                          padding: 0,
+                          fontSize: '1rem',
+                          lineHeight: 1,
+                          display: 'flex',
+                          alignItems: 'center'
+                        }}
+                        title="Treure"
+                      >
+                        &times;
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {/* Quick toggle chips for catalog shows */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginBottom: '0.5rem' }}>
+                {[
+                  "Layla, un viatge d'esperança",
+                  "Layla, el contacontes",
+                  "Cavernus, una evolució musical",
+                  "Un Nadal Màgic",
+                  "Silencis Trencats",
+                  "Marcel, cartes des del front",
+                  "El petit Leonardo",
+                  "Simfonia Corporativa",
+                  "Concert Duo Hemiòlia",
+                  "Concert Trio Hemiòlia",
+                  ...(shows || []).map(s => s.title).filter(Boolean)
+                ]
+                  .filter((value, index, self) => self.indexOf(value) === index)
+                  .map(showTitle => {
+                    const isSelected = selectedInteractionShows.includes(showTitle);
+                    return (
+                      <button
+                        key={showTitle}
+                        type="button"
+                        onClick={() => handleToggleInteractionShow(showTitle)}
+                        style={{
+                          padding: '0.3rem 0.65rem',
+                          borderRadius: '14px',
+                          fontSize: '0.78rem',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          backgroundColor: isSelected ? 'rgba(212, 175, 55, 0.25)' : 'rgba(255, 255, 255, 0.04)',
+                          color: isSelected ? 'var(--color-accent)' : 'var(--color-text-secondary)',
+                          border: isSelected ? '1px solid var(--color-accent)' : '1px solid var(--color-border)',
+                          fontWeight: isSelected ? '600' : 'normal'
+                        }}
+                      >
+                        {isSelected ? '✓ ' : '+ '}
+                        {showTitle}
+                      </button>
+                    );
+                  })}
               </div>
 
-              <div className="input-group" style={{ marginBottom: 0 }}>
-                <label>Espectacle relacionat (opcional)</label>
-                <input 
-                  list="shows-list" 
-                  className="input-field" 
-                  value={showId} 
-                  onChange={e => setShowId(e.target.value)} 
-                  placeholder="Tria o escriu l'espectacle..." 
+              {/* Custom / additional show input */}
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <input
+                  type="text"
+                  list="all-shows-datalist"
+                  className="input-field"
+                  value={customShowInput}
+                  onChange={e => setCustomShowInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddCustomInteractionShow();
+                    }
+                  }}
+                  placeholder="O escriu/afegeix un altre espectacle..."
+                  style={{ fontSize: '0.85rem' }}
                 />
-                <datalist id="shows-list">
+                <datalist id="all-shows-datalist">
                   {shows.map(s => <option key={s.id} value={s.title} />)}
                   <option value="Layla, un viatge d'esperança" />
                   <option value="Layla, el contacontes" />
@@ -1766,6 +1909,14 @@ export default function ContactDetailPage() {
                   <option value="Concert Duo Hemiòlia" />
                   <option value="Concert Trio Hemiòlia" />
                 </datalist>
+                <button
+                  type="button"
+                  onClick={handleAddCustomInteractionShow}
+                  className="btn btn-glass"
+                  style={{ padding: '0.4rem 0.9rem', fontSize: '0.85rem', whiteSpace: 'nowrap' }}
+                >
+                  + Afegir
+                </button>
               </div>
             </div>
 
@@ -2059,25 +2210,34 @@ export default function ContactDetailPage() {
                       </h4>
                     )}
 
-                    {/* Show Tag */}
-                    {interaction.showId && (
-                      <div style={{ marginBottom: '0.5rem' }}>
-                        <span style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '0.35rem',
-                          background: 'rgba(212, 175, 55, 0.12)',
-                          color: 'var(--color-accent)',
-                          border: '1px solid rgba(212, 175, 55, 0.3)',
-                          padding: '0.2rem 0.6rem',
-                          borderRadius: '4px',
-                          fontSize: '0.8rem',
-                          fontWeight: '500'
-                        }}>
-                          🎭 Espectacle: {interaction.showId}
-                        </span>
-                      </div>
-                    )}
+                    {/* Show Tags */}
+                    {(() => {
+                      const showsList = getInteractionShows(interaction);
+                      if (showsList.length === 0) return null;
+                      return (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.5rem' }}>
+                          {showsList.map(s => (
+                            <span 
+                              key={s}
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem',
+                                background: 'rgba(212, 175, 55, 0.12)',
+                                color: 'var(--color-accent)',
+                                border: '1px solid rgba(212, 175, 55, 0.3)',
+                                padding: '0.2rem 0.55rem',
+                                borderRadius: '4px',
+                                fontSize: '0.8rem',
+                                fontWeight: '500'
+                              }}
+                            >
+                              🎭 {s}
+                            </span>
+                          ))}
+                        </div>
+                      );
+                    })()}
 
                     {/* Notes / Description */}
                     {interaction.notes && (
