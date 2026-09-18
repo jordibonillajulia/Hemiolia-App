@@ -85,6 +85,19 @@ export const addInteraction = async (interactionData) => {
   });
 };
 
+export const updateInteraction = async (id, data) => {
+  const docRef = doc(db, 'interactions', id);
+  await updateDoc(docRef, {
+    ...data,
+    updatedAt: new Date().toISOString()
+  });
+};
+
+export const deleteInteraction = async (id) => {
+  const docRef = doc(db, 'interactions', id);
+  await deleteDoc(docRef);
+};
+
 export const getInteractionsByContact = async (contactId) => {
   const q = query(
     collection(db, 'interactions'), 

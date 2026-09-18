@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../../../lib/AuthContext';
-import { getContactById, getInteractionsByContact, addInteraction, getShows, updateContact, getUpcomingGigs, getContacts } from '../../../../lib/firestoreUtils';
+import { getContactById, getInteractionsByContact, addInteraction, updateInteraction, deleteInteraction, getShows, updateContact, getUpcomingGigs, getContacts } from '../../../../lib/firestoreUtils';
 import Link from 'next/link';
 import { normalizeText, formatNotesWithLineBreaks } from '../../../../lib/utils';
 import { auth } from '../../../../lib/firebase';
@@ -69,6 +69,28 @@ const getStatusBadgeStyle = (status) => {
     default:
       return { ...base, backgroundColor: 'rgba(108, 117, 125, 0.15)', color: '#adb5bd', border: '1px solid rgba(108, 117, 125, 0.3)' };
   }
+};
+
+const INTERACTION_TYPES = [
+  { id: 'call', label: 'Trucada telefònica', shortLabel: 'Trucada', icon: '📞', color: '#34d399', bg: 'rgba(52, 211, 153, 0.12)', border: 'rgba(52, 211, 153, 0.35)' },
+  { id: 'email', label: 'Correu electrònic', shortLabel: 'Correu', icon: '✉️', color: '#60a5fa', bg: 'rgba(96, 165, 250, 0.12)', border: 'rgba(96, 165, 250, 0.35)' },
+  { id: 'meeting', label: 'Reunió / Entrevista', shortLabel: 'Reunió', icon: '🤝', color: '#a78bfa', bg: 'rgba(167, 139, 250, 0.12)', border: 'rgba(167, 139, 250, 0.35)' },
+  { id: 'instance', label: 'Instància / Tràmit', shortLabel: 'Instància', icon: '📝', color: '#38bdf8', bg: 'rgba(56, 189, 248, 0.12)', border: 'rgba(56, 189, 248, 0.35)' },
+  { id: 'proposal', label: 'Proposta / Pressupost', shortLabel: 'Proposta', icon: '📄', color: '#fbbf24', bg: 'rgba(251, 191, 36, 0.12)', border: 'rgba(251, 191, 36, 0.35)' },
+  { id: 'show', label: 'Funció realitzada', shortLabel: 'Funció', icon: '🎭', color: '#f472b6', bg: 'rgba(244, 114, 182, 0.12)', border: 'rgba(244, 114, 182, 0.35)' },
+  { id: 'note', label: 'Nota interna', shortLabel: 'Nota', icon: '📌', color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.12)', border: 'rgba(148, 163, 184, 0.35)' },
+];
+
+const getInteractionTypeInfo = (type) => {
+  return INTERACTION_TYPES.find(t => t.id === type) || {
+    id: 'meeting',
+    label: 'Reunió / Contacte',
+    shortLabel: 'Contacte',
+    icon: '🤝',
+    color: '#d4af37',
+    bg: 'rgba(212, 175, 55, 0.12)',
+    border: 'rgba(212, 175, 55, 0.35)'
+  };
 };
 
 const MOODS = [
@@ -185,12 +207,20 @@ export default function ContactDetailPage() {
   const [c4Email, setC4Email] = useState('');
   const [c4Phone, setC4Phone] = useState('');
 
-  // Interaction form
+  // Interaction & Timeline states
+  const [editingInteractionId, setEditingInteractionId] = useState(null);
+  const [interactionType, setInteractionType] = useState('call');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [interactionTitle, setInteractionTitle] = useState('');
+  const [interactionContactPerson, setInteractionContactPerson] = useState('');
   const [showId, setShowId] = useState('');
-  const [interestLevel, setInterestLevel] = useState(3);
+  const [interestLevel, setInterestLevel] = useState(0);
+  const [interactionNotes, setInteractionNotes] = useState('');
   const [technicalFeedback, setTechnicalFeedback] = useState('');
   const [otherInterests, setOtherInterests] = useState('');
+  const [interactionFilter, setInteractionFilter] = useState('all');
+  const [interactionNextActionDate, setInteractionNextActionDate] = useState('');
+  const [interactionNextActionNotes, setInteractionNextActionNotes] = useState('');
 
   // Reminder states
   const [nextActionDate, setNextActionDate] = useState('');
@@ -364,23 +394,80 @@ export default function ContactDetailPage() {
     });
   };
 
-  const handleAddInteraction = async (e) => {
-    e.preventDefault();
-    await addInteraction({
-      contactId,
-      date,
-      showId,
-      interestLevel: parseInt(interestLevel, 10),
-      technicalFeedback,
-      otherInterests
-    });
-    setIsAdding(false);
+  const resetInteractionForm = () => {
+    setEditingInteractionId(null);
+    setInteractionType('call');
     setDate(new Date().toISOString().split('T')[0]);
+    setInteractionTitle('');
+    setInteractionContactPerson('');
     setShowId('');
-    setInterestLevel(3);
+    setInterestLevel(0);
+    setInteractionNotes('');
     setTechnicalFeedback('');
     setOtherInterests('');
-    loadData();
+    setInteractionNextActionDate('');
+    setInteractionNextActionNotes('');
+    setIsAdding(false);
+  };
+
+  const handleEditInteraction = (interaction) => {
+    setEditingInteractionId(interaction.id);
+    setInteractionType(interaction.type || (interaction.showId ? 'meeting' : 'call'));
+    setDate(interaction.date || new Date().toISOString().split('T')[0]);
+    setInteractionTitle(interaction.title || '');
+    setInteractionContactPerson(interaction.contactPerson || '');
+    setShowId(interaction.showId || '');
+    setInterestLevel(interaction.interestLevel !== undefined && interaction.interestLevel !== null ? Number(interaction.interestLevel) : 0);
+    setInteractionNotes(interaction.notes || '');
+    setTechnicalFeedback(interaction.technicalFeedback || '');
+    setOtherInterests(interaction.otherInterests || '');
+    setInteractionNextActionDate('');
+    setInteractionNextActionNotes('');
+    setIsAdding(true);
+  };
+
+  const handleDeleteInteraction = async (interactionId) => {
+    if (confirm("Segur que vols eliminar aquest registre d'activitat de l'històric?")) {
+      await deleteInteraction(interactionId);
+      if (editingInteractionId === interactionId) {
+        resetInteractionForm();
+      }
+      await loadData();
+    }
+  };
+
+  const handleAddOrUpdateInteraction = async (e) => {
+    e.preventDefault();
+    const payload = {
+      contactId,
+      type: interactionType,
+      date,
+      title: interactionTitle.trim(),
+      contactPerson: interactionContactPerson.trim(),
+      showId: showId.trim(),
+      interestLevel: parseInt(interestLevel, 10) || 0,
+      notes: interactionNotes.trim(),
+      technicalFeedback: technicalFeedback.trim(),
+      otherInterests: otherInterests.trim()
+    };
+
+    if (editingInteractionId) {
+      await updateInteraction(editingInteractionId, payload);
+    } else {
+      await addInteraction(payload);
+    }
+
+    if (interactionNextActionDate) {
+      await updateContact(contactId, {
+        nextActionDate: interactionNextActionDate,
+        nextActionNotes: interactionNextActionNotes || interactionTitle || 'Seguiment programat'
+      });
+      setNextActionDate(interactionNextActionDate);
+      setNextActionNotes(interactionNextActionNotes || interactionTitle || 'Seguiment programat');
+    }
+
+    resetInteractionForm();
+    await loadData();
   };
 
   const handleSaveReminder = async (e) => {
@@ -609,6 +696,24 @@ export default function ContactDetailPage() {
       });
 
       if (res.ok) {
+        // Auto-registre a l'històric d'activitat
+        try {
+          await addInteraction({
+            contactId,
+            type: 'email',
+            date: new Date().toISOString().split('T')[0],
+            title: emailSubject || 'Correu de seguiment enviat',
+            contactPerson: emailRecipients.join(', '),
+            notes: `Destinataris: ${emailRecipients.join(', ')}${ccString ? ` | CC: ${ccString}` : ''}${bccString ? ` | BCC: ${bccString}` : ''}\n\n${emailText}`,
+            interestLevel: 0,
+            showId: '',
+            technicalFeedback: '',
+            otherInterests: ''
+          });
+          loadData();
+        } catch (autoLogErr) {
+          console.error("Error auto-logging email interaction:", autoLogErr);
+        }
         alert("Correu enviat correctament!");
         setIsEditingEmail(false);
       } else {
@@ -1524,82 +1629,491 @@ export default function ContactDetailPage() {
         </div>
       </div>
 
-      <div className="header-bar-responsive" style={{ marginBottom: '1rem' }}>
-        <h2>Històric d'Interaccions</h2>
+      {/* CRM Activity Timeline & Interactions */}
+      <div className="header-bar-responsive" style={{ marginBottom: '1rem', marginTop: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+        <div>
+          <h2 style={{ margin: 0 }}>Històric d'Activitat & Interaccions</h2>
+          <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>
+            Registre de trucades, correus, reunions, tràmits i seguiments amb l'entitat
+          </span>
+        </div>
         {(isAdmin || isCrm) && (
-          <button className="btn btn-primary" onClick={() => setIsAdding(!isAdding)}>
-            {isAdding ? 'Cancel·lar' : '+ Nova Interacció'}
+          <button 
+            className="btn btn-primary" 
+            onClick={() => {
+              if (isAdding) {
+                resetInteractionForm();
+              } else {
+                resetInteractionForm();
+                setIsAdding(true);
+              }
+            }}
+          >
+            {isAdding ? 'Cancel·lar' : '+ Nova Activitat'}
           </button>
         )}
       </div>
 
       {isAdding && (
-        <div className="glass-panel animate-fade-in-up" style={{ marginBottom: 'var(--space-lg)' }}>
-          <form onSubmit={handleAddInteraction} className="grid-2col-responsive">
-            <div className="input-group">
-              <label>Data</label>
-              <input type="date" className="input-field" value={date} onChange={e => setDate(e.target.value)} required />
-            </div>
-            
-            <div className="input-group">
-              <label>Nivell d'Interès (1-5)</label>
-              <input type="range" min="1" max="5" className="input-field" value={interestLevel} onChange={e => setInterestLevel(e.target.value)} />
-              <div style={{ textAlign: 'center', color: 'var(--color-accent)', fontWeight: 'bold' }}>{interestLevel} ⭐</div>
+        <div className="glass-panel animate-fade-in-up" style={{ marginBottom: 'var(--space-lg)', border: '1px solid var(--color-accent)' }}>
+          <h3 style={{ color: 'var(--color-accent)', marginBottom: '1.25rem', fontSize: '1.2rem' }}>
+            {editingInteractionId ? "✏️ Editar Activitat" : "➕ Nova Activitat / Interacció"}
+          </h3>
+
+          <form onSubmit={handleAddOrUpdateInteraction} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {/* Type selector pills */}
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--color-text-secondary)', fontWeight: '500' }}>
+                Tipus d'activitat
+              </label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                {INTERACTION_TYPES.map(t => {
+                  const isSelected = interactionType === t.id;
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setInteractionType(t.id)}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.4rem',
+                        padding: '0.45rem 0.9rem',
+                        borderRadius: '20px',
+                        fontSize: '0.85rem',
+                        fontWeight: isSelected ? '600' : 'normal',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                        backgroundColor: isSelected ? t.bg : 'rgba(255, 255, 255, 0.05)',
+                        color: isSelected ? t.color : 'var(--color-text-secondary)',
+                        border: isSelected ? `1.5px solid ${t.color}` : '1px solid var(--color-border)',
+                        boxShadow: isSelected ? `0 0 10px ${t.border}` : 'none'
+                      }}
+                    >
+                      <span>{t.icon}</span>
+                      <span>{t.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
-            <div className="input-group" style={{ gridColumn: '1 / -1' }}>
-              <label>Espectacle presentat (opcional)</label>
-              <input list="shows-list" className="input-field" value={showId} onChange={e => setShowId(e.target.value)} placeholder="Tria o escriu l'espectacle..." />
-              <datalist id="shows-list">
-                {shows.map(s => <option key={s.id} value={s.title} />)}
-                <option value="Layla, un viatge d'esperança" />
-                <option value="Layla, el contacontes" />
-                <option value="Cavernus, una evolució musical" />
-                <option value="Un Nadal Màgic" />
-                <option value="Silencis Trencats" />
-                <option value="Marcel, cartes des del front" />
-                <option value="El petit Leonardo" />
-                <option value="Simfonia Corporativa" />
-                <option value="Concert Duo Hemiòlia" />
-                <option value="Concert Trio Hemiòlia" />
-              </datalist>
+            {/* Row 1: Date & Contact Person */}
+            <div className="grid-2col-responsive" style={{ gap: '1rem' }}>
+              <div className="input-group" style={{ marginBottom: 0 }}>
+                <label>Data *</label>
+                <input 
+                  type="date" 
+                  className="input-field" 
+                  value={date} 
+                  onChange={e => setDate(e.target.value)} 
+                  required 
+                />
+              </div>
+
+              <div className="input-group" style={{ marginBottom: 0 }}>
+                <label>Interlocutor / Persona de contacte (opcional)</label>
+                <input 
+                  type="text" 
+                  list="contact-persons-list" 
+                  className="input-field" 
+                  value={interactionContactPerson} 
+                  onChange={e => setInteractionContactPerson(e.target.value)} 
+                  placeholder="Escriu o tria el contacte..." 
+                />
+                <datalist id="contact-persons-list">
+                  {contact?.contact1?.name && <option value={`${contact.contact1.name}${contact.contact1.role ? ` (${contact.contact1.role})` : ''}`} />}
+                  {contact?.name && contact.name !== contact?.contact1?.name && <option value={contact.name} />}
+                  {contact?.contact2?.name && <option value={`${contact.contact2.name}${contact.contact2.role ? ` (${contact.contact2.role})` : ''}`} />}
+                  {contact?.contact3?.name && <option value={`${contact.contact3.name}${contact.contact3.role ? ` (${contact.contact3.role})` : ''}`} />}
+                  {contact?.contact4?.name && <option value={`${contact.contact4.name}${contact.contact4.role ? ` (${contact.contact4.role})` : ''}`} />}
+                </datalist>
+              </div>
             </div>
 
-            <div className="input-group" style={{ gridColumn: '1 / -1' }}>
-              <label>Feedback Tècnic</label>
-              <textarea className="input-field" rows="3" value={technicalFeedback} onChange={e => setTechnicalFeedback(e.target.value)} placeholder="Ex: L'escenari fa 6x4m i no tenen llums frontals..."></textarea>
+            {/* Row 2: Title / Subject & Show */}
+            <div className="grid-2col-responsive" style={{ gap: '1rem' }}>
+              <div className="input-group" style={{ marginBottom: 0 }}>
+                <label>Títol / Resum breu</label>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  value={interactionTitle} 
+                  onChange={e => setInteractionTitle(e.target.value)} 
+                  placeholder="Ex: Trucada per dates del Layla, enviament de pressupost..." 
+                />
+              </div>
+
+              <div className="input-group" style={{ marginBottom: 0 }}>
+                <label>Espectacle relacionat (opcional)</label>
+                <input 
+                  list="shows-list" 
+                  className="input-field" 
+                  value={showId} 
+                  onChange={e => setShowId(e.target.value)} 
+                  placeholder="Tria o escriu l'espectacle..." 
+                />
+                <datalist id="shows-list">
+                  {shows.map(s => <option key={s.id} value={s.title} />)}
+                  <option value="Layla, un viatge d'esperança" />
+                  <option value="Layla, el contacontes" />
+                  <option value="Cavernus, una evolució musical" />
+                  <option value="Un Nadal Màgic" />
+                  <option value="Silencis Trencats" />
+                  <option value="Marcel, cartes des del front" />
+                  <option value="El petit Leonardo" />
+                  <option value="Simfonia Corporativa" />
+                  <option value="Concert Duo Hemiòlia" />
+                  <option value="Concert Trio Hemiòlia" />
+                </datalist>
+              </div>
             </div>
 
-            <div className="input-group" style={{ gridColumn: '1 / -1' }}>
-              <label>Interès en altres espectacles</label>
-              <input type="text" className="input-field" value={otherInterests} onChange={e => setOtherInterests(e.target.value)} placeholder="Han preguntat pel format quartet..." />
+            {/* Row 3: Interest Level (0 to 5 stars, optional) */}
+            <div className="input-group" style={{ marginBottom: 0 }}>
+              <label>Nivell d'interès de l'entitat (opcional)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap', marginTop: '0.25rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setInterestLevel(0)}
+                  style={{
+                    padding: '0.35rem 0.75rem',
+                    borderRadius: '20px',
+                    fontSize: '0.8rem',
+                    backgroundColor: interestLevel === 0 ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.04)',
+                    border: interestLevel === 0 ? '1px solid rgba(255,255,255,0.4)' : '1px solid var(--color-border)',
+                    color: interestLevel === 0 ? '#ffffff' : 'var(--color-text-secondary)',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Sense valoració (0 ⭐)
+                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setInterestLevel(interestLevel === star ? 0 : star)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontSize: '1.45rem',
+                        color: star <= interestLevel ? 'var(--color-accent)' : 'rgba(255, 255, 255, 0.2)',
+                        padding: '0 2px',
+                        transition: 'transform 0.15s ease'
+                      }}
+                      title={`${star} estrella${star > 1 ? 's' : ''}`}
+                    >
+                      ★
+                    </button>
+                  ))}
+                </div>
+                {interestLevel > 0 && (
+                  <span style={{ fontSize: '0.9rem', color: 'var(--color-accent)', fontWeight: 'bold', marginLeft: '4px' }}>
+                    {interestLevel} / 5 ⭐
+                  </span>
+                )}
+              </div>
             </div>
 
-            <div style={{ gridColumn: '1 / -1' }}>
-              <button type="submit" className="btn btn-primary">Desar Interacció</button>
+            {/* Row 4: Notes / Detailed description */}
+            <div className="input-group" style={{ marginBottom: 0 }}>
+              <label>Notes / Contingut de la conversa o acció</label>
+              <textarea 
+                className="input-field" 
+                rows="3" 
+                value={interactionNotes} 
+                onChange={e => setInteractionNotes(e.target.value)} 
+                placeholder="Punts tractats, comentaris del programador, condicions acordades..."
+              />
+            </div>
+
+            {/* Row 5: Collapsible / optional technical feedback & other interests */}
+            <div className="grid-2col-responsive" style={{ gap: '1rem' }}>
+              <div className="input-group" style={{ marginBottom: 0 }}>
+                <label>Feedback Tècnic (opcional)</label>
+                <textarea 
+                  className="input-field" 
+                  rows="2" 
+                  value={technicalFeedback} 
+                  onChange={e => setTechnicalFeedback(e.target.value)} 
+                  placeholder="Ex: Escenari 6x4m, requereixen equip autònom de so..."
+                />
+              </div>
+
+              <div className="input-group" style={{ marginBottom: 0 }}>
+                <label>Altres Interessos (opcional)</label>
+                <input 
+                  type="text" 
+                  className="input-field" 
+                  value={otherInterests} 
+                  onChange={e => setOtherInterests(e.target.value)} 
+                  placeholder="Ex: Interessats també en espectacle per Nadal..." 
+                />
+              </div>
+            </div>
+
+            {/* Row 6: Schedule Next Action (Direct reminder sync) */}
+            {!editingInteractionId && (
+              <div style={{ background: 'rgba(212, 175, 55, 0.05)', border: '1px dashed rgba(212, 175, 55, 0.3)', borderRadius: 'var(--radius-sm)', padding: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  <span style={{ fontSize: '1.1rem' }}>⏰</span>
+                  <strong style={{ fontSize: '0.9rem', color: 'var(--color-accent)' }}>Vols programar un proper pas / recordatori de seguiment?</strong>
+                </div>
+                <div className="grid-2col-responsive" style={{ gap: '0.75rem' }}>
+                  <div className="input-group" style={{ marginBottom: 0 }}>
+                    <label style={{ fontSize: '0.8rem' }}>Data de la propera acció</label>
+                    <input 
+                      type="date" 
+                      className="input-field" 
+                      value={interactionNextActionDate} 
+                      onChange={e => setInteractionNextActionDate(e.target.value)} 
+                    />
+                  </div>
+                  <div className="input-group" style={{ marginBottom: 0 }}>
+                    <label style={{ fontSize: '0.8rem' }}>Tasca / Nota del recordatori</label>
+                    <input 
+                      type="text" 
+                      className="input-field" 
+                      value={interactionNextActionNotes} 
+                      onChange={e => setInteractionNextActionNotes(e.target.value)} 
+                      placeholder="Ex: Tornar a trucar per confirmar disponibilitat..." 
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Form Actions */}
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
+              <button type="submit" className="btn btn-primary" style={{ padding: '0.6rem 1.5rem', fontWeight: 'bold' }}>
+                {editingInteractionId ? 'Desar Canvis' : 'Desar Activitat'}
+              </button>
+              <button type="button" className="btn btn-glass" onClick={resetInteractionForm} style={{ padding: '0.6rem 1.25rem' }}>
+                Cancel·lar
+              </button>
             </div>
           </form>
         </div>
       )}
 
+      {/* Filter Tabs */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.25rem', alignItems: 'center' }}>
+        <button
+          type="button"
+          onClick={() => setInteractionFilter('all')}
+          style={{
+            padding: '0.35rem 0.8rem',
+            borderRadius: '20px',
+            fontSize: '0.8rem',
+            fontWeight: interactionFilter === 'all' ? '600' : 'normal',
+            cursor: 'pointer',
+            backgroundColor: interactionFilter === 'all' ? 'var(--color-accent)' : 'rgba(255, 255, 255, 0.05)',
+            color: interactionFilter === 'all' ? 'var(--color-bg)' : 'var(--color-text-secondary)',
+            border: interactionFilter === 'all' ? '1px solid var(--color-accent)' : '1px solid var(--color-border)',
+            transition: 'all 0.15s ease'
+          }}
+        >
+          Totes ({interactions.length})
+        </button>
+
+        {INTERACTION_TYPES.map(t => {
+          const count = interactions.filter(i => (i.type || (i.showId ? 'meeting' : 'call')) === t.id).length;
+          if (count === 0 && interactionFilter !== t.id) return null;
+          const isSelected = interactionFilter === t.id;
+          return (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setInteractionFilter(t.id)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+                padding: '0.35rem 0.8rem',
+                borderRadius: '20px',
+                fontSize: '0.8rem',
+                fontWeight: isSelected ? '600' : 'normal',
+                cursor: 'pointer',
+                backgroundColor: isSelected ? t.bg : 'rgba(255, 255, 255, 0.05)',
+                color: isSelected ? t.color : 'var(--color-text-secondary)',
+                border: isSelected ? `1px solid ${t.color}` : '1px solid var(--color-border)',
+                transition: 'all 0.15s ease'
+              }}
+            >
+              <span>{t.icon}</span>
+              <span>{t.shortLabel}</span>
+              <span style={{ opacity: 0.8, fontSize: '0.75rem' }}>({count})</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Activity Timeline List */}
       <div>
-        {interactions.length === 0 ? (
-          <p style={{ color: 'var(--color-text-secondary)' }}>No hi ha interaccions registrades.</p>
-        ) : (
-          interactions.map(interaction => (
-            <div key={interaction.id} className="glass-panel" style={{ marginBottom: '1rem', borderLeft: `4px solid var(--color-accent)` }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <strong>{formatDateDDMMYYYY(interaction.date)}</strong>
-                <span style={{ color: 'var(--color-accent)' }}>
-                  {'★'.repeat(interaction.interestLevel)}{'☆'.repeat(5 - interaction.interestLevel)}
-                </span>
+        {(() => {
+          const filtered = interactions.filter(i => {
+            if (interactionFilter === 'all') return true;
+            const t = i.type || (i.showId ? 'meeting' : 'call');
+            return t === interactionFilter;
+          });
+
+          if (filtered.length === 0) {
+            return (
+              <div className="glass-panel" style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-secondary)' }}>
+                <p style={{ margin: 0 }}>
+                  {interactions.length === 0 
+                    ? "No hi ha cap activitat registrada per a aquesta entitat encara. Fes clic a '+ Nova Activitat' per afegir-ne una."
+                    : "No hi ha registres que coincideixin amb aquest filtre."}
+                </p>
               </div>
-              {interaction.showId && <p style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}><strong>Espectacle:</strong> {interaction.showId}</p>}
-              {interaction.technicalFeedback && <p style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}><strong>Tècnic:</strong> {interaction.technicalFeedback}</p>}
-              {interaction.otherInterests && <p style={{ fontSize: '0.9rem', marginBottom: '0' }}><strong>Altres Interessos:</strong> {interaction.otherInterests}</p>}
+            );
+          }
+
+          return (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+              {filtered.map(interaction => {
+                const effectiveType = interaction.type || (interaction.showId ? 'meeting' : 'call');
+                const typeInfo = getInteractionTypeInfo(effectiveType);
+                const hasStars = interaction.interestLevel && Number(interaction.interestLevel) > 0;
+                const starsCount = Math.min(5, Math.max(0, Number(interaction.interestLevel) || 0));
+
+                return (
+                  <div 
+                    key={interaction.id} 
+                    className="glass-panel" 
+                    style={{ 
+                      padding: '1.25rem',
+                      borderLeft: `4px solid ${typeInfo.color}`,
+                      transition: 'all 0.2s ease',
+                      position: 'relative'
+                    }}
+                  >
+                    {/* Header: Type Badge, Date, Interlocutor, Stars & Action buttons */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.6rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.6rem' }}>
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          padding: '0.2rem 0.6rem',
+                          borderRadius: '12px',
+                          fontSize: '0.8rem',
+                          fontWeight: '600',
+                          backgroundColor: typeInfo.bg,
+                          color: typeInfo.color,
+                          border: `1px solid ${typeInfo.border}`
+                        }}>
+                          <span>{typeInfo.icon}</span>
+                          <span>{typeInfo.label}</span>
+                        </span>
+
+                        <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', fontWeight: '500' }}>
+                          📅 {formatDateDDMMYYYY(interaction.date)}
+                        </span>
+
+                        {interaction.contactPerson && (
+                          <span style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)', background: 'rgba(255,255,255,0.05)', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>
+                            👤 {interaction.contactPerson}
+                          </span>
+                        )}
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        {hasStars && (
+                          <span style={{ color: 'var(--color-accent)', fontSize: '0.9rem', fontWeight: 'bold' }} title={`${starsCount} estrelles d'interès`}>
+                            {'★'.repeat(starsCount)}{'☆'.repeat(5 - starsCount)}
+                          </span>
+                        )}
+
+                        {(isAdmin || isCrm) && (
+                          <div style={{ display: 'flex', gap: '0.35rem' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleEditInteraction(interaction)}
+                              className="btn btn-glass"
+                              style={{ padding: '0.25rem 0.55rem', fontSize: '0.75rem', borderRadius: '4px' }}
+                              title="Editar aquest registre"
+                            >
+                              ✏️ Editar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteInteraction(interaction.id)}
+                              className="btn btn-glass"
+                              style={{ padding: '0.25rem 0.55rem', fontSize: '0.75rem', borderRadius: '4px', color: 'var(--color-error)' }}
+                              title="Eliminar de l'històric"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Title */}
+                    {interaction.title && (
+                      <h4 style={{ margin: '0.2rem 0 0.5rem 0', fontSize: '1.05rem', color: 'var(--color-text-primary)', fontWeight: '600' }}>
+                        {interaction.title}
+                      </h4>
+                    )}
+
+                    {/* Show Tag */}
+                    {interaction.showId && (
+                      <div style={{ marginBottom: '0.5rem' }}>
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          background: 'rgba(212, 175, 55, 0.12)',
+                          color: 'var(--color-accent)',
+                          border: '1px solid rgba(212, 175, 55, 0.3)',
+                          padding: '0.2rem 0.6rem',
+                          borderRadius: '4px',
+                          fontSize: '0.8rem',
+                          fontWeight: '500'
+                        }}>
+                          🎭 Espectacle: {interaction.showId}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Notes / Description */}
+                    {interaction.notes && (
+                      <div style={{ 
+                        fontSize: '0.92rem', 
+                        color: 'var(--color-text-secondary)', 
+                        lineHeight: '1.6', 
+                        whiteSpace: 'pre-wrap',
+                        background: 'rgba(0, 0, 0, 0.2)',
+                        padding: '0.65rem 0.85rem',
+                        borderRadius: '6px',
+                        marginTop: '0.4rem'
+                      }}>
+                        {interaction.notes}
+                      </div>
+                    )}
+
+                    {/* Technical feedback (if any) */}
+                    {interaction.technicalFeedback && (
+                      <div style={{ fontSize: '0.88rem', color: 'var(--color-text-secondary)', marginTop: '0.4rem' }}>
+                        <strong style={{ color: 'var(--color-text-primary)' }}>🔧 Feedback Tècnic:</strong> {interaction.technicalFeedback}
+                      </div>
+                    )}
+
+                    {/* Other interests (if any) */}
+                    {interaction.otherInterests && (
+                      <div style={{ fontSize: '0.88rem', color: 'var(--color-text-secondary)', marginTop: '0.25rem' }}>
+                        <strong style={{ color: 'var(--color-text-primary)' }}>💡 Altres Interessos:</strong> {interaction.otherInterests}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          ))
-        )}
+          );
+        })()}
       </div>
 
       {/* Modal d'edició i enviament de correu de seguiment */}
