@@ -686,7 +686,10 @@ export default function CRMPage() {
             Contactes <span style={{ fontSize: '1.2rem', color: 'var(--color-text-secondary)', marginLeft: '0.5rem', fontWeight: 'normal' }}>({filteredContacts.length})</span>
           </h1>
         </div>
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+          <Link href="/dashboard/crm/diary" className="btn btn-glass no-print" title="Consultar el diari i registre de sessions de promoció">
+            📓 Diari de Promoció
+          </Link>
           <button className="btn btn-glass no-print" onClick={() => window.print()} title="Imprimir llista filtrada">
             🖨️ Imprimir
           </button>

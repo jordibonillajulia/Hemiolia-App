@@ -44,6 +44,9 @@ service cloud.firestore {
     match /interactions/{interactionId} {
       allow read, write: if isAdmin() || isCrmAgent();
     }
+    match /promotion_sessions/{sessionId} {
+      allow read, write: if isAdmin() || isCrmAgent();
+    }
 
     // Other private collections: read-only for CRM Agent, full access for Admin
     match /shows/{showId} {

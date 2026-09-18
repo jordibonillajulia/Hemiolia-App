@@ -109,6 +109,41 @@ export const getInteractionsByContact = async (contactId) => {
   return data.sort((a, b) => new Date(b.date) - new Date(a.date));
 };
 
+export const getAllInteractions = async () => {
+  const q = query(collection(db, 'interactions'));
+  const snapshot = await getDocs(q);
+  const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return data.sort((a, b) => new Date(b.date || b.createdAt || 0) - new Date(a.date || a.createdAt || 0));
+};
+
+// PROMOTION SESSIONS / DIARI DE PROMOCIÓ
+export const getPromotionSessions = async () => {
+  const q = query(collection(db, 'promotion_sessions'));
+  const snapshot = await getDocs(q);
+  const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return data.sort((a, b) => new Date(b.date) - new Date(a.date));
+};
+
+export const addPromotionSession = async (sessionData) => {
+  return await addDoc(collection(db, 'promotion_sessions'), {
+    ...sessionData,
+    createdAt: new Date().toISOString()
+  });
+};
+
+export const updatePromotionSession = async (id, data) => {
+  const docRef = doc(db, 'promotion_sessions', id);
+  await updateDoc(docRef, {
+    ...data,
+    updatedAt: new Date().toISOString()
+  });
+};
+
+export const deletePromotionSession = async (id) => {
+  const docRef = doc(db, 'promotion_sessions', id);
+  await deleteDoc(docRef);
+};
+
 // GIGS (Road-sheet)
 export const addGig = async (gigData) => {
   const docRef = await addDoc(collection(db, 'gigs'), {
